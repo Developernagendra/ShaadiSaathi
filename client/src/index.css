@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #C2185B;
+    /* Rani Pink */
+    --color-primary-dark: #8E244D;
+    /* Royal Maroon */
+    --color-gold: #D4AF37;
+    /* Royal Gold */
+    --color-gold-light: #F4D03F;
+    --color-cream: #FFF8F0;
+    /* Ivory/Cream */
+    --color-ivory: #FFFFF0;
+    --color-burgundy: #7A1F3D;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background-color: var(--color-cream);
+    color: #2D2D2D;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-cream);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, var(--color-primary), var(--color-gold));
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-dark);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-[#C2185B] via-[#8E244D] to-[#C2185B] bg-[length:200%_auto] text-white font-bold py-3.5 px-8 rounded-2xl hover:bg-right transition-all duration-500 shadow-xl shadow-pink-200/50 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-widest text-xs flex items-center justify-center gap-2;
+  }
+
+  .btn-gold {
+    @apply bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-white font-bold py-3.5 px-8 rounded-2xl hover:shadow-gold-glow transition-all duration-300 active:scale-[0.98] uppercase tracking-widest text-xs flex items-center justify-center gap-2;
+  }
+
+  .btn-outline {
+    @apply border-2 border-[#C2185B] text-[#C2185B] font-bold py-3 px-8 rounded-2xl hover:bg-pink-50 transition-all duration-300 active:scale-[0.98] uppercase tracking-widest text-xs flex items-center justify-center gap-2;
+  }
+
+  .input-field {
+    @apply w-full bg-white border border-gray-200 rounded-2xl px-5 py-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-100 focus:border-[#C2185B] transition-all duration-300 shadow-sm hover:border-pink-200;
+  }
+
+  .card-premium {
+    @apply bg-white rounded-[2rem] shadow-premium hover:shadow-premium-hover transition-all duration-500 overflow-hidden border border-gray-50;
+  }
+
+  .label {
+    @apply block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1;
+  }
+
+  .badge-wedding {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm;
+  }
+
+  .section-title-luxe {
+    @apply font-display text-3xl md:text-5xl font-black text-gray-900 leading-tight;
+  }
+
+  .divider-luxe {
+    @apply flex items-center justify-center gap-4 my-8;
+  }
+
+  .divider-line {
+    @apply h-[1px] bg-gradient-to-r from-transparent via-gold-400 to-transparent flex-1;
+  }
+
+  .floral-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c2185b' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  .shadow-premium {
+    box-shadow: 0 20px 50px rgba(194, 24, 91, 0.05);
+  }
+
+  .shadow-premium-hover {
+    box-shadow: 0 30px 70px rgba(194, 24, 91, 0.12);
+    transform: translateY(-5px);
+  }
+
+  .shadow-gold-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+
+  .text-gold {
+    color: #D4AF37;
+  }
+
+  .bg-wedding-gradient {
+    background: linear-gradient(135deg, #FFF8F0 0%, #FFFFFF 100%);
+  }
+
+  /* Hide scrollbar for mobile carousels */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Animations */
+@keyframes gold-shine {
+  from {
+    left: -100%;
+  }
+
+  to {
+    left: 100%;
+  }
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-25deg);
+  animation: gold-shine 3s infinite;
+}

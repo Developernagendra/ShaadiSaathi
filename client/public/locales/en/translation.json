@@ -1,0 +1,35 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "vendors": "Vendors",
+    "booking": "Booking",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "vendorDashboard": "Vendor Dashboard",
+    "userDashboard": "My Dashboard"
+  },
+  "home": {
+    "title": "Find trusted wedding services for your special day",
+    "subtitle": "Your dream wedding starts here",
+    "bookNow": "Book Now",
+    "exploreServices": "Explore Services"
+  },
+  "vendorDashboard": {
+    "myServices": "My Services",
+    "addService": "Add Service",
+    "bookings": "Bookings",
+    "earnings": "Earnings"
+  },
+  "userDashboard": {
+    "bookingStatus": "Booking Status",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "wishlist": "Wishlist",
+    "myBookings": "My Bookings"
+  },
+  "contact": {
+    "contactVendor": "Contact Vendor"
+  }
+}

@@ -1,0 +1,280 @@
+import { useEffect, lazy, Suspense } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { getMe, setInitialized } from './store/slices/authSlice'
+import { initSocket, disconnectSocket } from './utils/socket'
+import { fetchCategories } from './store/slices/vendorSlice'
+import { useTranslation } from 'react-i18next'
+
+// Layout
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import ProtectedRoute from './components/common/ProtectedRoute'
+import ScrollToTop from './components/common/ScrollToTop'
+import LoadingScreen from './components/common/LoadingScreen'
+import FloatingWhatsApp from './components/common/FloatingWhatsApp'
+import SocketListener from './components/common/SocketListener'
+import ErrorBoundary from './components/common/ErrorBoundary'
+
+const BaraatCabsPage = lazy(() => import('./pages/BaraatCabsPage'))
+const CabDetailPage = lazy(() => import('./pages/CabDetailPage'))
+const VendorManageCabsPage = lazy(() => import('./pages/vendor/VendorManageCabsPage'))
+const BundleDetailPage = lazy(() => import('./pages/BundleDetailPage'))
+
+// Lazy Load Pages
+const HomePage = lazy(() => import('./pages/HomePage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const ServicesPage = lazy(() => import('./pages/ServicesPage'))
+const ServiceDetailPage = lazy(() => import('./pages/ServiceDetailPage'))
+const VendorDetailPage = lazy(() => import('./pages/VendorDetailPage'))
+const BlogPage = lazy(() => import('./pages/BlogPage'))
+const BlogDetailPage = lazy(() => import('./pages/BlogDetailPage'))
+const FAQPage = lazy(() => import('./pages/FAQPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const TestimonialsPage = lazy(() => import('./pages/TestimonialsPage'))
+
+// Auth Pages
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterSelectionPage = lazy(() => import('./pages/auth/RegisterSelectionPage'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+const VendorRegisterPage = lazy(() => import('./pages/auth/VendorRegisterPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
+const VerifyEmailPage = lazy(() => import('./pages/auth/VerifyEmailPage'))
+const ResendVerificationPage = lazy(() => import('./pages/auth/ResendVerificationPage'))
+
+// User Pages
+const UserDashboard = lazy(() => import('./pages/user/UserDashboard'))
+const ProfilePage = lazy(() => import('./pages/user/ProfilePage'))
+const BookingsPage = lazy(() => import('./pages/user/BookingsPage'))
+const BookingDetailPage = lazy(() => import('./pages/user/BookingDetailPage'))
+const CabBookingDetailPage = lazy(() => import('./pages/user/CabBookingDetailPage'))
+const WishlistPage = lazy(() => import('./pages/user/WishlistPage'))
+const ChatPage = lazy(() => import('./pages/user/ChatPage'))
+const CartPage = lazy(() => import('./pages/user/CartPage'))
+const BookService = lazy(() => import('./pages/user/CheckoutPage'))
+const BookCab = lazy(() => import('./pages/CabBookingPage'))
+
+// Vendor Pages
+const VendorDashboard = lazy(() => import('./pages/vendor/VendorDashboard'))
+const VendorProfilePage = lazy(() => import('./pages/vendor/VendorProfilePage'))
+const VendorServicesPage = lazy(() => import('./pages/vendor/VendorServicesPage'))
+const VendorBookingsPage = lazy(() => import('./pages/vendor/VendorBookingsPage'))
+const VendorEarningsPage = lazy(() => import('./pages/vendor/VendorEarningsPage'))
+const VendorBlogsPage = lazy(() => import('./pages/vendor/VendorBlogsPage'))
+
+// Admin Pages
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'))
+const AdminVendorsPage = lazy(() => import('./pages/admin/AdminVendorsPage'))
+const AdminServicesApprovalPage = lazy(() => import('./pages/admin/AdminServicesApprovalPage'))
+const ServiceApprovalDetails = lazy(() => import('./pages/admin/ServiceApprovalDetails'))
+const AdminBookingsPage = lazy(() => import('./pages/admin/AdminBookingsPage'))
+const AdminBookingDetailPage = lazy(() => import('./pages/admin/AdminBookingDetailPage'))
+const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage'))
+
+// Special Pages
+const CabBookingPage = lazy(() => import('./pages/CabBookingPage'))
+const AIPlannerPage = lazy(() => import('./pages/AIPlannerPage'))
+const BudgetCalculatorPage = lazy(() => import('./pages/BudgetCalculatorPage'))
+const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage'))
+const ChecklistPage = lazy(() => import('./pages/ChecklistPage'))
+const InvitationPage = lazy(() => import('./pages/InvitationPage'))
+const LeadMarketplacePage = lazy(() => import('./pages/LeadMarketplacePage'))
+const VendorSubscriptionPage = lazy(() => import('./pages/VendorSubscriptionPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+
+const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'))
+
+// User Sub-Pages
+const NotificationsPage = lazy(() => import('./pages/user/NotificationsPage'))
+const SettingsPage = lazy(() => import('./pages/user/SettingsPage'))
+
+// Vendor Sub-Pages
+const VendorPackagesPage = lazy(() => import('./pages/vendor/VendorPackagesPage'))
+const VendorGalleryPage = lazy(() => import('./pages/vendor/VendorGalleryPage'))
+const VendorCalendarPage = lazy(() => import('./pages/vendor/VendorCalendarPage'))
+const VendorReviewsPage = lazy(() => import('./pages/vendor/VendorReviewsPage'))
+const VendorNotificationsPage = lazy(() => import('./pages/vendor/VendorNotificationsPage'))
+const VendorSettingsPage = lazy(() => import('./pages/vendor/VendorSettingsPage'))
+
+
+// Admin Sub-Pages
+// Deleted duplicate AdminApprovalsPage
+const AdminBlogsPage = lazy(() => import('./pages/admin/AdminBlogsPage'))
+const AdminLeadsPage = lazy(() => import('./pages/admin/AdminLeadsPage'))
+const AdminManageCabsPage = lazy(() => import('./pages/admin/AdminManageCabsPage'))
+const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
+const AdminReviewsPage = lazy(() => import('./pages/admin/AdminReviewsPage'))
+
+export default function App() {
+  const dispatch = useDispatch()
+  const { token, user, isInitialized } = useSelector((state) => state.auth || {})
+  const { categories = [] } = useSelector((state) => state.vendor || {})
+  const { i18n } = useTranslation()
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language || 'en'
+    document.documentElement.dir = i18n.dir(i18n.language) || 'ltr'
+  }, [i18n, i18n.language])
+
+  // Cross-Tab State Sync (Point 15)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'token') {
+        if (e.newValue) {
+          dispatch(getMe()) // Tab 2 logged in
+        } else {
+          dispatch({ type: 'auth/logout' }) // Tab 2 logged out
+        }
+      }
+      if (e.key === 'force_auth_refresh') {
+        if (token) dispatch(getMe()) // Tab 2 verified email or got approved
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [dispatch, token])
+
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      dispatch(fetchCategories())
+    }
+  }, [dispatch, categories?.length])
+
+  useEffect(() => {
+    if (token) {
+      dispatch(getMe())
+    } else {
+      dispatch(setInitialized())
+    }
+  }, [dispatch, token])
+
+  useEffect(() => {
+    if (user?._id) {
+      initSocket(user)
+    }
+    return () => {
+      disconnectSocket()
+    }
+  }, [user])
+
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingScreen />}>
+        <ScrollToTop />
+        <SocketListener />
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-1">
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/ai-planner" element={<AIPlannerPage />} />
+              <Route path="/baraat-cabs" element={<BaraatCabsPage />} />
+              <Route path="/baraat-cabs/details/:id" element={<CabDetailPage />} />
+              <Route path="/baraat-cabs/book" element={<CabBookingPage />} />
+              <Route path="/baraat-cabs/bundle/:bundleId" element={<BundleDetailPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services/:id" element={<ServiceDetailPage />} />
+              <Route path="/vendors/:id" element={<VendorDetailPage />} />
+              <Route path="/cab-booking" element={<CabBookingPage />} />
+              <Route path="/budget-calculator" element={<BudgetCalculatorPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogDetailPage />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/testimonials" element={<TestimonialsPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/our-story" element={<Navigate to="/about" replace />} />
+              <Route path="/reviews" element={<Navigate to="/testimonials" replace />} />
+
+
+              {/* Auth Routes */}
+              <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
+              <Route path="/register" element={!user ? <RegisterSelectionPage /> : <Navigate to="/" />} />
+              <Route path="/register/user" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
+              <Route path="/register/vendor" element={!user ? <VendorRegisterPage /> : <Navigate to="/" />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+              <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+              <Route path="/resend-verification" element={<ResendVerificationPage />} />
+
+              {/* User Dashboard Routes */}
+              <Route element={<ProtectedRoute roles={['user', 'vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<UserDashboard />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/bookings" element={<BookingsPage />} />
+                <Route path="/dashboard/my-bookings" element={<BookingsPage />} />
+                <Route path="/bookings/:id" element={<BookingDetailPage />} />
+                <Route path="/cab-booking/:id" element={<CabBookingDetailPage />} />
+                <Route path="/wishlist" element={<WishlistPage />} />
+                <Route path="/guests" element={<GuestManagementPage />} />
+                <Route path="/checklist" element={<ChecklistPage />} />
+                <Route path="/invitation-creator" element={<InvitationPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/leads" element={<LeadMarketplacePage />} />
+              </Route>
+
+              <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+              <Route path="/book-service/:id" element={<ProtectedRoute><BookService /></ProtectedRoute>} />
+              <Route path="/book-vendor/:id" element={<ProtectedRoute><BookService /></ProtectedRoute>} />
+              <Route path="/book-cab/:id" element={<ProtectedRoute><BookCab /></ProtectedRoute>} />
+
+              {/* Vendor Dashboard Routes */}
+              <Route element={<ProtectedRoute roles={['vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
+                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+                <Route path="/vendor/profile" element={<VendorProfilePage />} />
+                <Route path="/vendor/services" element={<VendorServicesPage />} />
+                <Route path="/vendor/packages" element={<VendorPackagesPage />} />
+                <Route path="/vendor/gallery" element={<VendorGalleryPage />} />
+                <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
+                <Route path="/vendor/bookings/:id" element={<BookingDetailPage />} />
+                <Route path="/vendor/dashboard/customer-bookings" element={<VendorBookingsPage />} />
+                <Route path="/vendor/calendar" element={<VendorCalendarPage />} />
+                <Route path="/vendor/earnings" element={<VendorEarningsPage />} />
+                <Route path="/vendor/blogs" element={<VendorBlogsPage />} />
+                <Route path="/vendor/reviews" element={<VendorReviewsPage />} />
+                <Route path="/vendor/notifications" element={<VendorNotificationsPage />} />
+                <Route path="/vendor/settings" element={<VendorSettingsPage />} />
+                <Route path="/vendor/manage-cabs" element={<VendorManageCabsPage />} />
+
+                <Route path="/vendor-subscription" element={<VendorSubscriptionPage />} />
+              </Route>
+
+              {/* Admin Dashboard Routes */}
+              <Route element={<ProtectedRoute roles={['admin']}><DashboardLayout /></ProtectedRoute>}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/vendors" element={<AdminVendorsPage />} />
+                <Route path="/admin/approvals" element={<AdminVendorsPage defaultTab="pending" title="Review Approvals" />} />
+                <Route path="/admin/services-approval" element={<AdminServicesApprovalPage />} />
+                <Route path="/admin/services/pending/:id" element={<ServiceApprovalDetails />} />
+                <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+                <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+                <Route path="/admin/bookings/:id" element={<AdminBookingDetailPage />} />
+                <Route path="/admin/blogs" element={<AdminBlogsPage />} />
+                <Route path="/admin/leads" element={<AdminLeadsPage />} />
+                <Route path="/admin/imperial-fleet" element={<AdminManageCabsPage />} />
+                <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+                <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              </Route>
+
+              {/* 404 */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
+          <Footer />
+          <FloatingWhatsApp />
+        </div>
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
+
