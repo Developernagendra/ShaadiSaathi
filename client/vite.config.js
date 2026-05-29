@@ -33,38 +33,11 @@ export default defineConfig(({ command }) => ({
 
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-
-            // React Core
-            if (
-              id.includes('react') ||
-              id.includes('react-dom') ||
-              id.includes('react-router-dom')
-            ) {
-              return 'vendor-core'
-            }
-
-            // UI Libraries
-            if (
-              id.includes('recharts') ||
-              id.includes('lucide-react') ||
-              id.includes('react-icons')
-            ) {
-              return 'vendor-ui'
-            }
-
-            // Animation Libraries
-            if (
-              id.includes('framer-motion') ||
-              id.includes('swiper')
-            ) {
-              return 'vendor-animation'
-            }
-
-            return 'vendor-libs'
-          }
-        },
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-redux': ['@reduxjs/toolkit', 'react-redux'],
+          'vendor-ui': ['recharts', 'lucide-react', 'react-icons', 'framer-motion', 'swiper']
+        }
       },
     },
 
