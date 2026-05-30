@@ -9,6 +9,8 @@ const BASE_URL =
    import.meta.env.VITE_API_URL ||
    "https://shaadisaathi-3.onrender.com/api";
 
+console.log("API URL:", BASE_URL);
+
 
 // ============================================
 // Axios Instance
