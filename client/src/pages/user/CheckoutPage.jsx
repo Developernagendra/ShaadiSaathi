@@ -147,7 +147,7 @@ export default function CheckoutPage() {
       <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
         <h1 className="font-display text-4xl md:text-5xl font-black text-gray-900 mb-12 tracking-tight">Checkout <span className="text-primary-600">& Confirm</span></h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2">
             <Formik
@@ -207,15 +207,15 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <button 
-                    type={user?.isVerified ? "submit" : "button"} 
+                  <button
+                    type={user?.isVerified ? "submit" : "button"}
                     onClick={() => {
                       if (user && !user.isVerified) {
                         toast.error('Please verify your email to book services', { id: 'verify-booking-toast' })
                         setShowVerifyModal(true)
                       }
                     }}
-                    disabled={loading || (user && !user.isVerified)} 
+                    disabled={loading || (user && !user.isVerified)}
                     className={`btn-primary w-full py-6 text-xl shadow-2xl group transition-all duration-300 ${user && !user.isVerified ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed shadow-none' : 'shadow-pink-200'}`}
                   >
                     {loading ? (
@@ -239,7 +239,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-[2.5rem] p-8 shadow-premium border border-pink-50 sticky top-28 overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFF8F0] rounded-bl-full opacity-50" />
               <h3 className="font-display font-black text-xl text-gray-900 mb-8 relative z-10 uppercase tracking-tight">Order Summary</h3>
-              
+
               <div className="flex items-center gap-5 mb-8 pb-8 border-b border-pink-50 relative z-10">
                 <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0 shadow-lg border border-white">
                   {vendor.images?.[0]?.url ? <img src={vendor.images[0].url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl">🏛️</div>}
@@ -260,7 +260,7 @@ export default function CheckoutPage() {
                     <p className="font-black text-gray-900">{formatPrice(pkg.price)}</p>
                   </div>
                 )}
-                
+
                 <div className="pt-6 border-t border-pink-50 space-y-4">
                   <div className="flex justify-between font-black text-gray-900 pt-4 border-t-2 border-pink-100">
                     <span className="text-sm uppercase tracking-[0.2em]">Total Price</span>
@@ -268,7 +268,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-10 bg-[#FFF8F0] p-6 rounded-2xl border border-pink-100">
                 <p className="text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.2em] italic mb-2">Booking Policy</p>
                 <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Your booking request will be sent to the vendor for confirmation. No payment is required at this stage.</p>
@@ -282,17 +282,17 @@ export default function CheckoutPage() {
       <AnimatePresence>
         {showVerifyModal && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setShowVerifyModal(false)} 
-              className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowVerifyModal(false)}
+              className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
-              animate={{ scale: 1, opacity: 1, y: 0 }} 
-              exit={{ scale: 0.95, opacity: 0, y: 20 }} 
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="bg-white rounded-[2.5rem] w-full max-w-md relative z-10 shadow-2xl overflow-hidden border border-pink-50 p-10 text-center"
             >
               {/* Premium Icon */}
@@ -303,7 +303,7 @@ export default function CheckoutPage() {
               <h3 className="font-display font-black text-3xl text-gray-900 mb-4 tracking-tight leading-none">
                 Verify Your Email
               </h3>
-              
+
               <p className="text-gray-500 font-medium leading-relaxed text-sm mb-8">
                 Please verify your email before confirming booking. We've sent a verification link to <span className="font-bold text-gray-800">{user?.email}</span>.
               </p>
@@ -317,7 +317,7 @@ export default function CheckoutPage() {
                 >
                   Verify Now
                 </button>
-                
+
                 <button
                   type="button"
                   disabled={resending}
@@ -326,7 +326,7 @@ export default function CheckoutPage() {
                 >
                   {resending ? 'Sending...' : 'Resend Verification Email'}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={() => setShowVerifyModal(false)}

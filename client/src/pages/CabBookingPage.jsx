@@ -19,7 +19,7 @@ export default function CabBookingPage() {
   const bundleId = searchParams.get('bundleId')
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  
+
   const { user } = useSelector(s => s.auth)
 
   const [cab, setCab] = useState(null)
@@ -100,16 +100,16 @@ export default function CabBookingPage() {
             const cap = v.vehicleId?.seatingCapacity || 4;
             return acc + (cap * v.quantity);
           }, 0) || 10;
-          setForm(f => ({ 
-            ...f, 
+          setForm(f => ({
+            ...f,
             city: f.city || data.vendor?.location?.city || '',
             guestCount: f.guestCount || String(totalGuests)
           }))
         } else if (cabId) {
           const { data } = await api.get(`/cab-booking/details/${cabId}`)
           setCab(data.cab)
-          setForm(f => ({ 
-            ...f, 
+          setForm(f => ({
+            ...f,
             city: f.city || data.cab.location?.city || '',
             guestCount: f.guestCount || String(data.cab.seatingCapacity || '')
           }))
@@ -139,7 +139,7 @@ export default function CabBookingPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!user) {
       toast.error('Please login to book a cab')
       const redirectId = bundleId ? `bundleId=${bundleId}` : `cabId=${cabId}`
@@ -185,7 +185,7 @@ export default function CabBookingPage() {
 
     setSubmitting(true)
     try {
-      const payload = { 
+      const payload = {
         ...form,
         guestCount: Number(form.guestCount) || 1,
         vendorId: vendor?._id || bundle?.vendorId || null,
@@ -194,7 +194,7 @@ export default function CabBookingPage() {
         gst,
         totalAmount
       }
-      
+
       let endpoint = '/cab-booking'
 
       if (bundleId) {
@@ -212,7 +212,7 @@ export default function CabBookingPage() {
       }
 
       const { data } = await api.post(endpoint, payload)
-      
+
       setSuccess(true)
       setCreatedBookingId(data.booking?._id || data.bookingId)
       toast.success('Booking request sent successfully!')
@@ -237,15 +237,15 @@ export default function CabBookingPage() {
             Your Baraat Cab booking request has been successfully sent. The vendor will contact you shortly to confirm details.
           </p>
           <div className="flex gap-4 justify-center">
-            <button 
-              onClick={() => navigate('/dashboard/my-bookings')} 
+            <button
+              onClick={() => navigate('/dashboard/my-bookings')}
               className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-black transition-colors shadow-lg"
             >
               View My Bookings
             </button>
 
-            <button 
-              onClick={() => navigate('/baraat-cabs')} 
+            <button
+              onClick={() => navigate('/baraat-cabs')}
               className="px-8 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-gray-200 transition-colors"
             >
               Back to Cabs
@@ -267,7 +267,7 @@ export default function CabBookingPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-          
+
           {/* Booking Form */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
@@ -275,11 +275,11 @@ export default function CabBookingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Full Name</label>
-                    <input required type="text" value={form.contactName} onChange={e => setForm({...form, contactName: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
+                    <input required type="text" value={form.contactName} onChange={e => setForm({ ...form, contactName: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</label>
-                    <input required type="tel" value={form.contactPhone} onChange={e => setForm({...form, contactPhone: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
+                    <input required type="tel" value={form.contactPhone} onChange={e => setForm({ ...form, contactPhone: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
                   </div>
                 </div>
 
@@ -288,28 +288,28 @@ export default function CabBookingPage() {
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Event Date</label>
                     <div className="relative">
                       <FiCalendar className="absolute left-5 top-1/2 -translate-y-1/2 text-primary-500" />
-                      <input required type="date" value={form.eventDate} onChange={e => setForm({...form, eventDate: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all text-gray-600" />
+                      <input required type="date" value={form.eventDate} onChange={e => setForm({ ...form, eventDate: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all text-gray-600" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</label>
                     <div className="relative">
                       <FiClock className="absolute left-5 top-1/2 -translate-y-1/2 text-primary-500" />
-                      <input required type="time" value={form.eventTime} onChange={e => setForm({...form, eventTime: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all text-gray-600" />
+                      <input required type="time" value={form.eventTime} onChange={e => setForm({ ...form, eventTime: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all text-gray-600" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">City</label>
                     <div className="relative">
                       <FiMapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-primary-500" />
-                      <input required type="text" value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
+                      <input required type="text" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pickup Location / Address</label>
-                  <input required type="text" placeholder="Full address" value={form.pickupLocation} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
+                  <input required type="text" placeholder="Full address" value={form.pickupLocation} onChange={e => setForm({ ...form, pickupLocation: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -317,26 +317,26 @@ export default function CabBookingPage() {
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Drop Location / Destination Address</label>
                     <div className="relative">
                       <FiMapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-primary-500" />
-                      <input required type="text" placeholder="Drop location/venue name" value={form.dropLocation} onChange={e => setForm({...form, dropLocation: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
+                      <input required type="text" placeholder="Drop location/venue name" value={form.dropLocation} onChange={e => setForm({ ...form, dropLocation: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Estimated Guest Count</label>
                     <div className="relative">
                       <FiUsers className="absolute left-5 top-1/2 -translate-y-1/2 text-primary-500" />
-                      <input required type="number" min="1" placeholder="Number of guests" value={form.guestCount} onChange={e => setForm({...form, guestCount: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all text-gray-700" />
+                      <input required type="number" min="1" placeholder="Number of guests" value={form.guestCount} onChange={e => setForm({ ...form, guestCount: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all text-gray-700" />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Additional Message (Optional)</label>
-                  <textarea rows="3" placeholder="Any special requests like decoration?" value={form.message} onChange={e => setForm({...form, message: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all resize-none" />
+                  <textarea rows="3" placeholder="Any special requests like decoration?" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-primary-400 focus:bg-white transition-all resize-none" />
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
-                  <button 
-                    type={user?.isVerified ? "submit" : "button"} 
+                  <button
+                    type={user?.isVerified ? "submit" : "button"}
                     onClick={() => {
                       if (user && !user.isVerified) {
                         toast.error('Please verify your email to book services', { id: 'verify-booking-toast' })
@@ -358,27 +358,27 @@ export default function CabBookingPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 sticky top-32">
               <h3 className="font-display font-black text-2xl text-gray-900 mb-6 border-b border-gray-100 pb-4">Vehicle Summary</h3>
-              
+
               {bundleId && bundle ? (
                 <div className="space-y-6">
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
                     <img src={'https://images.unsplash.com/photo-1563720223185-11003d516935?w=800'} alt={bundle.bundleName} className="w-full h-full object-cover" />
                   </div>
-                  
+
                   <div>
                     <h4 className="font-display font-black text-xl text-gray-900">{bundle.bundleName}</h4>
                     <p className="text-sm font-bold text-gray-400 capitalize mb-4">Fleet Bundle</p>
-                    
+
                     <div className="flex gap-4 py-4 border-y border-gray-100">
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Vehicles</span>
-                         <span className="text-sm font-bold text-gray-700 flex items-center gap-1"><FaTruck className="text-primary-400"/> {bundle.vehicles?.reduce((acc, v) => acc + v.quantity, 0) || 0} Cars</span>
-                       </div>
-                       <div className="w-px bg-gray-100" />
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Bundle Price</span>
-                         <span className="text-sm font-bold text-primary-600">{formatPrice(bundle.discountedPrice || bundle.totalPrice)}</span>
-                       </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Vehicles</span>
+                        <span className="text-sm font-bold text-gray-700 flex items-center gap-1"><FaTruck className="text-primary-400" /> {bundle.vehicles?.reduce((acc, v) => acc + v.quantity, 0) || 0} Cars</span>
+                      </div>
+                      <div className="w-px bg-gray-100" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Bundle Price</span>
+                        <span className="text-sm font-bold text-primary-600">{formatPrice(bundle.discountedPrice || bundle.totalPrice)}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -415,21 +415,21 @@ export default function CabBookingPage() {
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
                     <img src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'} alt={cab.name} className="w-full h-full object-cover" />
                   </div>
-                  
+
                   <div>
                     <h4 className="font-display font-black text-xl text-gray-900">{cab.name}</h4>
                     <p className="text-sm font-bold text-gray-400 capitalize mb-4">{cab.type?.replace('_', ' ')}</p>
-                    
+
                     <div className="flex gap-4 py-4 border-y border-gray-100">
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Seats</span>
-                         <span className="text-sm font-bold text-gray-700 flex items-center gap-1"><FiUsers className="text-primary-400"/> {cab.seatingCapacity}</span>
-                       </div>
-                       <div className="w-px bg-gray-100" />
-                       <div className="flex flex-col gap-1">
-                         <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{selectedPackage ? 'Package Selected' : 'Starting Price'}</span>
-                         <span className="text-sm font-bold text-primary-600">{selectedPackage ? formatPrice(selectedPackage.price) : formatPrice(cab.pricing?.baseFare)}</span>
-                       </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Seats</span>
+                        <span className="text-sm font-bold text-gray-700 flex items-center gap-1"><FiUsers className="text-primary-400" /> {cab.seatingCapacity}</span>
+                      </div>
+                      <div className="w-px bg-gray-100" />
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{selectedPackage ? 'Package Selected' : 'Starting Price'}</span>
+                        <span className="text-sm font-bold text-primary-600">{selectedPackage ? formatPrice(selectedPackage.price) : formatPrice(cab.pricing?.baseFare)}</span>
+                      </div>
                     </div>
                     {selectedPackage && (
                       <div className="mt-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
@@ -478,17 +478,17 @@ export default function CabBookingPage() {
       <AnimatePresence>
         {showVerifyModal && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setShowVerifyModal(false)} 
-              className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowVerifyModal(false)}
+              className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
-              animate={{ scale: 1, opacity: 1, y: 0 }} 
-              exit={{ scale: 0.95, opacity: 0, y: 20 }} 
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="bg-white rounded-[2.5rem] w-full max-w-md relative z-10 shadow-2xl overflow-hidden border border-pink-50 p-10 text-center"
             >
               {/* Premium Icon */}
@@ -499,7 +499,7 @@ export default function CabBookingPage() {
               <h3 className="font-display font-black text-3xl text-gray-900 mb-4 tracking-tight leading-none">
                 Verify Your Email
               </h3>
-              
+
               <p className="text-gray-500 font-medium leading-relaxed text-sm mb-8">
                 Please verify your email before confirming booking. We've sent a verification link to <span className="font-bold text-gray-800">{user?.email}</span>.
               </p>
@@ -513,7 +513,7 @@ export default function CabBookingPage() {
                 >
                   Verify Now
                 </button>
-                
+
                 <button
                   type="button"
                   disabled={resending}
@@ -522,7 +522,7 @@ export default function CabBookingPage() {
                 >
                   {resending ? 'Sending...' : 'Resend Verification Email'}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={() => setShowVerifyModal(false)}

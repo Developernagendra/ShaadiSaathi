@@ -11,8 +11,8 @@ export default function VendorRegisterPage() {
   const navigate = useNavigate()
   const { loading } = useSelector(s => s.auth)
 
-  const [form, setForm] = useState({ 
-    name: '', email: '', phone: '', password: '', confirmPassword: '' 
+  const [form, setForm] = useState({
+    name: '', email: '', phone: '', password: '', confirmPassword: ''
   })
   const [errors, setErrors] = useState({})
   const [showPass, setShowPass] = useState(false)
@@ -57,7 +57,7 @@ export default function VendorRegisterPage() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FFF8F0] via-white to-pink-50 flex items-center justify-center px-4 py-16">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md bg-white rounded-[3rem] shadow-premium border border-pink-50 p-10 text-center relative overflow-hidden"
@@ -68,7 +68,7 @@ export default function VendorRegisterPage() {
           </div>
           <h2 className="font-display text-3xl font-black text-gray-900 mb-3 tracking-tight">Check Your Email!</h2>
           <p className="text-gray-500 font-medium mb-4">
-            We've sent a secure verification link to <br/><strong className="text-gray-900">{form.email}</strong>
+            We've sent a secure verification link to <br /><strong className="text-gray-900">{form.email}</strong>
           </p>
           <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-10 italic">
             Verify your email to access the vendor dashboard
@@ -98,7 +98,7 @@ export default function VendorRegisterPage() {
       <div className="hidden lg:flex w-5/12 bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#C2185B] relative flex-col justify-between p-12 lg:p-20 overflow-hidden text-white">
         <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/4" />
-        
+
         <div className="relative z-10">
           <Link to="/" className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20 hover:bg-white/20 transition-all mb-16">
             <span className="text-xl">💍</span>
@@ -120,10 +120,10 @@ export default function VendorRegisterPage() {
               { icon: '💸', title: 'Zero Hidden Fees', desc: 'Transparent pricing with no surprise deductions.' },
               { icon: '📱', title: 'Smart Dashboard', desc: 'Manage bookings, leads, and earnings in one place.' },
             ].map((item, i) => (
-              <motion.div 
-                key={i} 
-                initial={{ opacity: 0, x: -20 }} 
-                animate={{ opacity: 1, x: 0 }} 
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.15 }}
                 className="flex items-start gap-5 group"
               >
@@ -149,9 +149,9 @@ export default function VendorRegisterPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-pink-100 rounded-full blur-[100px] opacity-60" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gold-100 rounded-full blur-[100px] opacity-60" />
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="w-full max-w-2xl bg-white/80 backdrop-blur-xl rounded-[3rem] p-8 sm:p-12 shadow-premium border border-white relative z-10"
         >
@@ -161,7 +161,7 @@ export default function VendorRegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Full Name */}
               <div className="group">
@@ -282,7 +282,7 @@ export default function VendorRegisterPage() {
                 ) : 'Create Vendor Account'}
               </button>
             </div>
-            
+
           </form>
 
           <div className="mt-10 flex flex-col items-center gap-6">

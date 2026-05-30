@@ -107,7 +107,7 @@ export default function LoginPage() {
           >
             {({ isSubmitting }) => (
               <Form className="space-y-6">
-                
+
                 {/* Email */}
                 <div className="group">
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-2">Email Address</label>

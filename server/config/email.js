@@ -1,17 +1,71 @@
 'use strict';
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
 // ============================================================
-// RESEND CONFIGURATION
+// SMTP CONFIGURATION
+// Transporter is created LAZILY (on first use) so that it
+// always reads the final, fully-loaded process.env values.
 // ============================================================
 
-const getResendClient = () => {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.error('[RESEND] ❌ RESEND_API_KEY missing in environment!');
+let _transporter = null;
+
+const createTransporter = () => {
+  const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.EMAIL_PORT || '465', 10);
+  const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
+
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS
+    ? process.env.EMAIL_PASS.replace(/\s+/g, '')
+    : '';
+
+  if (!user || !pass) {
+    console.error('[SMTP] ❌ EMAIL_USER or EMAIL_PASS missing in environment!');
     return null;
   }
-  return new Resend(apiKey);
+
+  console.log(`[SMTP] Creating transporter for: ${host}:${port}`);
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false },
+    pool: true,          // Reuse connections
+    maxConnections: 5,
+    rateDelta: 1000,
+    rateLimit: 5,
+  });
+
+  return transporter;
+};
+
+const getTransporter = () => {
+  if (!_transporter) {
+    _transporter = createTransporter();
+  }
+  return _transporter;
+};
+
+// Verify SMTP on startup (non-blocking)
+const verifySmtp = () => {
+  console.log('[EMAIL] Provider: Nodemailer SMTP');
+  console.log('[EMAIL] Host:', process.env.EMAIL_HOST || 'smtp.gmail.com');
+  console.log('[EMAIL] User:', process.env.EMAIL_USER || 'Not provided');
+
+  const t = getTransporter();
+  if (!t) return;
+
+  t.verify((error) => {
+    if (error) {
+      console.error('[SMTP] ❌ SMTP VERIFICATION FAILED:', error.message);
+      // Reset so next sendEmail() attempt will re-create transporter
+      _transporter = null;
+    } else {
+      console.log('[SMTP] ✅ SMTP READY — Connection verified successfully.');
+    }
+  });
 };
 
 // ============================================================
@@ -22,47 +76,48 @@ const sendEmail = async ({ to, subject, html, text, retryCount = 0 }) => {
   const MAX_RETRIES = 2;
 
   if (!to) {
-    console.error('[RESEND] ❌ sendEmail() called with no recipient address!');
+    console.error('[SMTP] ❌ sendEmail() called with no recipient address!');
     throw new Error('Email recipient (to) is required.');
   }
 
-  const resend = getResendClient();
-  if (!resend) {
-    throw new Error('[RESEND] Client could not be created. Check RESEND_API_KEY in .env');
+  const transporter = getTransporter();
+  if (!transporter) {
+    throw new Error('[SMTP] Transporter could not be created. Check EMAIL_USER and EMAIL_PASS in .env');
   }
 
   const fromName = process.env.EMAIL_FROM_NAME || 'ShaadiSaathi';
-  // Use a verified domain or onboarding@resend.dev
-  const fromAddr = process.env.EMAIL_FROM_ADDRESS || 'onboarding@resend.dev';
+  const fromAddr = process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER;
+
+  const mailOptions = {
+    from: `"${fromName}" <${fromAddr}>`,
+    to,
+    subject,
+    html,
+    text: text || html.replace(/<[^>]*>?/gm, '').replace(/\n\s*\n/g, '\n').trim(),
+  };
 
   try {
-    console.log(`[RESEND] 📨 Sending email to: ${to} | Subject: "${subject}" (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
-    
-    const { data, error } = await resend.emails.send({
-      from: `${fromName} <${fromAddr}>`,
-      to: [to],
-      subject,
-      html,
-      text: text || html.replace(/<[^>]*>?/gm, '').replace(/\n\s*\n/g, '\n').trim(),
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    console.log(`[RESEND] ✅ EMAIL SENT SUCCESSFULLY | ID: ${data.id} | To: ${to}`);
-    return { success: true, messageId: data.id };
+    console.log(`[SMTP] 📨 Sending email to: ${to} | Subject: "${subject}" (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[SMTP] ✅ EMAIL SENT SUCCESSFULLY | MessageID: ${info.messageId} | To: ${to}`);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error(`[RESEND] ❌ EMAIL SEND FAILED | To: ${to} | Error: ${error.message}`);
+    console.error(`[SMTP] ❌ EMAIL SEND FAILED | To: ${to} | Error: ${error.message}`);
+
+    // If auth error, reset transporter so next retry re-creates with fresh env
+    if (error.message.includes('535') || error.message.includes('auth')) {
+      console.error('[SMTP] 🔑 AUTH ERROR — resetting transporter cache');
+      _transporter = null;
+    }
 
     if (retryCount < MAX_RETRIES) {
       const delay = (retryCount + 1) * 3000; // 3s, 6s
-      console.log(`[RESEND] ⏳ Retrying in ${delay / 1000}s...`);
+      console.log(`[SMTP] ⏳ Retrying in ${delay / 1000}s...`);
       await new Promise(resolve => setTimeout(resolve, delay));
       return sendEmail({ to, subject, html, text, retryCount: retryCount + 1 });
     }
 
-    console.error(`[RESEND] ❌ ALL ${MAX_RETRIES + 1} DELIVERY ATTEMPTS FAILED for: ${to}`);
+    console.error(`[SMTP] ❌ ALL ${MAX_RETRIES + 1} DELIVERY ATTEMPTS FAILED for: ${to}`);
     throw new Error(`Email delivery failed after ${MAX_RETRIES + 1} attempts: ${error.message}`);
   }
 };
@@ -219,8 +274,8 @@ const emailTemplates = {
     const statusConfig = {
       confirmed: { color: '#27ae60', label: 'Confirmed ✓', bg: '#d4edda' },
       completed: { color: '#2980b9', label: 'Completed 🎉', bg: '#d1ecf1' },
-      rejected:  { color: '#e74c3c', label: 'Rejected',     bg: '#f8d7da' },
-      cancelled: { color: '#e74c3c', label: 'Cancelled',    bg: '#f8d7da' },
+      rejected: { color: '#e74c3c', label: 'Rejected', bg: '#f8d7da' },
+      cancelled: { color: '#e74c3c', label: 'Cancelled', bg: '#f8d7da' },
     };
     const cfg = statusConfig[booking.status] || { color: '#c41e6b', label: booking.status, bg: '#fce7f3' };
     return {
@@ -271,16 +326,16 @@ const emailTemplates = {
           </h2>
           <p style="color:#555;font-size:16px;margin:0 0 24px">Hi ${vendorName},</p>
           ${status === 'approved'
-            ? `<p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 32px">Your vendor application has been <strong>approved</strong>! You can now start listing your services on ShaadiSaathi and receive booking requests from customers.</p>
+        ? `<p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 32px">Your vendor application has been <strong>approved</strong>! You can now start listing your services on ShaadiSaathi and receive booking requests from customers.</p>
                <div style="text-align:center">
                  <a href="${getClientUrl()}/vendor/dashboard" style="display:inline-block;background:linear-gradient(135deg,#c41e6b,#e91e8c);color:white;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:700;font-size:16px">🚀 Go to My Dashboard</a>
                </div>`
-            : `<p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 16px">We regret to inform you that your vendor application requires additional review. Please contact our support team for more information.</p>
+        : `<p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 16px">We regret to inform you that your vendor application requires additional review. Please contact our support team for more information.</p>
                <p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 32px">You may reapply after resolving any outstanding issues.</p>
                <div style="text-align:center">
                  <a href="mailto:support@shaadisaathi.com" style="display:inline-block;background:#555;color:white;padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:14px">Contact Support</a>
                </div>`
-          }
+      }
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
           <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi</p>
@@ -289,6 +344,7 @@ const emailTemplates = {
   }),
 };
 
-// No longer verifying SMTP on startup because Resend uses HTTPS API
+// Run SMTP verification on startup
+verifySmtp();
 
 module.exports = { sendEmail, emailTemplates };

@@ -16,6 +16,7 @@ const xss = require("xss-clean");
 const socketUtil = require('./utils/socket');
 const { initSocketHandlers } = require('./utils/socketHandlers');
 const { cloudinary } = require('./config/cloudinary');
+const { errorHandler } = require('./middleware/errorMiddleware');
 
 // Activate keep-alive mechanism
 require("./keepAlive");
@@ -204,16 +205,7 @@ app.use("*", (req, res) => {
 });
 
 /* ---------------- ERROR HANDLER ---------------- */
-app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR:", err);
-  if (res.headersSent) {
-    return next(err);
-  }
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message: err.message || "Internal Server Error"
-  });
-});
+app.use(errorHandler);
 
 /* ---------------- DATABASE & SEEDERS ---------------- */
 const repairCategories = async () => {

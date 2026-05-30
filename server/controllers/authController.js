@@ -55,6 +55,7 @@ const register = catchAsync(async (req, res, next) => {
           console.log(`[AUTH] Resent verification email to unverified account: ${existingUser.email}`);
         } catch (err) {
           console.error('[AUTH] Failed to resend verification email:', err.message);
+          console.error("EMAIL ERROR FULL:", err);
         }
 
         return res.status(400).json({
@@ -87,6 +88,7 @@ const register = catchAsync(async (req, res, next) => {
       isVerified: false,
       isEmailVerified: false,
     });
+    console.log('[REGISTRATION] ✅ User Created successfully');
   } catch (err) {
     // Race condition: another request created the same user between our check and create
     if (err.code === 11000) {
@@ -112,6 +114,7 @@ const register = catchAsync(async (req, res, next) => {
       profileCompletion: 0,
     });
 
+    console.log('[REGISTRATION] ✅ Vendor Created successfully');
     console.log('VENDOR REGISTERED');
     console.log('VENDOR PROFILE CREATED');
 
@@ -120,12 +123,23 @@ const register = catchAsync(async (req, res, next) => {
 
   // Generate email verification token
   const token = user.generateEmailVerificationToken();
+  console.log('[REGISTRATION] 🔑 Verification Token Generated');
+  
+  // Auto-verify in development/local environment so they don't need to click any links
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+    user.isVerified = true;
+    user.isEmailVerified = true;
+    console.log(`[DEVELOPMENT] ✅ Auto-verified user ${user.email} on registration`);
+  }
+  
   await user.save({ validateBeforeSave: false });
 
   const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
 
   const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
+  console.log('[REGISTRATION] 📨 Email Attempt Started');
+  let emailSent = true;
   try {
     const template = emailTemplates.verification(
       user.name,
@@ -142,14 +156,14 @@ const register = catchAsync(async (req, res, next) => {
     console.log('[SMTP] ✅ VERIFICATION EMAIL DISPATCHED');
     console.log(`[SMTP]    → To        : ${user.email}`);
     console.log(`[SMTP]    → MessageID : ${emailResult?.messageId || 'N/A'}`);
+    console.log('[REGISTRATION] ✅ Email Success');
   } catch (error) {
     console.error('[SMTP] ❌ VERIFICATION EMAIL FAILED:', error.message);
-    await User.findByIdAndDelete(user._id);
-    if (user.vendorProfile) {
-      const Vendor = require('../models/Vendor');
-      await Vendor.findByIdAndDelete(user.vendorProfile);
-    }
-    return next(new AppError('Failed to send verification email. Please try again.', 500));
+    console.error("EMAIL ERROR:", error);
+    console.log('[REGISTRATION] ❌ Email Failed:', error.message);
+    emailSent = false;
+    // User registration must not fail because email sending failed.
+    // Proceed to return success response.
   }
 
   // Do not generate token or set cookie upon registration.
@@ -157,8 +171,10 @@ const register = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: 'Registration successful! Please check your email to verify your account.',
-    emailSent: true,
+    message: emailSent
+      ? 'Registration successful. Please check your email.'
+      : 'Account created successfully',
+    emailSent,
     user: {
       _id: user._id,
       name: user.name,
@@ -211,13 +227,12 @@ const login = catchAsync(async (req, res, next) => {
     );
   }
 
+  // No email issue should block login
   if (!user.isVerified && user.role !== 'admin') {
-    return next(
-      new AppError(
-        'Please verify your email before continuing.',
-        401
-      )
-    );
+    console.log(`[AUTH] User ${user.email} logged in without prior verification. Auto-verifying account (fail-safe bypass).`);
+    user.isVerified = true;
+    user.isEmailVerified = true;
+    await user.save({ validateBeforeSave: false });
   }
 
   // Update login time
@@ -361,6 +376,8 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     });
 
   } catch (err) {
+    console.error('[SMTP] ❌ PASSWORD RESET EMAIL FAILED:', err.message);
+    console.error("EMAIL ERROR:", err);
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -368,6 +385,14 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     await user.save({
       validateBeforeSave: false,
     });
+
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+      console.log(`[DEVELOPMENT] 🔗 Password Reset Link: ${resetUrl}`);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Password reset link generated! (Check your server console since SMTP is failing locally)',
+      });
+    }
 
     return next(
       new AppError(
@@ -486,13 +511,13 @@ const getMe = catchAsync(async (req, res, next) => {
   });
 });
 
-// ---------------- CHANGE PASSWORD ----------------
 const changePassword = catchAsync(async (req, res, next) => {
+  const currentPassword = req.body.currentPassword || req.body.oldPassword;
+  const { newPassword } = req.body;
 
-  const {
-    currentPassword,
-    newPassword,
-  } = req.body;
+  if (!currentPassword || !newPassword) {
+    return next(new AppError('Please provide current/old password and new password.', 400));
+  }
 
   const user = await User.findById(
     req.user._id
@@ -569,6 +594,8 @@ const resendVerification = catchAsync(async (req, res, next) => {
 
   const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
+  console.log(`[DEVELOPMENT] 🔗 Resend Verification Link: ${verificationUrl}`);
+
   try {
 
     const template =
@@ -589,6 +616,15 @@ const resendVerification = catchAsync(async (req, res, next) => {
     });
 
   } catch (error) {
+    console.error('[SMTP] ❌ RESEND VERIFICATION EMAIL FAILED:', error.message);
+    console.error("EMAIL ERROR:", error);
+
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+      return res.status(200).json({
+        status: 'success',
+        message: 'Verification link generated! (Check your server console since SMTP is failing locally)',
+      });
+    }
 
     return next(
       new AppError(
@@ -644,7 +680,7 @@ const testEmail = catchAsync(async (req, res, next) => {
     const info = await sendEmail({ to, subject, html });
 
     res.status(200).json({
-      status: 'success',
+      success: true,
       message: 'Test email sent successfully',
       data: {
         messageId: info.messageId,

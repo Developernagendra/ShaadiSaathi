@@ -10,9 +10,10 @@ router.post('/logout', logout);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
+router.post('/resend-verification', resendVerification);
 router.get('/me', protect, getMe);
 router.put('/change-password', protect, changePassword);
-router.post('/resend-verification', resendVerification);
+router.patch('/update-password', protect, changePassword);
 router.get('/test-email', testEmail);
 
 module.exports = router;

@@ -22,14 +22,14 @@ export default function VerifyEmailPage() {
         await axios.get(`${baseApiUrl}/auth/verify-email/${token}`);
 
         setStatus('success');
-        
+
         // Trigger cross-tab sync so other tabs update their state instantly
         localStorage.setItem('force_auth_refresh', Date.now());
 
         // Refresh state locally in this tab and clear any stale data
         dispatch(logout());
-        dispatch({ type: 'auth/clearError' }); 
-        
+        dispatch({ type: 'auth/clearError' });
+
         // Go back to login or dashboard. App.jsx will automatically route correctly if they are logged in
         setTimeout(() => {
           navigate('/login?verified=true');
