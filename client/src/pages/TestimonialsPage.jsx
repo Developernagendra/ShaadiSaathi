@@ -116,8 +116,8 @@ export default function TestimonialsPage() {
       {/* ── ❤️ HERO HEADER SECTION ── */}
       <section className="relative pt-32 pb-24 px-4 overflow-hidden bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#8E244D]">
         <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#C2185B]/30 rounded-full blur-[150px] pointer-events-none animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#D4AF37]/20 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#C2185B]/30 rounded-full blur-[150px] pointer-events-none animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#D4AF37]/20 rounded-full blur-[150px] pointer-events-none" />
         
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 mb-8 shadow-xl">
@@ -168,7 +168,7 @@ export default function TestimonialsPage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {Array(6).fill(0).map((_, i) => (
-              <div key={i} className="bg-white rounded-[2.5rem] h-[500px] shadow-sm border border-gray-100 animate-pulse" />
+              <div key={i} className="bg-white rounded-[2.5rem] h-96 md:h-[500px] shadow-sm border border-gray-100 animate-pulse" />
             ))}
           </div>
         ) : displayedData.length === 0 ? (

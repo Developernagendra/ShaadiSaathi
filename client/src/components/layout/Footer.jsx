@@ -97,7 +97,7 @@ export default function Footer() {
       {/* ── Premium Top CTA / Newsletter ── */}
       <div className="relative border-b border-white/10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a] via-[#C2185B]/20 to-[#1a1a1a] z-0" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2" />
         
         <div className="max-w-7xl mx-auto px-4 py-20 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>

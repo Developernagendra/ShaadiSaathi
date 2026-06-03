@@ -131,8 +131,8 @@ export default function ServicesPage() {
       {/* ── 🏆 VENDORS HERO SECTION ── */}
       <div className="relative bg-[#1a1a1a] py-28 px-4 overflow-hidden shadow-2xl">
         <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#C2185B]/20 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#D4AF37]/10 rounded-full blur-[150px] translate-y-1/2 -translate-x-1/3" />
+        <div className="absolute top-0 right-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/20 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#D4AF37]/10 rounded-full blur-[150px] translate-y-1/2 -translate-x-1/3" />
 
         <div className="max-w-7xl mx-auto relative z-10 text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-12">
           <div className="max-w-3xl">

@@ -163,8 +163,8 @@ export default function BaraatCabsPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 z-10" />
         
         {/* Animated Orbs */}
-        <div className="absolute top-1/4 -right-1/4 w-[800px] h-[800px] bg-[#D4AF37]/20 rounded-full blur-[150px] animate-pulse z-0" />
-        <div className="absolute bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-[#C2185B]/20 rounded-full blur-[150px] animate-[pulse_6s_ease-in-out_infinite] z-0" />
+        <div className="absolute top-1/4 -right-1/4 w-96 h-96 md:w-[800px] md:h-[800px] bg-[#D4AF37]/20 rounded-full blur-[150px] animate-pulse z-0" />
+        <div className="absolute bottom-1/4 -left-1/4 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/20 rounded-full blur-[150px] animate-[pulse_6s_ease-in-out_infinite] z-0" />
         
         {/* Background Video/Image */}
         <img 

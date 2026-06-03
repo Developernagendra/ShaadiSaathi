@@ -70,7 +70,7 @@ export default function UserDashboard() {
         {/* User Dashboard Header */}
         <div className="bg-gradient-to-br from-[#C2185B] via-[#8E244D] to-gray-900 rounded-[3rem] p-10 md:p-20 mb-12 text-white relative overflow-hidden shadow-premium">
           <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4" />
 
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">

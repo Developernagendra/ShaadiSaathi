@@ -180,7 +180,7 @@ const BudgetCalculatorPage = () => {
             <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-premium border border-gray-100 grid grid-cols-1 md:grid-cols-12 gap-10">
               
               {/* Chart */}
-              <div className="md:col-span-7 h-[350px] relative">
+              <div className="md:col-span-7 h-64 md:h-[350px] relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie

@@ -388,8 +388,8 @@ export default function HomePage() {
 
       {/* ── Curated Services ── */}
       <section className="py-24 px-4 bg-[#FFF8F0]/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#C2185B]/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 h-72 md:w-[400px] md:h-[400px] bg-[#C2185B]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
@@ -474,8 +474,8 @@ export default function HomePage() {
 
       {/* ── 🌟 Top Picks - Featured Vendors ── */}
       <section className="relative py-24 px-4 bg-[#FFF8F0]/30 overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#C2185B]/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
@@ -644,8 +644,8 @@ export default function HomePage() {
       <section className="py-24 md:py-32 px-4 relative overflow-hidden bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#C2185B]">
         {/* Luxury Background Elements */}
         <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#D4AF37]/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#C2185B]/20 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#D4AF37]/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 md:w-96 md:h-96 bg-[#C2185B]/20 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-12 gap-16 lg:gap-12 items-center">
@@ -791,8 +791,8 @@ export default function HomePage() {
 
       {/* ── Why ShaadiSaathi Premium ── */}
       <section className="relative py-24 px-4 bg-gradient-to-b from-white via-[#FFF8F0]/30 to-white overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#C2185B]/5 rounded-full blur-[150px] -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[150px] translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/5 rounded-full blur-[150px] -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/5 rounded-full blur-[150px] translate-y-1/2" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
@@ -857,7 +857,7 @@ export default function HomePage() {
 
       {/* ── Wedding Inspiration (Blogs) ── */}
       <section className="py-24 px-4 bg-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-pink-50/50 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 h-72 md:w-[400px] md:h-[400px] bg-pink-50/50 rounded-full blur-[100px] pointer-events-none" />
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
             <div className="text-center md:text-left">

@@ -120,7 +120,7 @@ export default function ServiceDetailPage() {
                 navigation
                 pagination={{ clickable: true }}
                 autoplay={{ delay: 5000, disableOnInteraction: true }}
-                className="h-[500px] w-full"
+                className="h-64 md:h-[500px] w-full"
               >
                 {allMedia.length > 0 ? allMedia.map((m, i) => (
                   <SwiperSlide key={i}>

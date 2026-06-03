@@ -41,7 +41,7 @@ const optimizeImage = (url, width = 400) => {
 // --- Components ---
 
 const SkeletonCard = () => (
-  <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden h-[480px] shadow-sm animate-pulse space-y-5">
+  <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden h-96 md:h-[480px] shadow-sm animate-pulse space-y-5">
     <div className="h-56 bg-gray-100" />
     <div className="p-6 space-y-4">
       <div className="h-6 bg-gray-100 rounded-xl w-3/4" />
@@ -70,7 +70,7 @@ const ServiceCard = memo(({ service, onEdit, onDelete, onView }) => {
   }, [service.status]);
 
   return (
-    <div className="group bg-white rounded-[2.5rem] shadow-premium hover:shadow-premium-hover border border-gray-100 hover:border-[#D4AF37]/35 overflow-hidden transition-all duration-300 flex flex-col justify-between h-[510px]">
+    <div className="group bg-white rounded-[2.5rem] shadow-premium hover:shadow-premium-hover border border-gray-100 hover:border-[#D4AF37]/35 overflow-hidden transition-all duration-300 flex flex-col justify-between h-auto md:h-[510px]">
 
       {/* Image & Header tags */}
       <div className="h-52 relative overflow-hidden flex-shrink-0 bg-gray-50">

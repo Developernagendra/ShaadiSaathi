@@ -97,7 +97,7 @@ export default function VendorRegisterPage() {
       {/* Left Panel: Branding & Benefits (Hidden on Mobile) */}
       <div className="hidden lg:flex w-5/12 bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#C2185B] relative flex-col justify-between p-12 lg:p-20 overflow-hidden text-white">
         <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute top-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/4" />
 
         <div className="relative z-10">
           <Link to="/" className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20 hover:bg-white/20 transition-all mb-16">

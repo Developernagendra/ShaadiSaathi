@@ -124,7 +124,7 @@ export default function VendorDetailPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] pb-32 relative selection:bg-[#D4AF37]/20 selection:text-[#D4AF37]">
       {/* ── ✨ Premium Full-Width Cover Photo ── */}
-      <div className="relative h-[400px] md:h-[500px] w-full bg-black overflow-hidden rounded-b-[40px] shadow-2xl group">
+      <div className="relative h-64 sm:h-80 md:h-[500px] w-full bg-black overflow-hidden rounded-b-[40px] shadow-2xl group">
         <motion.div 
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 

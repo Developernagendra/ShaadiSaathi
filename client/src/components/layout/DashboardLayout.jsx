@@ -29,6 +29,7 @@ export default function DashboardLayout() {
       {/* Sidebar - Desktop & Mobile */}
       <div className={`
         fixed inset-y-0 left-0 z-40 bg-white border-r border-gray-100 shadow-2xl shadow-gray-200/50 transition-all duration-300 ease-in-out transform pt-16 md:pt-0
+        w-[85%] max-w-[300px] md:max-w-none
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         ${isCollapsed ? 'md:w-20' : 'md:w-72'}
       `}>

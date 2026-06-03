@@ -22,7 +22,7 @@ export default function AboutPage() {
       <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
 
       {/* ── Hero Section ── */}
-      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-gray-900">
+      <section className="relative h-[80vh] min-h-[500px] md:min-h-[600px] flex items-center justify-center overflow-hidden bg-gray-900">
         <motion.img
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
@@ -114,7 +114,7 @@ export default function AboutPage() {
 
       {/* ── Why Choose Us ── */}
       <section className="py-24 px-4 bg-white border-y border-pink-50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-50 rounded-full blur-[100px] -z-10" />
+        <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-pink-50 rounded-full blur-[100px] -z-10" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-[#C2185B] text-xs font-black uppercase tracking-[0.3em] mb-4">The ShaadiSaathi Advantage</h2>

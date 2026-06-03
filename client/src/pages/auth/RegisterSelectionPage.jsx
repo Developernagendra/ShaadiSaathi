@@ -9,8 +9,8 @@ export default function RegisterSelectionPage() {
   return (
     <div className="min-h-screen bg-[#FFF8F0] flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background Ambience */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-200/40 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-yellow-200/40 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-pink-200/40 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-yellow-200/40 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
 
       <div className="w-full max-w-5xl relative z-10">

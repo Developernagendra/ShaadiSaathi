@@ -64,7 +64,7 @@ const BlogDetailPage = () => {
       />
 
       {/* ── 🌟 Premium Hero Section ── */}
-      <div className="relative h-[75vh] min-h-[600px] w-full mt-4 md:mt-8 mx-auto max-w-[96%] rounded-[3rem] overflow-hidden shadow-2xl">
+      <div className="relative h-[50vh] md:h-[75vh] min-h-[400px] md:min-h-[600px] w-full mt-4 md:mt-8 mx-auto max-w-[96%] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl">
         <motion.img 
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
@@ -213,7 +213,7 @@ const BlogDetailPage = () => {
       {/* ── 📚 Related Inspiration ── */}
       {(related.length > 0 || !blog) && (
         <section className="bg-gray-900 py-24 px-4 relative overflow-hidden mt-10 rounded-t-[4rem]">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#C2185B]/10 rounded-full blur-[150px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#C2185B]/10 rounded-full blur-[150px] pointer-events-none" />
           
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">

@@ -84,8 +84,8 @@ const AIPlannerPage = () => {
   return (
     <div className="min-h-screen bg-[#111] bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#C2185B]/20 pt-24 pb-20 font-sans selection:bg-[#D4AF37] selection:text-white">
       <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
-      <div className="fixed top-0 right-0 w-[800px] h-[800px] bg-[#D4AF37]/10 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-[#C2185B]/20 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+      <div className="fixed top-0 right-0 w-96 h-96 md:w-[800px] md:h-[800px] bg-[#D4AF37]/10 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-80 h-80 md:w-[500px] md:h-[500px] bg-[#C2185B]/20 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         
@@ -291,7 +291,7 @@ const AIPlannerPage = () => {
                   </div>
 
                   {/* Right Side: 💬 AI CHAT UI */}
-                  <div className="xl:col-span-4 flex flex-col h-[800px]">
+                  <div className="xl:col-span-4 flex flex-col h-[600px] md:h-[800px]">
                     <div className="bg-white rounded-[2.5rem] shadow-premium border border-gray-100 flex-1 flex flex-col overflow-hidden relative">
                       {/* Chat Header */}
                       <div className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] p-6 text-white flex items-center gap-4 shadow-md z-10">
