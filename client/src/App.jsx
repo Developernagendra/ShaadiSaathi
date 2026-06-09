@@ -12,14 +12,18 @@ import Footer from './components/layout/Footer'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import ScrollToTop from './components/common/ScrollToTop'
 import LoadingScreen from './components/common/LoadingScreen'
+import BaraatCabsSkeleton from './components/common/BaraatCabsSkeleton'
 import FloatingWhatsApp from './components/common/FloatingWhatsApp'
 import SocketListener from './components/common/SocketListener'
+import AuthSoundListener from './components/common/AuthSoundListener'
 import ErrorBoundary from './components/common/ErrorBoundary'
+import { NotificationSoundProvider } from './context/NotificationSoundContext'
 
 const BaraatCabsPage = lazy(() => import('./pages/BaraatCabsPage'))
 const CabDetailPage = lazy(() => import('./pages/CabDetailPage'))
 const VendorManageCabsPage = lazy(() => import('./pages/vendor/VendorManageCabsPage'))
 const BundleDetailPage = lazy(() => import('./pages/BundleDetailPage'))
+const CustomBundleBuilderPage = lazy(() => import('./pages/CustomBundleBuilderPage'))
 
 // Lazy Load Pages
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -31,6 +35,9 @@ const VendorDetailPage = lazy(() => import('./pages/VendorDetailPage'))
 const BlogPage = lazy(() => import('./pages/BlogPage'))
 const BlogDetailPage = lazy(() => import('./pages/BlogDetailPage'))
 const FAQPage = lazy(() => import('./pages/FAQPage'))
+const HelpPage = lazy(() => import('./pages/HelpPage'))
+const VendorSupportPage = lazy(() => import('./pages/VendorSupportPage'))
+const BookingHelpPage = lazy(() => import('./pages/BookingHelpPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const TestimonialsPage = lazy(() => import('./pages/TestimonialsPage'))
@@ -64,6 +71,11 @@ const VendorServicesPage = lazy(() => import('./pages/vendor/VendorServicesPage'
 const VendorBookingsPage = lazy(() => import('./pages/vendor/VendorBookingsPage'))
 const VendorEarningsPage = lazy(() => import('./pages/vendor/VendorEarningsPage'))
 const VendorBlogsPage = lazy(() => import('./pages/vendor/VendorBlogsPage'))
+const VendorPortfolioBuilder = lazy(() => import('./pages/vendor/VendorPortfolioBuilder'))
+const VendorLeadsPage = lazy(() => import('./pages/vendor/VendorLeadsPage'))
+const VendorAnalyticsPage = lazy(() => import('./pages/vendor/VendorAnalyticsPage'))
+const VendorOffersPage = lazy(() => import('./pages/vendor/VendorOffersPage'))
+const VendorMessagesPage = lazy(() => import('./pages/vendor/VendorMessagesPage'))
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
@@ -81,7 +93,10 @@ const AIPlannerPage = lazy(() => import('./pages/AIPlannerPage'))
 const BudgetCalculatorPage = lazy(() => import('./pages/BudgetCalculatorPage'))
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage'))
 const ChecklistPage = lazy(() => import('./pages/ChecklistPage'))
-const InvitationPage = lazy(() => import('./pages/InvitationPage'))
+const InvitationDashboard = lazy(() => import('./pages/invitation/InvitationDashboard'))
+const InvitationBuilder = lazy(() => import('./pages/invitation/InvitationBuilder'))
+const TemplateLibrary = lazy(() => import('./pages/invitation/TemplateLibrary'))
+const InvitationPreview = lazy(() => import('./pages/invitation/InvitationPreview'))
 const LeadMarketplacePage = lazy(() => import('./pages/LeadMarketplacePage'))
 const VendorSubscriptionPage = lazy(() => import('./pages/VendorSubscriptionPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
@@ -108,6 +123,8 @@ const AdminLeadsPage = lazy(() => import('./pages/admin/AdminLeadsPage'))
 const AdminManageCabsPage = lazy(() => import('./pages/admin/AdminManageCabsPage'))
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
 const AdminReviewsPage = lazy(() => import('./pages/admin/AdminReviewsPage'))
+const AdminSubscriptionsPage = lazy(() => import('./pages/admin/AdminSubscriptionsPage'))
+const AdminNewsletterPage = lazy(() => import('./pages/admin/AdminNewsletterPage'))
 
 export default function App() {
   const dispatch = useDispatch()
@@ -163,117 +180,161 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <Suspense fallback={<LoadingScreen />}>
-        <ScrollToTop />
-        <SocketListener />
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/ai-planner" element={<AIPlannerPage />} />
-              <Route path="/baraat-cabs" element={<BaraatCabsPage />} />
-              <Route path="/baraat-cabs/details/:id" element={<CabDetailPage />} />
-              <Route path="/baraat-cabs/book" element={<CabBookingPage />} />
-              <Route path="/baraat-cabs/bundle/:bundleId" element={<BundleDetailPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/services/:id" element={<ServiceDetailPage />} />
-              <Route path="/vendors/:id" element={<VendorDetailPage />} />
-              <Route path="/cab-booking" element={<CabBookingPage />} />
-              <Route path="/budget-calculator" element={<BudgetCalculatorPage />} />
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blog/:slug" element={<BlogDetailPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/testimonials" element={<TestimonialsPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/our-story" element={<Navigate to="/about" replace />} />
-              <Route path="/reviews" element={<Navigate to="/testimonials" replace />} />
+      <NotificationSoundProvider>
+        <Suspense fallback={<LoadingScreen />}>
+          <ScrollToTop />
+          <SocketListener />
+          <AuthSoundListener />
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/ai-planner" element={<AIPlannerPage />} />
+                {/* Baraat Cabs Routes — use skeleton fallback, NOT global LoadingScreen */}
+                <Route path="/baraat-cabs" element={
+                  <Suspense fallback={<BaraatCabsSkeleton />}>
+                    <BaraatCabsPage />
+                  </Suspense>
+                } />
+                <Route path="/baraat-cabs/details/:id" element={
+                  <Suspense fallback={<BaraatCabsSkeleton />}>
+                    <CabDetailPage />
+                  </Suspense>
+                } />
+                <Route path="/baraat-cabs/book" element={
+                  <Suspense fallback={<BaraatCabsSkeleton />}>
+                    <CabBookingPage />
+                  </Suspense>
+                } />
+                <Route path="/baraat-cabs/bundle/:bundleId" element={
+                  <Suspense fallback={<BaraatCabsSkeleton />}>
+                    <BundleDetailPage />
+                  </Suspense>
+                } />
+                <Route path="/baraat-cabs/custom-bundle" element={
+                  <Suspense fallback={<BaraatCabsSkeleton />}>
+                    <CustomBundleBuilderPage />
+                  </Suspense>
+                } />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/services/:categorySlug" element={<ServicesPage />} />
+                <Route path="/service/:id" element={<ServiceDetailPage />} />
+                <Route path="/vendors/:id" element={<VendorDetailPage />} />
+                <Route path="/cab-booking" element={
+                  <Suspense fallback={<BaraatCabsSkeleton />}>
+                    <CabBookingPage />
+                  </Suspense>
+                } />
+                <Route path="/budget-calculator" element={<BudgetCalculatorPage />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogDetailPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/help" element={<HelpPage />} />
+                <Route path="/vendor-support" element={<VendorSupportPage />} />
+                <Route path="/booking-help" element={<BookingHelpPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/testimonials" element={<TestimonialsPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/our-story" element={<Navigate to="/about" replace />} />
+                <Route path="/reviews" element={<Navigate to="/testimonials" replace />} />
 
 
-              {/* Auth Routes */}
-              <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
-              <Route path="/register" element={!user ? <RegisterSelectionPage /> : <Navigate to="/" />} />
-              <Route path="/register/user" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
-              <Route path="/register/vendor" element={!user ? <VendorRegisterPage /> : <Navigate to="/" />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-              <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-              <Route path="/resend-verification" element={<ResendVerificationPage />} />
+                {/* Auth Routes */}
+                <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
+                <Route path="/register" element={!user ? <RegisterSelectionPage /> : <Navigate to="/" />} />
+                <Route path="/register/user" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
+                <Route path="/register/vendor" element={!user ? <VendorRegisterPage /> : <Navigate to="/" />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+                <Route path="/resend-verification" element={<ResendVerificationPage />} />
 
-              {/* User Dashboard Routes */}
-              <Route element={<ProtectedRoute roles={['user', 'vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
-                <Route path="/dashboard" element={<UserDashboard />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/bookings" element={<BookingsPage />} />
-                <Route path="/dashboard/my-bookings" element={<BookingsPage />} />
-                <Route path="/bookings/:id" element={<BookingDetailPage />} />
-                <Route path="/cab-booking/:id" element={<CabBookingDetailPage />} />
-                <Route path="/wishlist" element={<WishlistPage />} />
-                <Route path="/guests" element={<GuestManagementPage />} />
-                <Route path="/checklist" element={<ChecklistPage />} />
-                <Route path="/invitation-creator" element={<InvitationPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/chat" element={<ChatPage />} />
-                <Route path="/leads" element={<LeadMarketplacePage />} />
-              </Route>
+                {/* User Dashboard Routes */}
+                <Route element={<ProtectedRoute roles={['user', 'vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<UserDashboard />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/bookings" element={<BookingsPage />} />
+                  <Route path="/dashboard/my-bookings" element={<BookingsPage />} />
+                  <Route path="/bookings/:id" element={<BookingDetailPage />} />
+                  <Route path="/cab-booking/:id" element={<CabBookingDetailPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/guests" element={<GuestManagementPage />} />
+                  <Route path="/checklist" element={<ChecklistPage />} />
+                  <Route path="/invitation-creator" element={<InvitationDashboard />} />
+                  <Route path="/invitation-creator/new" element={<InvitationBuilder />} />
+                  <Route path="/invitation-creator/edit/:id" element={<InvitationBuilder />} />
+                  <Route path="/invitation-creator/templates" element={<TemplateLibrary />} />
+                  <Route path="/invitation-creator/preview/:id" element={<InvitationPreview />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/chat" element={<ChatPage />} />
+                  <Route path="/leads" element={<LeadMarketplacePage />} />
+                </Route>
 
-              <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
-              <Route path="/book-service/:id" element={<ProtectedRoute><BookService /></ProtectedRoute>} />
-              <Route path="/book-vendor/:id" element={<ProtectedRoute><BookService /></ProtectedRoute>} />
-              <Route path="/book-cab/:id" element={<ProtectedRoute><BookCab /></ProtectedRoute>} />
+                <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+                <Route path="/book-service/:id" element={<ProtectedRoute><BookService /></ProtectedRoute>} />
+                <Route path="/book-vendor/:id" element={<ProtectedRoute><BookService /></ProtectedRoute>} />
+                <Route path="/book-cab/:id" element={<ProtectedRoute><BookCab /></ProtectedRoute>} />
 
-              {/* Vendor Dashboard Routes */}
-              <Route element={<ProtectedRoute roles={['vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
-                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-                <Route path="/vendor/profile" element={<VendorProfilePage />} />
-                <Route path="/vendor/services" element={<VendorServicesPage />} />
-                <Route path="/vendor/packages" element={<VendorPackagesPage />} />
-                <Route path="/vendor/gallery" element={<VendorGalleryPage />} />
-                <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
-                <Route path="/vendor/bookings/:id" element={<BookingDetailPage />} />
-                <Route path="/vendor/dashboard/customer-bookings" element={<VendorBookingsPage />} />
-                <Route path="/vendor/calendar" element={<VendorCalendarPage />} />
-                <Route path="/vendor/earnings" element={<VendorEarningsPage />} />
-                <Route path="/vendor/blogs" element={<VendorBlogsPage />} />
-                <Route path="/vendor/reviews" element={<VendorReviewsPage />} />
-                <Route path="/vendor/notifications" element={<VendorNotificationsPage />} />
-                <Route path="/vendor/settings" element={<VendorSettingsPage />} />
-                <Route path="/vendor/manage-cabs" element={<VendorManageCabsPage />} />
+                {/* Vendor Dashboard Routes */}
+                <Route element={<ProtectedRoute roles={['vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+                  <Route path="/vendor/profile" element={<VendorProfilePage />} />
+                  <Route path="/vendor/services" element={<VendorServicesPage />} />
+                  <Route path="/vendor/packages" element={<VendorPackagesPage />} />
+                  <Route path="/vendor/gallery" element={<VendorGalleryPage />} />
+                  <Route path="/vendor/portfolio-builder" element={<VendorPortfolioBuilder />} />
+                  <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
+                  <Route path="/vendor/bookings/:id" element={<BookingDetailPage />} />
+                  <Route path="/vendor/dashboard/customer-bookings" element={<VendorBookingsPage />} />
+                  <Route path="/vendor/calendar" element={<VendorCalendarPage />} />
+                  <Route path="/vendor/earnings" element={<VendorEarningsPage />} />
+                  <Route path="/vendor/blogs" element={<VendorBlogsPage />} />
+                  <Route path="/vendor/reviews" element={<VendorReviewsPage />} />
+                  <Route path="/vendor/notifications" element={<VendorNotificationsPage />} />
+                  <Route path="/vendor/settings" element={<VendorSettingsPage />} />
+                  <Route path="/vendor/manage-cabs" element={<VendorManageCabsPage />} />
+                  <Route path="/vendor/leads" element={<VendorLeadsPage />} />
+                  <Route path="/vendor/analytics" element={<VendorAnalyticsPage />} />
+                  <Route path="/vendor/offers" element={<VendorOffersPage />} />
+                  <Route path="/vendor/messages" element={<VendorMessagesPage />} />
 
-                <Route path="/vendor-subscription" element={<VendorSubscriptionPage />} />
-              </Route>
+                  <Route path="/vendor-subscription" element={<VendorSubscriptionPage />} />
+                </Route>
 
-              {/* Admin Dashboard Routes */}
-              <Route element={<ProtectedRoute roles={['admin']}><DashboardLayout /></ProtectedRoute>}>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/users" element={<AdminUsersPage />} />
-                <Route path="/admin/vendors" element={<AdminVendorsPage />} />
-                <Route path="/admin/approvals" element={<AdminVendorsPage defaultTab="pending" title="Review Approvals" />} />
-                <Route path="/admin/services-approval" element={<AdminServicesApprovalPage />} />
-                <Route path="/admin/services/pending/:id" element={<ServiceApprovalDetails />} />
-                <Route path="/admin/categories" element={<AdminCategoriesPage />} />
-                <Route path="/admin/bookings" element={<AdminBookingsPage />} />
-                <Route path="/admin/bookings/:id" element={<AdminBookingDetailPage />} />
-                <Route path="/admin/blogs" element={<AdminBlogsPage />} />
-                <Route path="/admin/leads" element={<AdminLeadsPage />} />
-                <Route path="/admin/imperial-fleet" element={<AdminManageCabsPage />} />
-                <Route path="/admin/reviews" element={<AdminReviewsPage />} />
-                <Route path="/admin/settings" element={<AdminSettingsPage />} />
-              </Route>
+                {/* Admin Dashboard Routes */}
+                <Route element={<ProtectedRoute roles={['admin']}><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<AdminUsersPage />} />
+                  <Route path="/admin/vendors" element={<AdminVendorsPage />} />
+                  <Route path="/admin/approvals" element={<AdminVendorsPage defaultTab="pending" title="Review Approvals" />} />
+                  <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
+                  <Route path="/admin/services-approval" element={<AdminServicesApprovalPage />} />
+                  <Route path="/admin/services/pending/:id" element={<ServiceApprovalDetails />} />
+                  <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+                  <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+                  <Route path="/admin/bookings/:id" element={<AdminBookingDetailPage />} />
+                  <Route path="/admin/blogs" element={<AdminBlogsPage />} />
+                  <Route path="/admin/leads" element={<AdminLeadsPage />} />
+                  <Route path="/admin/imperial-fleet" element={<AdminManageCabsPage />} />
+                  <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+                  <Route path="/admin/settings" element={<AdminSettingsPage />} />
+                  <Route path="/admin/newsletter" element={<AdminNewsletterPage />} />
+                </Route>
 
-              {/* 404 */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
-          <Footer />
-          <FloatingWhatsApp />
-        </div>
-      </Suspense>
+                {/* 404 */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </main>
+            <Footer />
+            <FloatingWhatsApp />
+          </div>
+        </Suspense>
+      </NotificationSoundProvider>
     </ErrorBoundary>
   )
 }

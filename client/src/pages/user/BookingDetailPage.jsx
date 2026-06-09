@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchBookingById } from '../../store/slices/bookingSlice'
 import { formatPrice, formatDate, formatDateShort, getStatusColor } from '../../utils/helpers'
-import { FiPhone, FiMapPin, FiCalendar, FiArrowLeft, FiClock, FiCheck, FiInfo, FiCreditCard } from 'react-icons/fi'
+import { FiPhone, FiMapPin, FiCalendar, FiArrowLeft, FiClock, FiCheck, FiInfo, FiCreditCard, FiGlobe, FiInstagram, FiFacebook, FiYoutube, FiMessageCircle, FiMail } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 
@@ -136,6 +136,51 @@ export default function BookingDetailPage() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Digital Presence / Social Links */}
+            {(booking.vendorProfileId?.socialLinks || booking.vendorProfileId?.website) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <h3 className="font-display font-black text-xl text-gray-900 mb-6 flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center text-pink-600"><FiGlobe /></span>
+                  Vendor Digital Presence
+                </h3>
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+                  <p className="text-gray-500 font-medium mb-6 text-sm">You have exclusive access to these details since you have an active booking with this vendor.</p>
+                  <div className="flex flex-wrap gap-4">
+                    {(booking.vendorProfileId?.socialLinks?.website || booking.vendorProfileId?.website) && (
+                      <a href={booking.vendorProfileId?.socialLinks?.website || booking.vendorProfileId?.website} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-gray-700 font-bold text-sm shadow-sm hover:shadow-md">
+                        <FiGlobe className="text-gray-500" size={18} /> Website
+                      </a>
+                    )}
+                    {booking.vendorProfileId?.socialLinks?.instagram && (
+                      <a href={booking.vendorProfileId.socialLinks.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-pink-50 hover:bg-pink-100 border border-pink-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-pink-700 font-bold text-sm shadow-sm hover:shadow-md">
+                        <FiInstagram className="text-pink-500" size={18} /> Instagram
+                      </a>
+                    )}
+                    {booking.vendorProfileId?.socialLinks?.facebook && (
+                      <a href={booking.vendorProfileId.socialLinks.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-blue-700 font-bold text-sm shadow-sm hover:shadow-md">
+                        <FiFacebook className="text-blue-500" size={18} /> Facebook
+                      </a>
+                    )}
+                    {booking.vendorProfileId?.socialLinks?.youtube && (
+                      <a href={booking.vendorProfileId.socialLinks.youtube} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-red-700 font-bold text-sm shadow-sm hover:shadow-md">
+                        <FiYoutube className="text-red-500" size={18} /> YouTube
+                      </a>
+                    )}
+                    {(booking.vendor?.phone || booking.vendorProfileId?.phone) && (
+                      <a href={`https://wa.me/${(booking.vendor?.phone || booking.vendorProfileId?.phone || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-green-50 hover:bg-green-100 border border-green-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-green-700 font-bold text-sm shadow-sm hover:shadow-md">
+                        <FiMessageCircle className="text-green-500" size={18} /> WhatsApp
+                      </a>
+                    )}
+                    {(booking.vendor?.email || booking.vendorProfileId?.email) && (
+                      <a href={`mailto:${booking.vendor?.email || booking.vendorProfileId?.email}`} className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-gray-700 font-bold text-sm shadow-sm hover:shadow-md">
+                        <FiMail className="text-gray-500" size={18} /> Email Contact
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
             )}
 
             {/* Event Logistics */}

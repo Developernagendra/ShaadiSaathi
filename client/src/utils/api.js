@@ -9,7 +9,9 @@ const BASE_URL =
    import.meta.env.VITE_API_URL ||
    "https://shaadisaathi-3.onrender.com/api";
 
-console.log("API URL:", BASE_URL);
+if (import.meta.env.DEV) {
+  console.log('API URL:', BASE_URL);
+}
 
 
 // ============================================
@@ -19,7 +21,7 @@ console.log("API URL:", BASE_URL);
 const API = axios.create({
    baseURL: BASE_URL,
    withCredentials: true,
-   timeout: 75000, // Increased to 75 seconds to handle Render free-tier cold starts
+   timeout: 30000, // 30 seconds — sufficient for localhost; Render cold starts handled by retry logic
    headers: {
       "Content-Type": "application/json",
    },
@@ -86,7 +88,7 @@ API.interceptors.response.use(
       if (!error.response) {
          return Promise.reject({
             success: false,
-            message: "Unable to connect to the wedding server. Please check your internet connection or try again shortly.",
+            message: "Unable to connect to the server. Please check your internet connection or try again shortly.",
             isNetworkError: true
          });
       }
@@ -109,8 +111,16 @@ API.interceptors.response.use(
       if (error.response.status >= 500) {
          console.error("❌ Server Error:", error.response.data);
       }
+      // Extract the best error message from the backend response
+      const responseData = error.response.data;
+      const errorPayload = {
+        success: false,
+        message: responseData?.message || responseData?.data?.message || error.message || 'Something went wrong',
+        status: error.response.status,
+        ...(responseData || {}),
+      };
 
-      return Promise.reject(error.response.data || error);
+      return Promise.reject(errorPayload);
    }
 );
 

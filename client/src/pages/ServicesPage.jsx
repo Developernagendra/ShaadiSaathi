@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchServices, fetchCategories, setFilters, clearFilters } from '../store/slices/vendorSlice'
 import ServiceCard from '../components/vendor/ServiceCard'
@@ -45,7 +45,8 @@ export default function ServicesPage() {
   const [page, setPage] = useState(1)
   const [previewVendor, setPreviewVendor] = useState(null)
 
-  const categorySlug = searchParams.get('category') || ''
+  const { categorySlug: paramCategorySlug } = useParams()
+  const categorySlug = paramCategorySlug || searchParams.get('category') || ''
 
   const [localFilters, setLocalFilters] = useState({
     city: searchParams.get('city') || '',
@@ -269,7 +270,7 @@ export default function ServicesPage() {
                 </select>
                 <FiChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
-              
+
               {/* Mobile Filter Button */}
               <button onClick={() => setFiltersOpen(true)} className="lg:hidden bg-gray-900 text-white p-4 rounded-2xl">
                 <FiFilter size={20} />
@@ -345,24 +346,24 @@ export default function ServicesPage() {
       <AnimatePresence>
         {previewVendor && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setPreviewVendor(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
             />
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-10 flex flex-col md:flex-row overflow-hidden"
             >
               {/* Left Side: Images/Portfolio Preview */}
               <div className="md:w-5/12 h-64 md:h-auto relative bg-gray-100">
-                <img 
-                  src={previewVendor.coverImage || (previewVendor.images?.[0]?.url || previewVendor.images?.[0]) || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800'} 
+                <img
+                  src={previewVendor.coverImage || (previewVendor.images?.[0]?.url || previewVendor.images?.[0]) || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800'}
                   alt={previewVendor.title}
                   className="w-full h-full object-cover"
                 />
@@ -411,20 +412,20 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="mt-auto space-y-3">
-                  <button 
+                  <button
                     onClick={() => navigate(`/book-service/${previewVendor._id}`)}
                     className="w-full bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white py-4 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg hover:shadow-xl transition-all text-center flex justify-center items-center gap-2"
                   >
                     Check Availability & Book
                   </button>
                   <div className="flex gap-3">
-                    <button 
-                      onClick={() => navigate(`/services/${previewVendor._id}`)}
+                    <button
+                      onClick={() => navigate(`/service/${previewVendor._id}`)}
                       className="flex-1 bg-gray-50 text-gray-600 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all text-center"
                     >
                       Full Profile
                     </button>
-                    <button 
+                    <button
                       onClick={() => window.open(`https://wa.me/91${previewVendor.vendor?.phone || '9999999999'}?text=Hi, I am interested in your services for my wedding.`, '_blank')}
                       className="flex-none bg-[#25D366] text-white w-12 rounded-xl flex items-center justify-center hover:bg-[#1EBE5D] transition-all shadow-sm"
                       title="WhatsApp Contact"

@@ -11,8 +11,26 @@ let _transporter = null;
 
 const createTransporter = () => {
   const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.EMAIL_PORT || '465', 10);
-  const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
+  const port = parseInt(process.env.EMAIL_PORT || '587', 10);
+
+  // Port 587 = STARTTLS = secure:false
+  // Port 465 = implicit TLS = secure:true
+  let secure;
+  if (process.env.EMAIL_SECURE !== undefined) {
+    secure = process.env.EMAIL_SECURE === 'true';
+  } else {
+    secure = port === 465;
+  }
+
+  // Safety: warn and correct known misconfigurations
+  if (port === 587 && secure) {
+    console.warn('[SMTP] ⚠️ Port 587 requires secure=false (STARTTLS). Auto-correcting.');
+    secure = false;
+  }
+  if (port === 465 && !secure) {
+    console.warn('[SMTP] ⚠️ Port 465 requires secure=true. Auto-correcting.');
+    secure = true;
+  }
 
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_PASS
@@ -34,6 +52,10 @@ const createTransporter = () => {
     tls: { rejectUnauthorized: false },
     pool: true,          // Reuse connections
     maxConnections: 5,
+    maxMessages: 100,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     rateDelta: 1000,
     rateLimit: 5,
   });

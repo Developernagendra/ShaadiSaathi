@@ -17,24 +17,24 @@ router.get('/services', protect, authorize('vendor', 'admin'), async (req, res, 
     const { Service, Vendor } = require('../models/index');
     const { page = 1, limit = 10 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
-    
+
     // Find the Vendor profile for the logged in user
     const vendorProfile = await Vendor.findOne({ user: req.user._id });
     const vendorIds = [req.user._id];
     if (vendorProfile) {
       vendorIds.push(vendorProfile._id);
     }
-    
+
     const total = await Service.countDocuments({ vendor: { $in: vendorIds } });
     const services = await Service.find({
       vendor: { $in: vendorIds }
     })
-    .select('title startingPrice city duration coverImage images category status isActive createdAt description rating')
-    .populate('category', 'name icon')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(Number(limit))
-    .lean();
+      .select('title startingPrice city duration coverImage images category status isActive createdAt description rating')
+      .populate('category', 'name icon')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit))
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -82,7 +82,7 @@ router.post('/video', protect, authorize('vendor', 'admin'), verified, uploadSer
     vendor = await Vendor.findOne({ user: req.user._id });
   }
   if (!vendor) return next(new AppError('Vendor not found', 404));
-  
+
   if (vendor.video?.publicId) {
     const { deleteFromCloudinary } = require('../config/cloudinary');
     await deleteFromCloudinary(vendor.video.publicId);
@@ -110,6 +110,11 @@ router.delete('/video', protect, authorize('vendor', 'admin'), verified, async (
   res.status(200).json({ status: 'success' });
 });
 
+// Leads pipeline
+const { getVendorLeadsPipeline, updateLeadPipelineStatus } = require('../controllers/vendorController');
+router.get('/leads/pipeline', protect, authorize('vendor', 'admin'), verified, getVendorLeadsPipeline);
+router.patch('/leads/:id/status', protect, authorize('vendor', 'admin'), verified, updateLeadPipelineStatus);
+
 // Blog management
 router.get('/blogs', protect, authorize('vendor', 'admin'), getVendorBlogs);
 router.post('/blogs', protect, authorize('vendor', 'admin'), saveVendorBlog);
@@ -118,143 +123,62 @@ router.delete('/blogs/:id', protect, authorize('vendor', 'admin'), deleteVendorB
 // Subscription Activation (Payment-Free)
 router.post('/activate-subscription', protect, authorize('vendor'), activateSubscription);
 
-// Vendor Fleet Vehicle Dropdown APIs
+// ======== Shared helper: fetch vendor's fleet vehicles ========
+const getVendorFleetVehicles = async (userId) => {
+  const { Cab, Vendor } = require('../models/index');
+  const vendorProfile = await Vendor.findOne({ user: userId });
+  const vendorProfileId = vendorProfile ? vendorProfile._id : null;
+
+  const vehicles = await Cab.find({
+    $or: [
+      { vendor: vendorProfileId },
+      { vendorId: vendorProfileId },
+      { vendorId: userId },
+      { createdBy: userId }
+    ],
+    $and: [
+      { $or: [{ isApproved: true }, { status: 'approved' }] },
+      { $or: [{ isActive: true }, { isAvailable: true }] }
+    ]
+  });
+
+  return vehicles.map(vehicle => {
+    const vName = vehicle.vehicleName || vehicle.name || `${vehicle.brand || ''} ${vehicle.model || ''}`.trim() || 'Premium Vehicle';
+    const vCategory = vehicle.category || vehicle.type || 'luxury_car';
+    return {
+      _id: vehicle._id,
+      vehicleName: vName,
+      name: vName,
+      category: vCategory,
+      type: vCategory,
+      seatingCapacity: vehicle.seatingCapacity || 4,
+      price: vehicle.price || (vehicle.pricing && vehicle.pricing.baseFare) || 0,
+      isApproved: true,
+      isActive: true,
+      images: vehicle.images || []
+    };
+  });
+};
+
 router.get('/fleet', protect, authorize('vendor', 'admin'), async (req, res, next) => {
   try {
-    const { Cab, Vendor } = require('../models/index');
-    const vendorProfile = await Vendor.findOne({ user: req.user._id });
-    const vendorProfileId = vendorProfile ? vendorProfile._id : null;
-
-    const vehicles = await Cab.find({
-      $or: [
-        { vendor: vendorProfileId },
-        { vendorId: vendorProfileId },
-        { vendorId: req.user._id },
-        { createdBy: req.user._id }
-      ],
-      $and: [
-        { $or: [{ isApproved: true }, { status: 'approved' }] },
-        { $or: [{ isActive: true }, { isAvailable: true }] }
-      ]
-    });
-
-    const formattedVehicles = vehicles.map(vehicle => {
-      const vName = vehicle.vehicleName || vehicle.name || `${vehicle.brand || ''} ${vehicle.model || ''}`.trim() || 'Premium Vehicle';
-      const vCategory = vehicle.category || vehicle.type || 'luxury_car';
-      return {
-        _id: vehicle._id,
-        vehicleName: vName,
-        name: vName,
-        category: vCategory,
-        type: vCategory,
-        seatingCapacity: vehicle.seatingCapacity || 4,
-        price: vehicle.price || (vehicle.pricing && vehicle.pricing.baseFare) || 0,
-        isApproved: true,
-        isActive: true,
-        images: vehicle.images || []
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      data: formattedVehicles,
-      message: 'Vendor vehicles loaded successfully.'
-    });
-  } catch (err) {
-    next(err);
-  }
+    const data = await getVendorFleetVehicles(req.user._id);
+    res.status(200).json({ success: true, data, message: 'Vendor vehicles loaded successfully.' });
+  } catch (err) { next(err); }
 });
 
 router.get('/fleet/vehicles', protect, authorize('vendor', 'admin'), async (req, res, next) => {
   try {
-    const { Cab, Vendor } = require('../models/index');
-    const vendorProfile = await Vendor.findOne({ user: req.user._id });
-    const vendorProfileId = vendorProfile ? vendorProfile._id : null;
-
-    const vehicles = await Cab.find({
-      $or: [
-        { vendor: vendorProfileId },
-        { vendorId: vendorProfileId },
-        { vendorId: req.user._id },
-        { createdBy: req.user._id }
-      ],
-      $and: [
-        { $or: [{ isApproved: true }, { status: 'approved' }] },
-        { $or: [{ isActive: true }, { isAvailable: true }] }
-      ]
-    });
-
-    const formattedVehicles = vehicles.map(vehicle => {
-      const vName = vehicle.vehicleName || vehicle.name || `${vehicle.brand || ''} ${vehicle.model || ''}`.trim() || 'Premium Vehicle';
-      const vCategory = vehicle.category || vehicle.type || 'luxury_car';
-      return {
-        _id: vehicle._id,
-        vehicleName: vName,
-        name: vName,
-        category: vCategory,
-        type: vCategory,
-        seatingCapacity: vehicle.seatingCapacity || 4,
-        price: vehicle.price || (vehicle.pricing && vehicle.pricing.baseFare) || 0,
-        isApproved: true,
-        isActive: true,
-        images: vehicle.images || []
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      data: formattedVehicles,
-      message: 'Vendor vehicles loaded successfully.'
-    });
-  } catch (err) {
-    next(err);
-  }
+    const data = await getVendorFleetVehicles(req.user._id);
+    res.status(200).json({ success: true, data, message: 'Vendor vehicles loaded successfully.' });
+  } catch (err) { next(err); }
 });
 
 router.get('/fleet/my-vehicles', protect, authorize('vendor', 'admin'), async (req, res, next) => {
   try {
-    const { Cab, Vendor } = require('../models/index');
-    const vendorProfile = await Vendor.findOne({ user: req.user._id });
-    const vendorProfileId = vendorProfile ? vendorProfile._id : null;
-
-    const vehicles = await Cab.find({
-      $or: [
-        { vendor: vendorProfileId },
-        { vendorId: vendorProfileId },
-        { vendorId: req.user._id },
-        { createdBy: req.user._id }
-      ],
-      $and: [
-        { $or: [{ isApproved: true }, { status: 'approved' }] },
-        { $or: [{ isActive: true }, { isAvailable: true }] }
-      ]
-    });
-
-    const formattedVehicles = vehicles.map(vehicle => {
-      const vName = vehicle.vehicleName || vehicle.name || `${vehicle.brand || ''} ${vehicle.model || ''}`.trim() || 'Premium Vehicle';
-      const vCategory = vehicle.category || vehicle.type || 'luxury_car';
-      return {
-        _id: vehicle._id,
-        vehicleName: vName,
-        name: vName,
-        category: vCategory,
-        type: vCategory,
-        seatingCapacity: vehicle.seatingCapacity || 4,
-        price: vehicle.price || (vehicle.pricing && vehicle.pricing.baseFare) || 0,
-        isApproved: true,
-        isActive: true,
-        images: vehicle.images || []
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      data: formattedVehicles,
-      message: 'Vendor vehicles loaded successfully.'
-    });
-  } catch (err) {
-    next(err);
-  }
+    const data = await getVendorFleetVehicles(req.user._id);
+    res.status(200).json({ success: true, data, message: 'Vendor vehicles loaded successfully.' });
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

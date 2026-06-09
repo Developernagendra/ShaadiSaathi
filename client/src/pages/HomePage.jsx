@@ -10,7 +10,7 @@ import VendorCard from '../components/vendor/VendorCard'
 import { SkeletonCard } from '../components/common/Skeleton'
 import StarRating from '../components/common/StarRating'
 import { INDIAN_CITIES, optimizeImage } from '../utils/helpers'
-import { FiSearch, FiMapPin, FiArrowRight, FiCheck, FiUsers, FiStar, FiAward, FiMessageCircle, FiCheckCircle, FiCalendar } from 'react-icons/fi'
+import { FiSearch, FiMapPin, FiArrowRight, FiCheck, FiUsers, FiStar, FiAward, FiMessageCircle, FiCheckCircle, FiCalendar, FiClock } from 'react-icons/fi'
 import api from '../utils/api'
 import { getSocket } from '../utils/socket'
 import { useTranslation } from 'react-i18next'
@@ -699,10 +699,10 @@ export default function HomePage() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
-                <Link to="/cab-booking" className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-gray-900 font-black text-xs uppercase tracking-[0.3em] py-5 px-10 rounded-[2rem] shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:shadow-[0_0_60px_rgba(212,175,55,0.6)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 w-full sm:w-auto">
+                <Link to="/baraat-cabs" className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-gray-900 font-black text-xs uppercase tracking-[0.3em] py-5 px-10 rounded-[2rem] shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:shadow-[0_0_60px_rgba(212,175,55,0.6)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 w-full sm:w-auto">
                   Book Baraat Cabs <FiArrowRight size={18} />
                 </Link>
-                <Link to="/cab-booking" className="bg-white/10 backdrop-blur-md text-white border border-white/20 font-black text-xs uppercase tracking-[0.3em] py-5 px-10 rounded-[2rem] hover:bg-white/20 transition-all text-center w-full sm:w-auto">
+                <Link to="/baraat-cabs" className="bg-white/10 backdrop-blur-md text-white border border-white/20 font-black text-xs uppercase tracking-[0.3em] py-5 px-10 rounded-[2rem] hover:bg-white/20 transition-all text-center w-full sm:w-auto">
                   Explore Fleet
                 </Link>
               </div>
@@ -777,7 +777,7 @@ export default function HomePage() {
                       <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-1">Estimated Fare</p>
                       <p className="font-display font-black text-3xl text-gray-900 tracking-tighter">₹3000</p>
                     </div>
-                    <Link to="/cab-booking" className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center text-white shadow-xl hover:bg-[#C2185B] hover:rotate-12 transition-all cursor-pointer">
+                    <Link to="/baraat-cabs" className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center text-white shadow-xl hover:bg-[#C2185B] hover:rotate-12 transition-all cursor-pointer">
                       <FiArrowRight size={24} />
                     </Link>
                   </div>
@@ -809,36 +809,31 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { id: 1, icon: '🚖', title: 'Baraat Cabs', desc: 'Premium luxury cars and bulk buses for your wedding baraat.', link: '/cab-booking' },
-              { id: 2, icon: '📸', title: 'Photography', desc: 'Candid & traditional photographers to capture your best moments.', link: '/services?category=photography' },
-              { id: 3, icon: '🏰', title: 'Wedding Venues', desc: 'Book the most luxurious palaces, banquets, and resorts.', link: '/services?category=venues' },
-              { id: 4, icon: '🍲', title: 'Premium Catering', desc: 'Delicious multi-cuisine catering for your grand feast.', link: '/services?category=catering' },
-              { id: 5, icon: '🌸', title: 'Decoration', desc: 'Elegant floral and thematic decor to light up your special day.', link: '/services?category=decoration' },
-              { id: 6, icon: '✨', title: 'Mehndi Artists', desc: 'Professional artists for intricate and beautiful bridal mehndi.', link: '/services?category=mehndi-artists' },
-              { id: 7, icon: '🤖', title: 'AI Wedding Planner', desc: 'Smart AI assistant to organize and plan your entire wedding timeline.', link: '/ai-planner' },
-              { id: 8, icon: '💰', title: 'Budget Planning', desc: 'Intelligent budget analytics to optimize your wedding expenses.', link: '/budget-calculator' }
-            ].map((feature, idx) => (
-              <motion.div
-                key={feature.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="group bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(194,24,91,0.08)] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden flex flex-col"
-              >
-                <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-pink-50 to-gold-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
-                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl mb-6 relative z-10 group-hover:rotate-6 transition-transform">
-                  {feature.icon}
-                </div>
-                <h3 className="font-display font-black text-xl text-gray-900 mb-3 relative z-10">{feature.title}</h3>
-                <p className="text-gray-500 text-sm font-medium leading-relaxed mb-8 flex-grow relative z-10">{feature.desc}</p>
+            {Array.isArray(categories) && categories.length > 0 ? (
+              categories.slice(0, 8).map((cat, idx) => (
+                <motion.div
+                  key={cat._id || idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="group bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(194,24,91,0.08)] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden flex flex-col"
+                >
+                  <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-pink-50 to-gold-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
+                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl mb-6 relative z-10 group-hover:rotate-6 transition-transform">
+                    {cat.icon || '✨'}
+                  </div>
+                  <h3 className="font-display font-black text-xl text-gray-900 mb-3 relative z-10">{cat.name}</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed mb-8 flex-grow relative z-10">{cat.description || `Explore top ${cat.name} professionals.`}</p>
 
-                <Link to={feature.link} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C2185B] hover:text-[#8E244D] transition-colors relative z-10">
-                  Explore <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </motion.div>
-            ))}
+                  <Link to={cat.slug === 'cab-service' ? '/baraat-cabs' : `/services/${cat.slug}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C2185B] hover:text-[#8E244D] transition-colors relative z-10">
+                    Explore <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-gray-400">Loading Premium Services...</div>
+            )}
           </div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-16 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-[2rem] p-8 md:p-12 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-gray-800">
@@ -856,68 +851,142 @@ export default function HomePage() {
       </section>
 
       {/* ── Wedding Inspiration (Blogs) ── */}
-      <section className="py-24 px-4 bg-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-72 h-72 md:w-[400px] md:h-[400px] bg-pink-50/50 rounded-full blur-[100px] pointer-events-none" />
+      <section className="py-32 px-4 bg-[#FAFAFA] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-pink-100/40 to-transparent rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-gold-100/30 to-transparent rounded-full blur-[100px] pointer-events-none" />
+        
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
-            <div className="text-center md:text-left">
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 bg-pink-50 px-4 py-1.5 rounded-full border border-pink-100 mb-4">
-                <span className="text-[#C2185B] font-black text-[9px] uppercase tracking-widest">💍 Wedding Inspiration</span>
-              </motion.div>
-              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
-                Latest From <span className="text-[#C2185B] italic">Our Blog</span>
-              </motion.h2>
-            </div>
-            <Link to="/blog" className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-900 border-2 border-gray-100 px-6 py-3 rounded-full hover:border-[#C2185B] hover:text-[#C2185B] transition-all">
-              View All Inspiration <FiArrowRight />
-            </Link>
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-3xl shadow-xl border border-pink-50 mb-6">
+              🕊️
+            </motion.div>
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-6xl font-black text-gray-900 tracking-tight mb-6">
+              Latest From <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C2185B] to-[#D4AF37] italic">Our Blog</span>
+            </motion.h2>
+            <motion.div initial={{ opacity: 0, width: 0 }} whileInView={{ opacity: 1, width: "100px" }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.8 }} className="h-1 bg-gradient-to-r from-[#C2185B] to-[#D4AF37] mx-auto rounded-full mb-6" />
+            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-gray-500 text-lg font-medium leading-relaxed">
+              Wedding inspiration, planning tips, trends, and expert advice for your perfect celebration.
+            </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {blogs.length > 0 ? blogs.slice(0, 3).map((blog, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15 }}
-                viewport={{ once: true }}
+          {blogs.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              {/* Featured Large Blog */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true }} 
+                className="lg:col-span-7"
               >
-                <Link to={`/blog/${blog.slug || blog._id}`} className="group block bg-white rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(194,24,91,0.12)] border border-gray-100 flex flex-col h-full hover:-translate-y-2 transition-all duration-500">
-                  <div className="h-64 overflow-hidden relative">
-                    <img src={optimizeImage(blog.coverImage, 400)} alt={blog.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-[#C2185B] shadow-sm border border-white/50">
-                      {blog.category || 'Wedding Tips'}
-                    </div>
-                  </div>
-                  <div className="p-8 flex-1 flex flex-col">
-                    <p className="text-[#D4AF37] text-[9px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <FiCalendar size={12} /> {new Date(blog.createdAt || blog.date).toLocaleDateString()}
-                    </p>
-                    <h3 className="font-display font-black text-2xl text-gray-900 group-hover:text-[#C2185B] transition-colors leading-snug mb-4">
-                      {blog.title}
-                    </h3>
-                    <div className="mt-auto border-t border-gray-50 pt-5 flex items-center justify-between">
-                      <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Read Article</span>
-                      <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-[#C2185B] text-gray-400 group-hover:text-white flex items-center justify-center transition-colors">
-                        <FiArrowRight size={14} />
+                {blogs[0] && (
+                  <Link to={`/blog/${blogs[0].slug || blogs[0]._id}`} className="group block bg-white rounded-[2.5rem] overflow-hidden shadow-[0_10px_40px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(194,24,91,0.15)] border border-gray-100 h-full hover:-translate-y-2 transition-all duration-500 relative">
+                    <div className="h-[400px] overflow-hidden relative">
+                      <img src={optimizeImage(blogs[0].coverImage, 800)} alt={blogs[0].title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent" />
+                      
+                      <div className="absolute top-6 left-6">
+                        <span className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg backdrop-blur-md">
+                          {blogs[0].category || 'Featured'}
+                        </span>
+                      </div>
+                      
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <div className="flex items-center gap-4 text-white/80 text-xs font-bold uppercase tracking-widest mb-3">
+                          <span className="flex items-center gap-1.5"><FiCalendar /> {new Date(blogs[0].createdAt || blogs[0].date).toLocaleDateString()}</span>
+                          <span className="w-1 h-1 bg-white/50 rounded-full" />
+                          <span className="flex items-center gap-1.5"><FiClock /> {blogs[0].readTime || '5 min read'}</span>
+                        </div>
+                        <h3 className="font-display font-black text-3xl md:text-4xl text-white group-hover:text-pink-200 transition-colors leading-tight drop-shadow-md">
+                          {blogs[0].title}
+                        </h3>
                       </div>
                     </div>
-                  </div>
-                </Link>
+                    <div className="p-8 lg:p-10 bg-white flex flex-col justify-between h-[calc(100%-400px)]">
+                      <p className="text-gray-600 text-lg line-clamp-2 leading-relaxed mb-8">
+                        {blogs[0].excerpt || blogs[0].description || 'Discover everything you need to know about planning your dream wedding with our expert insights and tips.'}
+                      </p>
+                      <div className="flex items-center justify-between border-t border-gray-100 pt-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 font-black text-sm">
+                            {blogs[0].author?.name?.charAt(0) || 'W'}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Written By</p>
+                            <p className="text-sm font-bold text-gray-900">{blogs[0].author?.name || 'Wedding Expert'}</p>
+                          </div>
+                        </div>
+                        <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#C2185B] group-hover:text-[#8E244D] transition-colors">
+                          Read Article <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center group-hover:bg-[#C2185B] group-hover:text-white transition-all"><FiArrowRight /></div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )}
               </motion.div>
-            )) : (
-              <div className="col-span-full py-16 text-center bg-[#FFF8F0]/50 rounded-[3rem] border border-dashed border-pink-100">
-                <p className="text-gray-500 font-medium italic">New inspiration and blogs coming soon!</p>
-              </div>
-            )}
-          </div>
 
-          <div className="mt-12 text-center md:hidden">
-            <Link to="/blog" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C2185B] border-2 border-pink-100 px-8 py-4 rounded-full hover:bg-pink-50 transition-all">
-              View All Inspiration <FiArrowRight />
-            </Link>
-          </div>
+              {/* Secondary Blogs List */}
+              <div className="lg:col-span-5 flex flex-col gap-8">
+                {blogs.slice(1, 3).map((blog, i) => (
+                  <motion.div 
+                    key={blog._id || i}
+                    initial={{ opacity: 0, x: 30 }} 
+                    whileInView={{ opacity: 1, x: 0 }} 
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + (i * 0.1) }}
+                    className="flex-1"
+                  >
+                    <Link to={`/blog/${blog.slug || blog._id}`} className="group flex flex-col sm:flex-row bg-white rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(194,24,91,0.12)] border border-gray-100 h-full hover:-translate-y-1 transition-all duration-500">
+                      <div className="sm:w-2/5 h-48 sm:h-auto overflow-hidden relative">
+                        <img src={optimizeImage(blog.coverImage, 300)} alt={blog.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
+                        <div className="absolute top-3 left-3">
+                          <span className="bg-white/90 backdrop-blur-md text-[#C2185B] px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm">
+                            {blog.category || 'Tips'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="sm:w-3/5 p-6 flex flex-col justify-center">
+                        <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                          <FiCalendar size={10} /> {new Date(blog.createdAt || blog.date).toLocaleDateString()}
+                        </p>
+                        <h3 className="font-display font-black text-xl text-gray-900 group-hover:text-[#C2185B] transition-colors leading-tight mb-3 line-clamp-3">
+                          {blog.title}
+                        </h3>
+                        <div className="mt-auto inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-[#C2185B] transition-colors">
+                          Read More <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+                
+                {/* View All Button Card */}
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="mt-auto">
+                  <Link to="/blog" className="group flex items-center justify-between bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-[2rem] p-8 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all hover:-translate-y-1 border border-gray-800">
+                    <div>
+                      <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest mb-1">More Inspiration</p>
+                      <p className="font-display font-black text-2xl text-white">View All Articles</p>
+                    </div>
+                    <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#C2185B] transition-colors">
+                      <FiArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                </motion.div>
+              </div>
+            </div>
+          ) : (
+            /* Empty State */
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="max-w-2xl mx-auto py-20 px-8 text-center bg-white rounded-[3rem] shadow-[0_20px_60px_rgb(0,0,0,0.05)] border border-pink-50">
+              <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
+                ✍️
+              </div>
+              <h3 className="font-display font-black text-3xl text-gray-900 mb-4">Words of Wisdom</h3>
+              <p className="text-gray-500 font-medium text-lg mb-8">New premium wedding inspiration articles and planning guides are being curated and will be published shortly.</p>
+              <div className="inline-flex items-center gap-2 bg-[#FAFAFA] text-gray-400 text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-full border border-gray-100">
+                Coming Soon
+              </div>
+            </motion.div>
+          )}
         </div>
       </section>
 

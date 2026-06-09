@@ -9,8 +9,9 @@ const { cloudinary } = require('../config/cloudinary');
 exports.getAdminStats = catchAsync(async (req, res, next) => {
   const [
     totalUsers, totalVendors, pendingVendors, totalBookings,
-    completedBookings, recentUsers, 
-    recentVendors, totalCabs
+    completedBookings, recentUsers,
+    recentVendors, totalCabs,
+    pendingBookingsCount, approvedBookingsCount, cancelledBookingsCount
   ] = await Promise.all([
     User.countDocuments({ role: 'user' }),
     Vendor.countDocuments({ approvalStatus: 'approved' }),
@@ -19,7 +20,10 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
     Booking.countDocuments({ status: 'completed' }), // Unified
     User.find({ role: 'user' }).sort({ createdAt: -1 }).limit(5).select('name email avatar createdAt').lean(),
     Vendor.find({ approvalStatus: 'pending' }).select('businessName category user createdAt approvalStatus').populate('user', 'name email').populate('category', 'name').sort({ createdAt: -1 }).limit(5).lean(),
-    require('../models/index').Cab.countDocuments()
+    require('../models/index').Cab.countDocuments(),
+    Booking.countDocuments({ status: 'pending' }),
+    Booking.countDocuments({ status: 'confirmed' }),
+    Booking.countDocuments({ status: { $in: ['cancelled', 'rejected'] } })
   ]);
 
   // Compute Revenue Analytics based on exact paymentStatus and prices
@@ -130,6 +134,64 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
     { $sort: { revenue: -1 } }
   ]);
 
+  const CabModel = require('../models/index').Cab;
+  const allCabs = await CabModel.find().lean();
+  const totalVehiclesCount = allCabs.reduce((acc, curr) => acc + (curr.totalFleet || curr.quantityAvailable || 1), 0);
+
+  const startOfToday = new Date(new Date().setHours(0,0,0,0));
+  const endOfToday = new Date(new Date().setHours(23,59,59,999));
+  const activeBookingsToday = await Booking.find({
+    eventDate: { $gte: startOfToday, $lte: endOfToday },
+    status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+    bookingType: { $in: ['cab', 'baraat-cab'] }
+  }).lean();
+
+  let bookedVehiclesCount = 0;
+  activeBookingsToday.forEach(b => {
+    if (b.fleetSelection && b.fleetSelection.length > 0) {
+      b.fleetSelection.forEach(item => {
+        bookedVehiclesCount += (item.count || 1);
+      });
+    } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+      b.cabIds.forEach((id, idx) => {
+        bookedVehiclesCount += (b.vehicles[idx]?.count || 1);
+      });
+    } else {
+      if (b.cab) {
+        bookedVehiclesCount += 1;
+      }
+    }
+  });
+
+  const availableVehiclesCount = Math.max(0, totalVehiclesCount - bookedVehiclesCount);
+
+  let soldOutVehiclesCount = 0;
+  allCabs.forEach(cab => {
+    let cabBooked = 0;
+    const cabTotal = cab.totalFleet || cab.quantityAvailable || 1;
+    activeBookingsToday.forEach(b => {
+      if (b.fleetSelection && b.fleetSelection.length > 0) {
+        const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cab._id.toString());
+        if (match) cabBooked += (match.count || 1);
+      } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+        const idx = b.cabIds.findIndex(id => id && id.toString() === cab._id.toString());
+        if (idx !== -1 && b.vehicles[idx]) {
+          cabBooked += (b.vehicles[idx].count || 1);
+        } else if (idx !== -1) {
+          cabBooked += 1;
+        }
+      } else {
+        if (b.cab && b.cab.toString() === cab._id.toString()) {
+          cabBooked += 1;
+        }
+      }
+    });
+    const cabAvailable = Math.max(0, cabTotal - cabBooked);
+    if (cabAvailable === 0) {
+      soldOutVehiclesCount += 1;
+    }
+  });
+
   const recentTransactions = await Booking.find()
     .populate('userId', 'name email')
     .populate('vendorProfileId', 'businessName')
@@ -153,7 +215,14 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
         partialPaymentsSum,
         completedPayments: completedPaymentsCount,
         completedPaymentsSum,
-        totalCabs: totalCabs || 0
+        totalCabs: totalCabs || 0,
+        totalVehicles: totalVehiclesCount,
+        bookedVehicles: bookedVehiclesCount,
+        availableVehicles: availableVehiclesCount,
+        soldOutVehicles: soldOutVehiclesCount,
+        pendingBookings: pendingBookingsCount,
+        approvedBookings: approvedBookingsCount,
+        cancelledBookings: cancelledBookingsCount
       },
       recentUsers,
       recentVendors,
@@ -170,17 +239,17 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
 exports.getAllBookingsAdmin = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 20, status, type = 'services', search } = req.query;
   const query = {};
-  
+
   if (status && status !== 'all') {
     query.status = status;
   }
-  
+
   if (type === 'cabs') {
     query.bookingType = { $in: ['cab', 'baraat-cab'] };
   } else if (type === 'services') {
     query.bookingType = 'service';
   }
-  
+
   if (search) {
     query.$or = [
       { bookingId: { $regex: search, $options: 'i' } },
@@ -273,7 +342,7 @@ exports.getBookingByIdAdmin = catchAsync(async (req, res, next) => {
 // @access  Private (Admin)
 exports.updateVendorStatus = catchAsync(async (req, res, next) => {
   const { approvalStatus, approvalNote, badges, isFeatured, verificationDocuments } = req.body;
-  
+
   if (approvalStatus && !['approved', 'rejected', 'suspended', 'pending'].includes(approvalStatus)) {
     return next(new AppError('Invalid approval status.', 400));
   }
@@ -294,7 +363,7 @@ exports.updateVendorStatus = catchAsync(async (req, res, next) => {
   if (!vendor) return next(new AppError('Vendor not found', 404));
 
   // Update user role if approved
-  if (approvalStatus === 'approved') {
+  if (approvalStatus === 'approved' && vendor.user && vendor.user._id) {
     await User.findByIdAndUpdate(vendor.user._id, { role: 'vendor' });
   }
 
@@ -334,6 +403,11 @@ exports.updateVendorStatus = catchAsync(async (req, res, next) => {
   if (io) {
     io.emit('vendor_updated', { vendorId: vendor._id, status: approvalStatus });
     io.emit('featured_vendors_updated');
+    io.emit('auth-event', {
+      type: 'ADMIN_ACTION',
+      role: 'admin',
+      message: `Vendor profile ${approvalStatus}`
+    });
   }
 
   res.status(200).json({ status: 'success', data: { vendor } });
@@ -402,7 +476,7 @@ exports.saveBlog = catchAsync(async (req, res, next) => {
   if (id) {
     blog = await Blog.findById(id);
     if (!blog) return next(new AppError('Blog not found', 404));
-    
+
     blog.title = title;
     blog.content = content;
     blog.excerpt = excerpt || blog.excerpt;
@@ -410,7 +484,7 @@ exports.saveBlog = catchAsync(async (req, res, next) => {
     blog.category = category || blog.category;
     blog.tags = tags || blog.tags;
     blog.isPublished = isPublished !== undefined ? isPublished : blog.isPublished;
-    
+
     await blog.save();
   } else {
     blog = await Blog.create({
@@ -445,19 +519,19 @@ exports.deleteBlog = catchAsync(async (req, res, next) => {
 // @access  Private (Admin)
 exports.uploadAdminFile = catchAsync(async (req, res, next) => {
   if (!req.file) return next(new AppError('No file uploaded.', 400));
-  
+
   try {
     const b64 = Buffer.from(req.file.buffer).toString('base64');
     const dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
-    
+
     // Leverage top-level destructured cloudinary import and apply automatic compression transformations
-    const result = await cloudinary.uploader.upload(dataURI, { 
+    const result = await cloudinary.uploader.upload(dataURI, {
       folder: 'admin_uploads',
       transformation: [
         { quality: 'auto', fetch_format: 'auto' } // Direct Cloudinary compression & delivery optimization
       ]
     });
-    
+
     console.log('✅ Blog image uploaded to Cloudinary successfully:', result.secure_url);
     res.status(200).json({ status: 'success', url: result.secure_url });
   } catch (error) {
@@ -472,7 +546,7 @@ exports.uploadAdminFile = catchAsync(async (req, res, next) => {
 exports.getAllReviews = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 20 } = req.query;
   const { Review } = require('../models/index');
-  
+
   const total = await Review.countDocuments();
   const reviews = await Review.find()
     .populate('user', 'name email avatar')
@@ -482,10 +556,10 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
     .skip((page - 1) * limit)
     .limit(Number(limit));
 
-  res.status(200).json({ 
-    status: 'success', 
-    reviews, 
-    pagination: { total, page: Number(page), pages: Math.ceil(total / limit) } 
+  res.status(200).json({
+    status: 'success',
+    reviews,
+    pagination: { total, page: Number(page), pages: Math.ceil(total / limit) }
   });
 });
 
@@ -495,7 +569,7 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
 exports.getAllServicesAdmin = catchAsync(async (req, res, next) => {
   const { Service } = require('../models/index');
   const { status } = req.query;
-  
+
   const query = {};
   if (status && status !== 'all') {
     query.status = status;
@@ -583,7 +657,7 @@ exports.updateServiceStatusAdmin = catchAsync(async (req, res, next) => {
     const message = status === 'approved'
       ? `Your service "${service.title}" has been approved and is now live.`
       : `Your service "${service.title}" has been rejected.`;
-    
+
     await sendNotification({
       recipient: service.vendor.user._id,
       sender: req.user._id,
@@ -599,6 +673,11 @@ exports.updateServiceStatusAdmin = catchAsync(async (req, res, next) => {
   if (io) {
     io.emit('service_updated', { id: service._id, status: service.status });
     io.emit('featured_vendors_updated');
+    io.emit('auth-event', {
+      type: 'ADMIN_ACTION',
+      role: 'admin',
+      message: `Service ${status}`
+    });
   }
 
   if (status === 'approved') {
@@ -656,8 +735,8 @@ exports.approveServiceAdmin = catchAsync(async (req, res, next) => {
       const template = emailTemplates.serviceApproved
         ? emailTemplates.serviceApproved(service.vendor.user.name, service.title, clientUrl)
         : {
-            subject: '🎉 Your Service Has Been Approved — ShaadiSaathi',
-            html: `
+          subject: '🎉 Your Service Has Been Approved — ShaadiSaathi',
+          html: `
               <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#fff">
                 <div style="background:linear-gradient(135deg,#c41e6b,#e91e8c);padding:40px;text-align:center">
                   <h1 style="color:white;margin:0;font-size:28px">💒 ShaadiSaathi</h1>
@@ -672,7 +751,7 @@ exports.approveServiceAdmin = catchAsync(async (req, res, next) => {
                 </div>
                 <div style="background:#f8f8f8;padding:20px;text-align:center;color:#999;font-size:12px">© 2024 ShaadiSaathi</div>
               </div>`,
-          };
+        };
       await sendEmail({ to: service.vendor.user.email, ...template });
       console.log('[SMTP] Service approval email sent to:', service.vendor.user.email);
     } catch (mailErr) {
@@ -685,6 +764,11 @@ exports.approveServiceAdmin = catchAsync(async (req, res, next) => {
   if (io) {
     io.emit('service_updated', { id: service._id, status: service.status });
     io.emit('featured_vendors_updated');
+    io.emit('auth-event', {
+      type: 'ADMIN_ACTION',
+      role: 'admin',
+      message: `Service approved`
+    });
   }
 
   console.log('SERVICE APPROVED');
@@ -796,8 +880,8 @@ exports.updateConfigAdmin = catchAsync(async (req, res, next) => {
   }
 
   const allowedUpdates = [
-    'siteName', 'contactEmail', 'maintenanceMode', 
-    'enableRegistration', 'platformFee', 'minPayout', 
+    'siteName', 'contactEmail', 'maintenanceMode',
+    'enableRegistration', 'platformFee', 'minPayout',
     'showContactAfterBookingOnly'
   ];
 
@@ -808,10 +892,66 @@ exports.updateConfigAdmin = catchAsync(async (req, res, next) => {
   });
 
   await config.save();
-
-  res.status(200).json({
-    status: 'success',
-    message: 'System configuration updated successfully',
-    data: config
-  });
-});
+ 
+   res.status(200).json({
+     status: 'success',
+     message: 'System configuration updated successfully',
+     data: config
+   });
+ });
+ 
+ // @desc    Get all vendor subscriptions (Admin)
+ // @route   GET /api/admin/subscriptions
+ // @access  Private (Admin)
+ exports.getSubscriptionsAdmin = catchAsync(async (req, res, next) => {
+   const vendors = await Vendor.find()
+     .select('businessName email approvalStatus subscription')
+     .populate('user', 'name email')
+     .lean();
+ 
+   res.status(200).json({
+     status: 'success',
+     data: vendors
+   });
+ });
+ 
+ // @desc    Update / Manage Vendor Subscription (Admin)
+ // @route   PATCH /api/admin/vendors/:id/subscription
+ // @access  Private (Admin)
+ exports.updateVendorSubscriptionAdmin = catchAsync(async (req, res, next) => {
+   const { plan, action } = req.body;
+   const vendor = await Vendor.findById(req.params.id);
+ 
+   if (!vendor) {
+     return next(new AppError('No vendor found with that ID', 404));
+   }
+ 
+   // Handle actions
+   if (action === 'suspend') {
+     vendor.subscription.status = 'suspended';
+     vendor.subscription.isActive = false;
+   } else if (action === 'renew' || action === 'upgrade') {
+     if (!plan || !['free', 'premium', 'elite', 'silver', 'gold', 'platinum'].includes(plan.toLowerCase())) {
+       return next(new AppError('Invalid subscription plan specified', 400));
+     }
+     const normalizedPlan = plan.toLowerCase();
+     const days = normalizedPlan === 'elite' || normalizedPlan === 'platinum' ? 365 : normalizedPlan === 'free' ? 36500 : 30;
+     
+     vendor.subscription.plan = normalizedPlan;
+     vendor.subscription.status = 'active';
+     vendor.subscription.startDate = new Date();
+     vendor.subscription.endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+     vendor.subscription.paymentStatus = 'paid';
+     vendor.subscription.isActive = true;
+   } else {
+     return next(new AppError('Invalid action specified', 400));
+   }
+ 
+   await vendor.save();
+ 
+   res.status(200).json({
+     status: 'success',
+     message: `Subscription successfully updated to ${vendor.subscription.plan} (${vendor.subscription.status})`,
+     data: vendor
+   });
+ });

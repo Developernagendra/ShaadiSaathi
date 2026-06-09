@@ -21,6 +21,9 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 // Activate keep-alive mechanism
 require("./keepAlive");
 
+// Initialize Campaign Scheduler
+const initCampaignScheduler = require('./utils/campaignScheduler');
+initCampaignScheduler();
 const app = express();
 const server = http.createServer(app);
 
@@ -61,13 +64,13 @@ const corsOptions = {
     if (!origin) {
       return callback(null, true);
     }
-    
+
     // Check if the origin matches local, CLIENT_URL, or any Vercel domain
-    const isAllowed = allowedOrigins.includes(origin) || 
-                      origin.endsWith('.vercel.app') ||
-                      /https:\/\/shaadi-saathi(-[a-z0-9-]+)?\.vercel\.app/.test(origin) ||
-                      /https:\/\/shaadisaathi(-[a-z0-9-]+)?\.vercel\.app/.test(origin);
-    
+    const isAllowed = allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      /https:\/\/shaadi-saathi(-[a-z0-9-]+)?\.vercel\.app/.test(origin) ||
+      /https:\/\/shaadisaathi(-[a-z0-9-]+)?\.vercel\.app/.test(origin);
+
     if (isAllowed) {
       callback(null, true);
     } else {
@@ -110,36 +113,17 @@ app.use(mongoSanitize());
 app.use(xss());
 
 /* ---------------- RESPONSE STANDARDIZER MIDDLEWARE ---------------- */
+// Adds a top-level `success` field without mutating existing keys.
+// This preserves backward compatibility for all existing frontend consumers.
 app.use((req, res, next) => {
   const originalJson = res.json;
   res.json = function (body) {
-    if (body && typeof body === 'object') {
-      // Must check res.statusCode < 400 to prevent false-successes on errors
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
       const isSuccess = res.statusCode < 400 && body.success !== false && body.status !== 'fail' && body.status !== 'error';
-
-      const standardizedBody = {};
-      if (isSuccess) {
-        standardizedBody.success = true;
-        if ('data' in body) {
-          standardizedBody.data = body.data;
-        } else {
-          standardizedBody.data = body;
-        }
-        standardizedBody.message = body.message || 'Operation successful';
-
-        // Merge remaining keys to preserve backward compatibility (e.g. results, cabs, bookings)
-        Object.assign(standardizedBody, body);
-        standardizedBody.success = true;
-      } else {
-        standardizedBody.success = false;
-        standardizedBody.data = body.data !== undefined ? body.data : null;
-        standardizedBody.message = body.message || 'Operation failed';
-
-        Object.assign(standardizedBody, body);
-        standardizedBody.success = false;
+      // Only inject `success` if not already set — avoids double-nesting
+      if (!('success' in body)) {
+        body.success = isSuccess;
       }
-
-      return originalJson.call(this, standardizedBody);
     }
     return originalJson.call(this, body);
   };
@@ -147,11 +131,25 @@ app.use((req, res, next) => {
 });
 
 /* ---------------- RATE LIMIT ---------------- */
+// General API rate limit — generous but protects against floods
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5000
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'development' ? 5000 : 300, // Higher limit in development
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes.' }
 });
 app.use(limiter);
+
+// Strict auth rate limit — prevent brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit in development
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many authentication attempts. Please try again after 15 minutes.' },
+  skip: (req) => req.path === '/test-email' || req.path === '/resend-verification' || process.env.NODE_ENV === 'development' // allow resend and skip in dev
+});
 
 /* ---------------- HEALTH ROUTES ---------------- */
 app.get("/", (req, res) => {
@@ -179,7 +177,7 @@ app.get("/api/health", (req, res) => {
 const { testEmail } = require("./controllers/authController");
 app.get("/api/test-email", testEmail);
 
-app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/auth", authLimiter, require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/vendors", require("./routes/vendorRoutes"));
 app.use("/api/vendor", require("./routes/vendorRoutes"));
@@ -195,6 +193,8 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/features", require("./routes/featureRoutes"));
 app.use("/api/availability", require("./routes/availabilityRoutes"));
+app.use("/api/offers", require("./routes/offerRoutes"));
+app.use("/api/newsletter", require("./routes/newsletterRoutes"));
 
 /* ---------------- 404 ---------------- */
 app.use("*", (req, res) => {
@@ -351,17 +351,18 @@ const startServer = async () => {
       let admin = await User.findOne({ email: adminEmail }).select('+password');
 
       if (!admin) {
+        const adminPass = process.env.ADMIN_PASS || 'Admin@123';
         console.log('⏳ Default admin not found. Seeding admin user...');
         await User.create({
           name: 'System Admin',
           email: adminEmail,
-          password: 'Admin@123',
+          password: adminPass,
           role: 'admin',
           isVerified: true,
           isEmailVerified: true,
           isActive: true
         });
-        console.log('✅ Default admin seeded successfully: admin@shaadisaathi.com / Admin@123');
+        console.log(`✅ Default admin seeded successfully. Use ADMIN_PASS env var to set password.`);
       } else {
         let needsUpdate = false;
         if (admin.role !== 'admin') {
@@ -372,9 +373,11 @@ const startServer = async () => {
           admin.isActive = true;
           needsUpdate = true;
         }
-        const isPasswordCorrect = await admin.comparePassword('Admin@123');
-        if (!isPasswordCorrect) {
-          admin.password = 'Admin@123';
+        const adminPass = process.env.ADMIN_PASS || 'Admin@123';
+        const isPasswordCorrect = await admin.comparePassword(adminPass);
+        if (!isPasswordCorrect && process.env.ADMIN_PASS) {
+          // Only auto-update password if ADMIN_PASS env var is explicitly set
+          admin.password = adminPass;
           needsUpdate = true;
         }
 
@@ -396,7 +399,8 @@ const startServer = async () => {
           { isApproved: { $exists: false } },
           { isActive: { $exists: false } },
           { vendorId: { $exists: false } },
-          { category: { $exists: false } }
+          { category: { $exists: false } },
+          { status: 'pending' }
         ]
       });
 
@@ -404,6 +408,10 @@ const startServer = async () => {
         console.log(`⏳ Normalizing ${cabsToNormalize.length} fleet vehicles in the database...`);
         for (const cab of cabsToNormalize) {
           try {
+            if (cab.status === 'pending') {
+              cab.status = 'approved';
+              cab.isAvailable = true;
+            }
             await cab.save({ validateBeforeSave: false });
           } catch (e) {
             console.error(`⚠️ Failed to normalize cab ${cab._id}:`, e.message);

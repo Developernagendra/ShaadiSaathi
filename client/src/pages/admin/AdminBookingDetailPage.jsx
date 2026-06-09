@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchAdminBookingById, updateBookingStatus, updateCabBookingStatus } from '../../store/slices/bookingSlice'
 import { formatPrice, formatDate, getStatusColor } from '../../utils/helpers'
-import { FiArrowLeft, FiUser, FiBriefcase, FiGrid, FiMapPin, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle, FiPlus } from 'react-icons/fi'
+import { FiArrowLeft, FiUser, FiBriefcase, FiGrid, FiMapPin, FiCalendar, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle, FiPlus, FiGlobe, FiInstagram, FiFacebook, FiYoutube, FiMessageCircle, FiMail } from 'react-icons/fi'
 import { toast } from 'react-hot-toast'
 
 export default function AdminBookingDetailPage() {
@@ -100,10 +100,10 @@ export default function AdminBookingDetailPage() {
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Main Info Blocks */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Section 1: Customer Details */}
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
               <h3 className="font-display text-lg font-black text-gray-900 mb-6 flex items-center gap-3 border-b border-gray-50 pb-4">
@@ -148,13 +148,55 @@ export default function AdminBookingDetailPage() {
               </div>
             </div>
 
-            {/* Section 3: Service Details */}
+            {/* Section 2.5: Vendor Digital Presence */}
+            {(b.vendorProfileId?.socialLinks || b.vendorProfileId?.website) && (
+              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+                <h3 className="font-display text-lg font-black text-gray-900 mb-6 flex items-center gap-3 border-b border-gray-50 pb-4">
+                  <span className="w-9 h-9 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center"><FiGlobe size={18} /></span>
+                  Vendor Digital Presence
+                </h3>
+                <div className="flex flex-wrap gap-4">
+                  {(b.vendorProfileId?.socialLinks?.website || b.vendorProfileId?.website) && (
+                    <a href={b.vendorProfileId?.socialLinks?.website || b.vendorProfileId?.website} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-gray-700 font-bold text-sm shadow-sm hover:shadow-md">
+                      <FiGlobe className="text-gray-500" size={18} /> Website
+                    </a>
+                  )}
+                  {b.vendorProfileId?.socialLinks?.instagram && (
+                    <a href={b.vendorProfileId.socialLinks.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-pink-50 hover:bg-pink-100 border border-pink-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-pink-700 font-bold text-sm shadow-sm hover:shadow-md">
+                      <FiInstagram className="text-pink-500" size={18} /> Instagram
+                    </a>
+                  )}
+                  {b.vendorProfileId?.socialLinks?.facebook && (
+                    <a href={b.vendorProfileId.socialLinks.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-blue-700 font-bold text-sm shadow-sm hover:shadow-md">
+                      <FiFacebook className="text-blue-500" size={18} /> Facebook
+                    </a>
+                  )}
+                  {b.vendorProfileId?.socialLinks?.youtube && (
+                    <a href={b.vendorProfileId.socialLinks.youtube} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-red-700 font-bold text-sm shadow-sm hover:shadow-md">
+                      <FiYoutube className="text-red-500" size={18} /> YouTube
+                    </a>
+                  )}
+                  {(b.vendor?.phone || b.vendorProfileId?.phone) && (
+                    <a href={`https://wa.me/${(b.vendor?.phone || b.vendorProfileId?.phone || '').replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-green-50 hover:bg-green-100 border border-green-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-green-700 font-bold text-sm shadow-sm hover:shadow-md">
+                      <FiMessageCircle className="text-green-500" size={18} /> WhatsApp
+                    </a>
+                  )}
+                  {(b.vendor?.email || b.vendorProfileId?.email) && (
+                    <a href={`mailto:${b.vendor?.email || b.vendorProfileId?.email}`} className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-5 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 text-gray-700 font-bold text-sm shadow-sm hover:shadow-md">
+                      <FiMail className="text-gray-500" size={18} /> Email Contact
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Section 3: Booking Item Details */}
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
               <h3 className="font-display text-lg font-black text-gray-900 mb-6 flex items-center gap-3 border-b border-gray-50 pb-4">
                 <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><FiGrid size={18} /></span>
                 Service details
               </h3>
-              
+
               {b.bookingType === 'cab' || b.bookingType === 'baraat-cab' ? (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
@@ -172,16 +214,16 @@ export default function AdminBookingDetailPage() {
                     </div>
                   </div>
 
-                  {b.vehicles && b.vehicles.length > 0 && (
+                  {(b.fleetSelection?.length > 0 || b.vehicles?.length > 0) && (
                     <div className="mt-6 border-t border-gray-50 pt-6">
                       <p className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">Booked Fleet Vehicles</p>
                       <div className="space-y-3">
-                        {b.vehicles.map((v, idx) => (
+                        {(b.fleetSelection || b.vehicles).map((v, idx) => (
                           <div key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl">
                             <div>
-                              <p className="font-bold text-gray-800 text-sm">{v.vehicleType === 'bundle_vehicle' ? 'Fleet Bundle Vehicle' : v.vehicleType}</p>
+                              <p className="font-bold text-gray-800 text-sm">{v.name || v.vehicleType || 'Fleet Vehicle'}</p>
                               <p className="text-xs text-gray-400">
-                                Count: {v.count} {v.pricePerVehicle > 0 ? `x ${formatPrice(v.pricePerVehicle)}` : '(Included in Bundle)'}
+                                Count: {v.count} {v.pricePerVehicle > 0 ? `x ${formatPrice(v.pricePerVehicle)}` : ''}
                               </p>
                             </div>
                             <span className="font-display font-black text-gray-900 text-sm">{v.totalFare > 0 ? formatPrice(v.totalFare) : ''}</span>
@@ -234,7 +276,7 @@ export default function AdminBookingDetailPage() {
                 <span className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><FiCalendar size={18} /></span>
                 Event & Venue details
               </h3>
-              
+
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
                   <div>
@@ -279,7 +321,7 @@ export default function AdminBookingDetailPage() {
 
           {/* Action & Status Box (Sidebar) */}
           <div className="space-y-6">
-            
+
             {/* Section 5: Booking Status & Action Controls */}
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 space-y-6">
               <h3 className="font-display text-base font-black text-gray-900 pb-4 border-b border-gray-50">

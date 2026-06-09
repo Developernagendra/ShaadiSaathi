@@ -132,6 +132,7 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -164,4 +165,33 @@
   background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
   transform: skewX(-25deg);
   animation: gold-shine 3s infinite;
+}
+
+/* ===== MISSING UTILITY CLASSES — Required by vendor/user dashboards ===== */
+
+/* Fade-in animation used by most page components */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+/* Scrollbar-hide used by Sidebar and carousels */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Glass-panel used in Vendor dashboards */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Font-display alias (maps to serif heading stack) */
+.font-display {
+  font-family: 'Playfair Display', 'Cormorant Garamond', serif;
 }

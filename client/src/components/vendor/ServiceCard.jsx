@@ -17,8 +17,8 @@ export default function ServiceCard({ service, onPreview }) {
   const isVerified = service.vendor?.isVerified || service.rating?.average >= 4.0;
 
   return (
-    <div 
-      onClick={() => onPreview ? onPreview(service) : navigate(`/services/${service._id}`)}
+    <div
+      onClick={() => onPreview ? onPreview(service) : navigate(`/service/${service._id}`)}
       tabIndex={0}
       role="button"
       aria-label={`View details for ${service.title}`}
@@ -41,13 +41,25 @@ export default function ServiceCard({ service, onPreview }) {
 
         <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
           {service.category && (
-            <span className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-[#D4AF37] shadow-lg border border-[#D4AF37]/20 flex items-center gap-1.5">
+            <span className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-[#D4AF37] shadow-lg border border-[#D4AF37]/20 flex items-center gap-1.5 w-fit">
               {service.category.name}
+            </span>
+          )}
+          {service.vendor?.subscription?.plan === 'elite' && service.vendor?.subscription?.status === 'active' && (
+            <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect w-fit select-none">
+              <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
+              <span>👑 Elite Partner</span>
+            </span>
+          )}
+          {service.vendor?.subscription?.plan === 'premium' && service.vendor?.subscription?.status === 'active' && (
+            <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect w-fit select-none">
+              <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
+              <span>⭐ Featured Partner</span>
             </span>
           )}
         </div>
 
-        {isVerified && (
+        {isVerified && !['premium', 'elite'].includes(service.vendor?.subscription?.plan) && (
           <div className="absolute top-4 right-4 z-20 bg-green-500 text-white p-2 rounded-full shadow-lg shadow-green-500/40" title="Verified Vendor">
             <FiCheckCircle size={16} strokeWidth={3} />
           </div>
@@ -76,12 +88,12 @@ export default function ServiceCard({ service, onPreview }) {
               </div>
             )}
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
             <span className="flex items-center gap-1.5"><FiMapPin className="text-[#D4AF37]" size={14} /> {service.city}</span>
             {service.duration && <span className="flex items-center gap-1.5"><FiClock className="text-[#D4AF37]" size={14} /> {service.duration}</span>}
           </div>
-          
+
           <p className="text-gray-500 text-sm font-medium italic line-clamp-2 leading-relaxed">
             {service.description}
           </p>
@@ -93,16 +105,16 @@ export default function ServiceCard({ service, onPreview }) {
             <p className="text-2xl font-display font-black text-[#D4AF37] mt-0.5">{formatPrice(service.startingPrice || service.price)}</p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/services/${service._id}`);
+                navigate(`/service/${service._id}`);
               }}
               className="flex-1 sm:flex-none bg-gray-50 text-gray-600 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-gray-100 transition-all text-center"
             >
               View Profile
             </button>
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/book-service/${service._id}`);

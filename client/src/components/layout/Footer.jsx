@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FiInstagram, FiFacebook, FiYoutube, FiTwitter, FiMail, FiPhone, FiMapPin, 
-  FiArrowRight, FiArrowUp, FiCamera, FiMusic, FiHeart, FiStar, FiShield
+  FiArrowRight, FiArrowUp, FiCamera, FiMusic, FiHeart, FiStar, FiShield, FiLoader, FiCheckCircle, FiCheck
 } from 'react-icons/fi'
 import { FaWhatsapp, FaCcVisa, FaCcMastercard, FaPaypal } from 'react-icons/fa'
 import { LuCar, LuUtensils, LuPaintbrush } from 'react-icons/lu'
@@ -24,6 +24,28 @@ export default function Footer() {
   })
 
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault()
+    if (!email) {
+      setError('Please enter a valid email address.')
+      return
+    }
+    setStatus('loading')
+    setError('')
+    
+    try {
+      await api.post('/newsletter/subscribe', { email })
+      setStatus('success')
+      setEmail('')
+    } catch (err) {
+      setStatus('error')
+      setError(err.message || 'Something went wrong. Please try again.')
+    }
+  }
 
   useEffect(() => {
     const fetchContact = async () => {
@@ -62,7 +84,7 @@ export default function Footer() {
   const quickLinks = [
     { to: '/', label: 'Home' },
     { to: '/services', label: 'Vendors' },
-    { to: '/cab-booking', label: 'Baraat Cabs' },
+    { to: '/baraat-cabs', label: 'Baraat Cabs' },
     { to: '/ai-planner', label: 'AI Planner' },
     { to: '/budget-calculator', label: 'Budget Planner' },
     { to: '/about', label: 'About Us' },
@@ -108,19 +130,91 @@ export default function Footer() {
               Get wedding updates, special offers, and premium vendor insights straight to your inbox.
             </p>
           </div>
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-4 shadow-2xl flex flex-col sm:flex-row gap-3 relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#C2185B] to-[#D4AF37] rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+          <form onSubmit={handleSubscribe} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row gap-3 relative group focus-within:border-[#D4AF37]/50 transition-colors">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#C2185B] to-[#D4AF37] rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 pointer-events-none"></div>
             <input 
               type="email" 
+              required
+              disabled={status === 'loading'}
+              value={email}
+              onChange={e => {setEmail(e.target.value); setError('')}}
               placeholder="Enter your email address"
               className="relative flex-1 bg-white/10 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/40 outline-none focus:bg-white/20 transition-all font-medium"
             />
-            <button className="relative bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:shadow-[0_0_20px_rgba(194,24,91,0.5)] transition-all flex items-center justify-center gap-2">
-              Subscribe <FiArrowRight />
+            <button 
+              type="submit" 
+              disabled={status === 'loading'}
+              className="relative bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:shadow-[0_0_20px_rgba(194,24,91,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-70 overflow-hidden"
+            >
+              {status === 'loading' ? (
+                <><FiLoader className="animate-spin text-lg" /> SUBSCRIBING...</>
+              ) : status === 'error' ? (
+                'TRY AGAIN'
+              ) : (
+                <>SUBSCRIBE <FiArrowRight className="group-hover:translate-x-1 transition-transform" /></>
+              )}
             </button>
-          </div>
+            {error && <p className="absolute -bottom-8 left-6 text-red-400 text-sm font-bold animate-pulse">{error}</p>}
+          </form>
         </div>
       </div>
+
+      {/* ── Success Modal ── */}
+      <AnimatePresence>
+        {status === 'success' && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setStatus('idle')}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] border border-[#D4AF37]/30 rounded-3xl p-8 md:p-12 max-w-md w-full shadow-[0_30px_100px_rgba(212,175,55,0.15)] text-center overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#C2185B]/10 rounded-full blur-[80px] pointer-events-none -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#D4AF37]/10 rounded-full blur-[80px] pointer-events-none translate-y-1/2 -translate-x-1/2" />
+              
+              <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-400 text-4xl shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>
+                  <FiCheckCircle />
+                </motion.div>
+              </div>
+
+              <h3 className="text-3xl font-display font-black text-white mb-2">🎉 Thank You!</h3>
+              <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-8">Subscription Successful</p>
+              
+              <div className="space-y-4 text-left bg-white/5 border border-white/10 rounded-2xl p-6 mb-8">
+                <p className="text-gray-300 font-medium text-sm mb-4">You will now receive:</p>
+                <ul className="space-y-3">
+                  {['Wedding Planning Tips', 'Premium Vendor Offers', 'Baraat Cab Deals', 'Exclusive Updates'].map((item, i) => (
+                    <motion.li 
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + (i * 0.1) }}
+                      className="flex items-center gap-3 text-white/80 text-sm font-medium"
+                    >
+                      <FiCheck className="text-emerald-400 shrink-0" /> {item}
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+
+              <button 
+                onClick={() => setStatus('idle')}
+                className="w-full bg-white text-black py-4 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-200 transition-colors"
+              >
+                Continue Exploring
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ── Main Footer ── */}
       <div className="max-w-7xl mx-auto px-4 py-20 relative z-10">

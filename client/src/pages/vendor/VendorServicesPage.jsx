@@ -70,109 +70,111 @@ const ServiceCard = memo(({ service, onEdit, onDelete, onView }) => {
   }, [service.status]);
 
   return (
-    <div className="group bg-white rounded-[2.5rem] shadow-premium hover:shadow-premium-hover border border-gray-100 hover:border-[#D4AF37]/35 overflow-hidden transition-all duration-300 flex flex-col justify-between h-auto md:h-[510px]">
+    <div className="group bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white hover:border-[#D4AF37]/30 overflow-hidden transition-all duration-500 flex flex-col justify-between h-auto md:h-[510px] relative hover:-translate-y-1">
+      {/* Decorative Blur */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#D4AF37]/20 to-[#C2185B]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
       {/* Image & Header tags */}
-      <div className="h-52 relative overflow-hidden flex-shrink-0 bg-gray-50">
+      <div className="h-56 relative overflow-hidden flex-shrink-0 bg-gray-50/50 m-2 rounded-[2rem]">
         {imageUrl ? (
           <img
             src={imageUrl}
             loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
             alt={service.title}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
             <FiCamera size={36} />
-            <p className="text-[9px] font-black mt-2 uppercase tracking-widest italic">No Portfolio Media</p>
+            <p className="text-[9px] font-black mt-2 uppercase tracking-[0.2em] italic">No Portfolio Media</p>
           </div>
         )}
 
         {/* Category tag */}
         <div className="absolute top-4 left-4 z-10">
-          <span className="bg-white/95 backdrop-blur-md text-[9px] font-black uppercase text-amber-700 px-3.5 py-1.5 rounded-xl shadow-sm border border-amber-100/30 tracking-wider font-display">
+          <span className="bg-white/90 backdrop-blur-md text-[9px] font-black uppercase text-[#C2185B] px-4 py-2 rounded-xl shadow-sm border border-white/50 tracking-[0.2em] font-display">
             {service.category?.name || 'Uncategorized'}
           </span>
         </div>
 
         {/* Floating status */}
         <div className="absolute bottom-4 left-4 z-10">
-          <span className={`backdrop-blur-md text-[9px] font-black uppercase px-3 py-1.5 rounded-xl shadow-sm border ${statusLabel.color} tracking-wider`}>
+          <span className={`backdrop-blur-md text-[9px] font-black uppercase px-4 py-2 rounded-xl shadow-sm border ${statusLabel.color} tracking-[0.2em]`}>
             {statusLabel.text}
           </span>
         </div>
       </div>
 
       {/* Body content */}
-      <div className="p-6 flex-1 flex flex-col justify-between">
-        <div className="space-y-2">
+      <div className="p-6 flex-1 flex flex-col justify-between relative z-10">
+        <div className="space-y-3">
 
           {/* Location & Rating */}
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-400">
-            <span className="flex items-center gap-1">
-              <FiMapPin className="text-[#D4AF37]" size={12} /> {service.city || 'Pan India'}
+          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.1em] text-gray-400">
+            <span className="flex items-center gap-1.5 text-gray-500">
+              <FiMapPin className="text-[#D4AF37]" size={14} /> {service.city || 'Pan India'}
             </span>
             <span className="flex items-center gap-1">
-              <FiStar className="fill-amber-400 text-amber-400" size={12} />
-              <span className="text-gray-800 font-bold">{service.rating?.average || '4.8'}</span>
-              <span className="text-[10px] text-gray-400">({service.rating?.count || 12})</span>
+              <FiStar className="fill-[#D4AF37] text-[#D4AF37]" size={14} />
+              <span className="text-gray-900 font-bold">{service.rating?.average || '4.8'}</span>
+              <span className="text-[9px] text-gray-400">({service.rating?.count || 12})</span>
             </span>
           </div>
 
-          <h3 className="font-display font-black text-gray-900 text-lg leading-tight line-clamp-1 group-hover:text-primary-600 transition-colors">
+          <h3 className="font-display font-black text-gray-900 text-xl leading-tight line-clamp-2 group-hover:text-[#C2185B] transition-colors duration-300">
             {service.title}
           </h3>
 
-          <p className="text-gray-500 text-xs font-medium italic line-clamp-3 leading-relaxed">
+          <p className="text-gray-500 text-xs font-medium line-clamp-2 leading-relaxed">
             {service.description}
           </p>
         </div>
 
         {/* Pricing split */}
-        <div className="flex items-end justify-between pt-4 border-t border-gray-50 mt-4">
+        <div className="flex items-end justify-between pt-5 border-t border-gray-100/50 mt-5">
           <div>
-            <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">Base Rate</p>
-            <p className="text-2xl font-display font-black text-[#D4AF37] leading-none mt-1">
+            <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.2em]">Starting From</p>
+            <p className="text-2xl font-display font-black text-[#D4AF37] leading-none mt-1.5 drop-shadow-sm">
               {formatPrice(service.startingPrice)}
             </p>
           </div>
           <div className="text-right">
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1 rounded-lg">
-              <FiClock size={10} /> {service.duration || 'Full day'}
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-gray-500 bg-gray-50/50 border border-gray-100 px-3 py-1.5 rounded-xl shadow-sm">
+              <FiClock size={12} className="text-[#C2185B]" /> {service.duration || 'Full day'}
             </span>
           </div>
         </div>
       </div>
 
       {/* Action panel */}
-      <div className="px-6 pb-6 pt-2 grid grid-cols-4 gap-2 flex-shrink-0 border-t border-gray-50/50 bg-gray-50/10">
+      <div className="px-4 pb-4 pt-0 grid grid-cols-4 gap-3 flex-shrink-0 relative z-10">
         <button
           onClick={() => onView(service._id)}
           title="View Live Page"
-          className="py-3 bg-white hover:bg-amber-50 border border-gray-200 hover:border-[#D4AF37]/50 rounded-xl text-gray-600 hover:text-[#D4AF37] flex items-center justify-center transition-all shadow-sm active:scale-95"
+          className="py-3.5 bg-white hover:bg-gray-50 border border-gray-100 hover:border-gray-200 rounded-[1.2rem] text-gray-400 hover:text-gray-900 flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1"
         >
-          <FiEye size={14} />
+          <FiEye size={16} />
         </button>
         <button
           onClick={() => onEdit(service)}
           title="Edit Details"
-          className="py-3 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all shadow-sm active:scale-95"
+          className="py-3.5 bg-white hover:bg-blue-50 border border-gray-100 hover:border-blue-200 rounded-[1.2rem] text-gray-400 hover:text-blue-600 flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1"
         >
-          <FiEdit size={14} />
+          <FiEdit size={16} />
         </button>
         <button
           onClick={() => onEdit(service)} // Opens packages in form editor
           title="Manage Pricing Packages"
-          className="py-3 bg-white hover:bg-emerald-50 border border-gray-200 hover:border-emerald-300 rounded-xl text-gray-600 hover:text-emerald-600 flex items-center justify-center transition-all shadow-sm active:scale-95"
+          className="py-3.5 bg-white hover:bg-[#FFF8F0] border border-gray-100 hover:border-[#D4AF37]/30 rounded-[1.2rem] text-gray-400 hover:text-[#D4AF37] flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1"
         >
-          <FiLayers size={14} />
+          <FiLayers size={16} />
         </button>
         <button
           onClick={() => onDelete(service._id)}
           title="Delete Service"
-          className="py-3 bg-white hover:bg-red-50 border border-gray-200 hover:border-red-300 rounded-xl text-gray-600 hover:text-red-600 flex items-center justify-center transition-all shadow-sm active:scale-95"
+          className="py-3.5 bg-white hover:bg-rose-50 border border-gray-100 hover:border-rose-200 rounded-[1.2rem] text-gray-400 hover:text-rose-600 flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1"
         >
-          <FiTrash2 size={14} />
+          <FiTrash2 size={16} />
         </button>
       </div>
 
@@ -278,10 +280,10 @@ export default function VendorServicesPage() {
     const mockBookingsCount = services.reduce((acc, curr) => acc + (curr.bookingsCount || Math.floor((curr.startingPrice % 7) + 2)), 0);
 
     return [
-      { label: 'Total Services', value: total, desc: 'Created offerings', icon: <FiLayers size={18} />, color: 'text-amber-600', bg: 'bg-amber-50/60' },
-      { label: 'Active & Live', value: active, desc: 'Visible on storefront', icon: <FiCheckCircle size={18} />, color: 'text-emerald-600', bg: 'bg-emerald-50/60' },
-      { label: 'Pending Approval', value: pending, desc: 'Awaiting moderation', icon: <FiInfo size={18} />, color: 'text-indigo-600', bg: 'bg-indigo-50/60' },
-      { label: 'Total Bookings', value: mockBookingsCount, desc: 'Placements served', icon: <FiActivity size={18} />, color: 'text-pink-600', bg: 'bg-pink-50/60' },
+      { label: 'Total Services', value: total, desc: 'Created offerings', icon: <FiLayers size={20} />, color: 'text-gray-900', bg: 'bg-white shadow-sm border border-gray-100' },
+      { label: 'Active & Live', value: active, desc: 'Visible on storefront', icon: <FiCheckCircle size={20} />, color: 'text-green-600', bg: 'bg-[#F0FDF4] border border-green-100' },
+      { label: 'Pending Approval', value: pending, desc: 'Awaiting moderation', icon: <FiInfo size={20} />, color: 'text-amber-600', bg: 'bg-[#FFFBEB] border border-amber-100' },
+      { label: 'Total Bookings', value: mockBookingsCount, desc: 'Placements served', icon: <FiActivity size={20} />, color: 'text-[#C2185B]', bg: 'bg-[#FFF0F6] border border-pink-100' },
     ];
   }, [services]);
 
@@ -371,7 +373,7 @@ export default function VendorServicesPage() {
     e.preventDefault();
     setIsDragOver(false);
     const files = Array.from(e.dataTransfer.files);
-    
+
     // File validation
     const validFiles = files.filter(file => {
       const isImg = file.type.startsWith('image/');
@@ -526,7 +528,7 @@ export default function VendorServicesPage() {
   }, [])
 
   const handleViewLive = (id) => {
-    window.open(`/services/${id}`, '_blank');
+    window.open(`/service/${id}`, '_blank');
   };
 
   if (!vendor) return (
@@ -578,9 +580,12 @@ export default function VendorServicesPage() {
 
           <button
             onClick={() => handleOpenModal()}
-            className="bg-gray-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider py-4.5 px-8 rounded-2xl transition-all shadow-lg flex items-center gap-3 active:scale-95 self-start md:self-auto"
+            className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] hover:from-[#8E244D] hover:to-[#C2185B] text-white font-black text-[10px] uppercase tracking-[0.2em] py-4 px-8 rounded-full transition-all duration-300 shadow-[0_10px_30px_rgba(194,24,91,0.3)] hover:shadow-[0_15px_40px_rgba(194,24,91,0.5)] hover:-translate-y-1 flex items-center gap-3 active:scale-95 self-start md:self-auto group"
           >
-            <FiPlus size={18} className="text-[#D4AF37]" /> Add New Service
+            <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <FiPlus size={14} className="text-white" />
+            </span>
+            Add New Service
           </button>
         </div>
 
@@ -605,19 +610,19 @@ export default function VendorServicesPage() {
 
         {/* Search, Filter, and Sort Toolbar */}
         {!error && !loading && services.length > 0 && (
-          <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-6 border border-white shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] transition-all duration-500 flex flex-col lg:flex-row gap-5 items-center justify-between">
 
             {/* Search Input */}
             <div className="relative w-full lg:w-96">
-              <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#D4AF37]">
-                <FiSearch size={16} />
+              <span className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-[#D4AF37]">
+                <FiSearch size={18} />
               </span>
               <input
                 type="text"
                 placeholder="Search services by title, city..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-gray-50/50 border border-gray-100 focus:bg-white focus:border-amber-400 outline-none text-xs font-semibold text-gray-700 transition-all placeholder:text-gray-400"
+                className="w-full pl-14 pr-5 py-4 rounded-2xl bg-gray-50/50 border border-gray-100 focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] outline-none text-sm font-bold text-gray-900 transition-all placeholder:text-gray-400 placeholder:font-medium"
               />
             </div>
 
@@ -628,7 +633,7 @@ export default function VendorServicesPage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-gray-50/50 border border-gray-100 px-4 py-3 rounded-2xl font-semibold text-xs text-gray-600 outline-none focus:border-amber-400 cursor-pointer transition-colors"
+                className="bg-gray-50/50 border border-gray-100 px-5 py-4 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] cursor-pointer transition-all appearance-none"
               >
                 <option value="all">All Categories</option>
                 {(categories || [])?.map(c => (
@@ -640,7 +645,7 @@ export default function VendorServicesPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-gray-50/50 border border-gray-100 px-4 py-3 rounded-2xl font-semibold text-xs text-gray-600 outline-none focus:border-amber-400 cursor-pointer transition-colors"
+                className="bg-gray-50/50 border border-gray-100 px-5 py-4 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] cursor-pointer transition-all appearance-none"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active & Live</option>
@@ -652,7 +657,7 @@ export default function VendorServicesPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-gray-50/50 border border-gray-100 px-4 py-3 rounded-2xl font-semibold text-xs text-gray-600 outline-none focus:border-amber-400 cursor-pointer transition-colors"
+                className="bg-gray-50/50 border border-gray-100 px-5 py-4 rounded-2xl font-bold text-sm text-gray-900 outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] cursor-pointer transition-all appearance-none"
               >
                 <option value="latest">Sort: Latest Additions</option>
                 <option value="price_asc">Price: Low to High</option>
@@ -727,8 +732,8 @@ export default function VendorServicesPage() {
                       key={i}
                       onClick={() => load(i + 1)}
                       className={`w-12 h-12 rounded-2xl font-bold text-xs transition-all ${pagination.page === i + 1
-                          ? 'bg-[#D4AF37] text-white shadow-md'
-                          : 'bg-white text-gray-500 border border-gray-100 hover:border-amber-400 hover:text-amber-600'
+                        ? 'bg-[#D4AF37] text-white shadow-md'
+                        : 'bg-white text-gray-500 border border-gray-100 hover:border-amber-400 hover:text-amber-600'
                         }`}
                     >
                       {i + 1}
@@ -754,23 +759,23 @@ export default function VendorServicesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="md:col-span-2">
-              <label className="label text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Service Title *</label>
+              <label className="label text-[10px] font-black text-gray-400 mb-3 block uppercase tracking-[0.2em]">Service Title *</label>
               <input
                 required
                 value={form.title}
                 onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                 placeholder="e.g. Traditional Bridal Mehndi Artist"
-                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-sm font-semibold outline-none focus:bg-white focus:border-[#D4AF37] transition-all"
+                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-gray-900 text-sm font-bold outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all"
               />
             </div>
 
             <div>
-              <label className="label text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Category *</label>
+              <label className="label text-[10px] font-black text-gray-400 mb-3 block uppercase tracking-[0.2em]">Category *</label>
               <select
                 required
                 value={form.category}
                 onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-sm font-semibold outline-none focus:bg-white focus:border-[#D4AF37] transition-all cursor-pointer"
+                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-gray-900 text-sm font-bold outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all cursor-pointer appearance-none"
               >
                 <option value="">Select Category</option>
                 {(categories || [])?.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
@@ -778,53 +783,56 @@ export default function VendorServicesPage() {
             </div>
 
             <div>
-              <label className="label text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">City / Location *</label>
+              <label className="label text-[10px] font-black text-gray-400 mb-3 block uppercase tracking-[0.2em]">City / Location *</label>
               <input
                 required
                 value={form.city}
                 onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
-                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-sm font-semibold outline-none focus:bg-white focus:border-[#D4AF37] transition-all"
+                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-gray-900 text-sm font-bold outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="label text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Service Description *</label>
+            <label className="label text-[10px] font-black text-gray-400 mb-3 block uppercase tracking-[0.2em]">Service Description *</label>
             <textarea
               required
               rows={4}
               value={form.description}
               onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
               placeholder="Provide a detailed description of your professional work, equipment, features..."
-              className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-sm font-semibold outline-none focus:bg-white focus:border-[#D4AF37] transition-all resize-none leading-relaxed"
+              className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-gray-900 text-sm font-medium outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all resize-none leading-relaxed"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <label className="label text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Starting Price (₹) *</label>
+              <label className="label text-[10px] font-black text-gray-400 mb-3 block uppercase tracking-[0.2em]">Starting Price (₹) *</label>
               <input
                 type="number"
                 required
                 value={form.startingPrice}
                 onChange={e => setForm(p => ({ ...p, startingPrice: e.target.value }))}
-                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-base font-bold text-[#D4AF37] outline-none focus:bg-white focus:border-[#D4AF37] transition-all"
+                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-[#C2185B] text-base font-black outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all"
               />
             </div>
             <div>
-              <label className="label text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Duration (e.g. Per Event, Full Day)</label>
+              <label className="label text-[10px] font-black text-gray-400 mb-3 block uppercase tracking-[0.2em]">Duration (e.g. Per Event, Full Day)</label>
               <input
                 value={form.duration}
                 onChange={e => setForm(p => ({ ...p, duration: e.target.value }))}
-                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-sm font-semibold outline-none focus:bg-white focus:border-[#D4AF37] transition-all"
+                className="w-full px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-gray-900 text-sm font-bold outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all"
               />
             </div>
           </div>
 
           {/* Features Tag Input */}
-          <div className="bg-[#FAF8F5]/80 p-5 rounded-[2rem] border border-gray-100 space-y-4">
-            <label className="label text-[10px] font-black text-gray-500 uppercase tracking-widest">Highlights & Service Features</label>
-            <div className="flex gap-2">
+          <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white shadow-sm transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] space-y-5">
+            <label className="label text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="w-6 h-6 rounded-md bg-[#FFF8F0] text-[#D4AF37] flex items-center justify-center"><FiLayers size={12}/></span>
+              Highlights & Service Features
+            </label>
+            <div className="flex gap-3">
               <input
                 value={featureInput}
                 onChange={e => setFeatureInput(e.target.value)}
@@ -835,7 +843,7 @@ export default function VendorServicesPage() {
                   }
                 })())}
                 placeholder="Add highlight (e.g. Includes Trials)"
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-xs outline-none focus:border-[#D4AF37] bg-white"
+                className="flex-1 px-5 py-4 border border-gray-100 bg-gray-50/50 rounded-2xl text-gray-900 text-sm font-bold outline-none focus:bg-white focus:border-[#C2185B] focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all"
               />
               <button
                 type="button"
@@ -845,21 +853,21 @@ export default function VendorServicesPage() {
                     setFeatureInput('')
                   }
                 }}
-                className="bg-gray-900 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-black transition-colors"
+                className="bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-white w-14 h-[54px] rounded-2xl flex items-center justify-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
               >
-                <FiPlus size={16} />
+                <FiPlus size={20} />
               </button>
             </div>
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex flex-wrap gap-3 pt-2">
               {form.features?.map((f, i) => (
-                <span key={i} className="bg-white text-gray-700 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 border border-gray-200 shadow-sm">
+                <span key={i} className="bg-white text-gray-700 px-4 py-2 rounded-[1rem] text-[11px] font-black flex items-center gap-3 border border-gray-100 shadow-sm hover:border-[#D4AF37]/50 transition-colors">
                   {f}
-                  <button type="button" onClick={() => setForm(p => ({ ...p, features: p.features.filter((_, idx) => idx !== i) }))} className="text-gray-300 hover:text-red-500 transition-colors">
+                  <button type="button" onClick={() => setForm(p => ({ ...p, features: p.features.filter((_, idx) => idx !== i) }))} className="text-gray-300 hover:text-rose-500 transition-colors bg-gray-50 w-5 h-5 rounded-md flex items-center justify-center">
                     <FiX size={12} />
                   </button>
                 </span>
               ))}
-              {form.features.length === 0 && <p className="text-gray-400 text-xs italic">No highlights added yet.</p>}
+              {form.features.length === 0 && <p className="text-gray-400 text-xs italic font-medium">No highlights added yet.</p>}
             </div>
           </div>
 
@@ -867,11 +875,11 @@ export default function VendorServicesPage() {
           <div className="space-y-4">
             <label className="label text-[10px] font-black text-gray-400 uppercase tracking-widest block">Portfolio Media Showcase</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, 'image')}
-                onClick={() => fileInputRef.current?.click()} 
+                onClick={() => fileInputRef.current?.click()}
                 className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer text-[#D4AF37] hover:bg-amber-50/30 transition-all group border-2 border-dashed ${isDragOver ? 'border-[#D4AF37] bg-amber-50/50 scale-[1.02] shadow-md' : 'border-amber-200/40 bg-amber-50/20'}`}
               >
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
@@ -882,11 +890,11 @@ export default function VendorServicesPage() {
                   <span className="text-[9px] opacity-60">High quality JPG, PNG, WEBP files</span>
                 </div>
               </div>
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, 'video')}
-                onClick={() => videoInputRef.current?.click()} 
+                onClick={() => videoInputRef.current?.click()}
                 className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer text-blue-600 hover:bg-blue-50/30 transition-all group border-2 border-dashed ${isDragOver ? 'border-blue-500 bg-blue-50/50 scale-[1.02] shadow-md' : 'border-blue-200/40 bg-blue-50/20'}`}
               >
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
@@ -956,10 +964,10 @@ export default function VendorServicesPage() {
             </div>
           )}
 
-          <div className="flex gap-4 pt-8 sticky bottom-0 bg-white pb-2 border-t border-gray-100 mt-8">
-            <button type="button" onClick={() => setModal(false)} disabled={submitting} className="flex-1 py-4 border border-gray-200 hover:bg-gray-50 rounded-2xl font-bold text-xs uppercase tracking-wider text-gray-500 transition-colors">Cancel</button>
-            <button type="submit" disabled={submitting} className="flex-[2] py-4 bg-gray-900 hover:bg-black text-white rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-colors">
-              {submitting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing ({uploadProgress}%)...</> : editing ? 'Update Details' : 'Publish Service'}
+          <div className="flex gap-4 pt-8 sticky bottom-0 bg-white pb-4 border-t border-gray-100/50 mt-8">
+            <button type="button" onClick={() => setModal(false)} disabled={submitting} className="flex-1 py-5 bg-white border border-gray-100 hover:border-gray-200 hover:bg-gray-50 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] text-gray-500 transition-all shadow-sm">Cancel</button>
+            <button type="submit" disabled={submitting} className="flex-[2] py-5 bg-gradient-to-r from-[#C2185B] via-[#8E244D] to-[#C2185B] bg-[length:200%_auto] hover:bg-[100%_auto] text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(194,24,91,0.3)] hover:shadow-[0_15px_40px_rgba(194,24,91,0.5)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">
+              {submitting ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing ({uploadProgress}%)...</> : editing ? 'Update Details' : 'Publish Service'}
             </button>
           </div>
 

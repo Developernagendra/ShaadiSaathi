@@ -130,22 +130,28 @@ export default function VendorBlogsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+    <div className="pb-24 animate-fade-in relative max-w-7xl mx-auto px-4 md:px-8 pt-8">
+      <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
+      
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 relative z-10">
         <div>
-          <h1 className="font-display text-3xl font-black text-gray-900">Your <span className="text-primary-600">Journal</span></h1>
-          <p className="text-gray-500 text-sm italic mt-1 font-medium">Share your wedding expertise and inspirations with couples.</p>
+          <div className="divider-luxe !justify-start mb-3 !gap-3">
+            <div className="divider-line !bg-[#D4AF37]/30 !w-8" />
+            <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] italic">Business Insights</span>
+          </div>
+          <h1 className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Your <span className="bg-gradient-to-r from-[#C2185B] to-[#D4AF37] text-transparent bg-clip-text">Journal</span></h1>
+          <p className="text-gray-500 font-medium italic mt-2">Share your wedding expertise and inspirations with couples.</p>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="relative group flex-1 md:flex-none">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#C2185B] transition-colors" />
             <input 
               type="text"
               placeholder="Search articles..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="bg-white border border-gray-100 rounded-2xl py-3 pl-12 pr-6 text-sm font-medium focus:outline-none focus:border-primary-200 transition-all w-full md:w-64"
+              className="bg-white/80 backdrop-blur-md border border-white shadow-sm focus:border-[#D4AF37] rounded-full py-4 pl-12 pr-6 text-xs font-black uppercase tracking-widest text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#D4AF37] transition-all w-full md:w-64"
             />
           </div>
           <button 
@@ -155,43 +161,44 @@ export default function VendorBlogsPage() {
               setActiveTab('edit');
               setIsModalOpen(true) 
             }}
-            className="bg-primary-600 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-pink-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+            className="bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] text-white hover:from-[#D4AF37] hover:to-[#F4D03F] hover:text-black px-8 py-4 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-premium transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2"
           >
             <FiPlus size={16} /> New Post
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
         {loading ? (
           Array(3).fill(0).map((_, i) => (
-            <div key={i} className="h-64 bg-gray-50 animate-pulse rounded-3xl" />
+            <div key={i} className="h-80 bg-white/50 backdrop-blur-md animate-pulse rounded-[3rem]" />
           ))
         ) : filteredBlogs.map(b => (
-          <div key={b?._id} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-            <div className="h-48 overflow-hidden relative">
+          <div key={b?._id} className="bg-white/80 backdrop-blur-md rounded-[3rem] overflow-hidden border border-white shadow-premium hover:shadow-2xl transition-all duration-500 group hover:-translate-y-2 relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFF8F0] rounded-bl-full blur-2xl pointer-events-none" />
+            <div className="h-56 overflow-hidden relative m-4 rounded-[2.5rem]">
               {b?.coverImage ? (
-                <img src={optimizeImage(b.coverImage, 400)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                <img src={optimizeImage(b.coverImage, 400)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300 italic font-medium">No cover image</div>
               )}
-              <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${b?.isPublished ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+              <div className={`absolute top-4 right-4 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg backdrop-blur-md ${b?.isPublished ? 'bg-emerald-500/90 text-white' : 'bg-white/90 text-gray-400'}`}>
                 {b?.isPublished ? 'Live' : 'Draft'}
               </div>
             </div>
             <div className="p-8">
-              <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-3 block">{b?.category || 'General'}</span>
-              <h3 className="font-display text-xl font-black text-gray-900 mb-6 line-clamp-2 leading-tight">{b?.title || 'Untitled'}</h3>
+              <span className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-4 block">{b?.category || 'General'}</span>
+              <h3 className="font-display text-2xl font-black text-gray-900 mb-6 line-clamp-2 leading-tight">{b?.title || 'Untitled'}</h3>
               
-              <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">
+              <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                <div className="flex items-center gap-4 text-[9px] text-gray-400 font-black uppercase tracking-[0.2em] italic">
                   <span>{b?.createdAt ? formatDateShort(b.createdAt) : 'Recent'}</span>
-                  <span className="flex items-center gap-1"><FiEye /> {b?.views || 0}</span>
+                  <span className="flex items-center gap-1.5"><FiEye size={12} className="text-[#C2185B]" /> {b?.views || 0}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleEdit(b)} className="p-2.5 bg-gray-50 text-gray-400 hover:text-blue-500 rounded-xl transition-colors"><FiEdit2 size={16} /></button>
-                  <button onClick={() => handleDelete(b._id)} className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 rounded-xl transition-colors"><FiTrash2 size={16} /></button>
-                  <Link to={`/blog/${b?.slug}`} className="p-2.5 bg-gray-50 text-gray-400 hover:text-primary-600 rounded-xl transition-colors"><FiEye size={16} /></Link>
+                  <button onClick={() => handleEdit(b)} className="w-10 h-10 flex items-center justify-center bg-gray-50/50 hover:bg-[#FFF8F0] hover:text-[#D4AF37] text-gray-400 rounded-xl transition-all duration-300 shadow-sm"><FiEdit2 size={14} /></button>
+                  <button onClick={() => handleDelete(b._id)} className="w-10 h-10 flex items-center justify-center bg-gray-50/50 hover:bg-red-50 hover:text-red-500 text-gray-400 rounded-xl transition-all duration-300 shadow-sm"><FiTrash2 size={14} /></button>
+                  <Link to={`/blog/${b?.slug}`} className="w-10 h-10 flex items-center justify-center bg-gray-50/50 hover:bg-[#FFF8F0] hover:text-[#C2185B] text-gray-400 rounded-xl transition-all duration-300 shadow-sm"><FiEye size={14} /></Link>
                 </div>
               </div>
             </div>
@@ -200,67 +207,67 @@ export default function VendorBlogsPage() {
       </div>
 
       {!loading && filteredBlogs.length === 0 && (
-        <div className="py-24 text-center">
-          <div className="text-5xl mb-4">✍️</div>
-          <h3 className="text-xl font-black text-gray-900 mb-2">Ready to share your wisdom?</h3>
-          <p className="text-gray-400 text-sm italic mb-8">Click 'New Post' to start writing your first article.</p>
+        <div className="py-24 text-center bg-white/50 backdrop-blur-xl rounded-[4rem] border border-white shadow-premium mt-8 relative z-10">
+          <div className="w-24 h-24 bg-[#FFF8F0] rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner border border-[#D4AF37]/20">✍️</div>
+          <h3 className="font-display text-2xl font-black text-gray-900 mb-2">Ready to share your wisdom?</h3>
+          <p className="text-gray-500 font-medium italic mb-8 max-w-sm mx-auto">Click 'New Post' to start writing your first article.</p>
         </div>
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingBlog ? 'Edit Post' : 'New Inspiration'} size="4xl">
         {/* Tabs */}
-        <div className="flex items-center gap-8 px-12 border-b border-gray-100 bg-gray-50/30 relative z-10">
+        <div className="flex items-center gap-8 px-12 border-b border-gray-100 bg-[#FFF8F0]/30 relative z-10">
           <button 
             onClick={() => setActiveTab('edit')}
-            className={`py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative ${activeTab === 'edit' ? 'text-primary-600' : 'text-gray-400'}`}
+            className={`py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative ${activeTab === 'edit' ? 'text-[#C2185B]' : 'text-gray-400'}`}
           >
             Editor
-            {activeTab === 'edit' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary-600" />}
+            {activeTab === 'edit' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C2185B]" />}
           </button>
           <button 
             onClick={() => setActiveTab('preview')}
-            className={`py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative ${activeTab === 'preview' ? 'text-primary-600' : 'text-gray-400'}`}
+            className={`py-6 text-[10px] font-black uppercase tracking-[0.3em] transition-all relative ${activeTab === 'preview' ? 'text-[#C2185B]' : 'text-gray-400'}`}
           >
             Preview
-            {activeTab === 'preview' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary-600" />}
+            {activeTab === 'preview' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C2185B]" />}
           </button>
         </div>
 
-        <div className="p-8 relative z-10 overflow-y-auto max-h-[70vh]">
+        <div className="p-10 relative z-10 overflow-y-auto max-h-[75vh] custom-scrollbar">
           {activeTab === 'edit' ? (
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-10">
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 italic ml-1">Title</label>
-                  <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all font-display text-lg font-black shadow-inner" placeholder="Your amazing title..." />
+                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 italic ml-1">Title</label>
+                  <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-6 py-5 text-gray-900 placeholder-gray-300 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:bg-white transition-all font-display text-2xl font-black shadow-sm" placeholder="Your amazing title..." />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 italic ml-1">Excerpt</label>
-                  <textarea value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} rows={2} className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all font-bold shadow-inner" placeholder="Short description..." />
+                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 italic ml-1">Excerpt</label>
+                  <textarea value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} rows={2} className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:bg-white transition-all font-bold shadow-sm" placeholder="Short description..." />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 italic ml-1">Category</label>
-                  <input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} required className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all font-bold shadow-inner" placeholder="Planning, Fashion..." />
+                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 italic ml-1">Category</label>
+                  <input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} required className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:bg-white transition-all font-bold shadow-sm" placeholder="Planning, Fashion..." />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 italic ml-1">Tags (comma separated)</label>
-                  <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all font-bold shadow-inner" placeholder="trends, guide, inspiration" />
+                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 italic ml-1">Tags (comma separated)</label>
+                  <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder-gray-300 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:bg-white transition-all font-bold shadow-sm" placeholder="trends, guide, inspiration" />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 italic ml-1">Cover Image</label>
+                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 italic ml-1">Cover Image</label>
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1 relative group">
-                      <div className={`w-full h-40 rounded-2xl border-2 border-dashed ${form.coverImage ? 'border-primary-200' : 'border-gray-200'} flex flex-col items-center justify-center overflow-hidden bg-gray-50/50 transition-all`}>
+                      <div className={`w-full h-48 rounded-[2rem] border-2 border-dashed ${form.coverImage ? 'border-[#D4AF37]' : 'border-gray-200'} flex flex-col items-center justify-center overflow-hidden bg-gray-50/50 transition-all hover:bg-[#FFF8F0]/30`}>
                         {form.coverImage ? (
                           <img src={form.coverImage} className="w-full h-full object-cover" alt="" />
                         ) : (
                           <div className="text-center p-6">
-                            <FiImage size={32} className="text-gray-300 mx-auto mb-2" />
-                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Image</p>
+                            <FiImage size={32} className="text-[#D4AF37] mx-auto mb-3" />
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Select Cover Image</p>
                           </div>
                         )}
                         <input 
@@ -271,7 +278,7 @@ export default function VendorBlogsPage() {
                         />
                         {uploading && (
                           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
-                            <FiLoader className="animate-spin text-primary-600" size={24} />
+                            <FiLoader className="animate-spin text-[#C2185B]" size={24} />
                           </div>
                         )}
                       </div>
@@ -280,7 +287,7 @@ export default function VendorBlogsPage() {
                       <input 
                         value={form.coverImage}
                         onChange={e => setForm({ ...form, coverImage: e.target.value })}
-                        className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-[10px] font-bold text-gray-500 focus:ring-2 focus:ring-primary-500 transition-all shadow-inner"
+                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-[10px] font-bold text-gray-500 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:bg-white transition-all shadow-sm"
                         placeholder="Or paste URL..."
                       />
                     </div>
@@ -288,48 +295,49 @@ export default function VendorBlogsPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 italic ml-1">Content</label>
-                  <div className="quill-container">
+                  <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 italic ml-1">Content</label>
+                  <div className="quill-container border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm">
                     <ReactQuill 
                       theme="snow"
                       value={form.content}
                       onChange={val => setForm({ ...form, content: val })}
                       modules={quillModules}
-                      className="bg-white rounded-2xl overflow-hidden"
+                      className="bg-white"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 bg-gray-50 p-6 rounded-[2rem]">
+              <div className="flex items-center gap-6 bg-gray-50/50 p-6 rounded-[2rem] border border-gray-100/50">
                 <div className="relative inline-flex items-center cursor-pointer group" onClick={() => setForm({ ...form, isPublished: !form.isPublished })}>
-                  <div className={`w-14 h-8 rounded-full transition-all duration-300 relative ${form.isPublished ? 'bg-[#27ae60]' : 'bg-gray-200'}`}>
-                    <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${form.isPublished ? 'translate-x-6' : 'translate-x-0'} shadow-sm`} />
+                  <div className={`w-14 h-8 rounded-full transition-all duration-300 relative shadow-inner ${form.isPublished ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                    <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${form.isPublished ? 'translate-x-6' : 'translate-x-0'} shadow-md`} />
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-black text-gray-900 italic uppercase tracking-widest">Public Visibility</p>
-                  <p className="text-[10px] text-gray-400 font-bold italic uppercase tracking-widest mt-1">Make visible to everyone</p>
+                  <p className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1">Public Visibility</p>
+                  <p className="text-[10px] text-gray-500 font-medium italic">Make visible to everyone</p>
                 </div>
               </div>
             </form>
           ) : (
-            <div className="space-y-12 animate-fade-in">
-              <div className="relative h-[300px] rounded-[2rem] overflow-hidden shadow-xl">
+            <div className="space-y-12 animate-fade-in bg-white p-8 rounded-[3rem] shadow-sm border border-gray-50">
+              <div className="relative h-[400px] rounded-[2.5rem] overflow-hidden shadow-xl">
                 <img src={form.coverImage || 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80'} className="w-full h-full object-cover" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-8 left-8 right-8">
-                  <h2 className="font-display text-3xl font-black text-white leading-tight">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-10 left-10 right-10">
+                  <span className="bg-[#D4AF37] text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] mb-4 inline-block shadow-lg">{form.category || 'General'}</span>
+                  <h2 className="font-display text-4xl font-black text-white leading-tight">
                     {form.title || 'Untitled Article'}
                   </h2>
                 </div>
               </div>
-              <div className="max-w-2xl mx-auto">
-                <p className="text-xl text-gray-500 font-medium italic mb-8 border-l-4 border-primary-500 pl-6 py-2">
+              <div className="max-w-3xl mx-auto">
+                <p className="text-xl text-gray-600 font-medium italic mb-10 border-l-4 border-[#C2185B] pl-6 py-2 leading-relaxed bg-pink-50/30 rounded-r-2xl">
                   {form.excerpt || 'No excerpt.'}
                 </p>
                 <div 
-                  className="prose prose-pink max-w-none text-gray-700 leading-loose"
+                  className="prose prose-lg max-w-none prose-headings:font-display prose-headings:font-black prose-p:font-medium prose-p:text-gray-600 leading-loose"
                   dangerouslySetInnerHTML={{ __html: form.content || '<p className="text-gray-400 italic">No content yet...</p>' }}
                 />
               </div>
@@ -337,10 +345,10 @@ export default function VendorBlogsPage() {
           )}
         </div>
 
-        <div className="px-12 py-6 border-t border-gray-100 flex gap-4 bg-white/50 relative z-10">
-          <button type="button" onClick={() => handleSubmit(null, false)} disabled={uploading} className="flex-1 py-5 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-gray-900 hover:text-gray-900 transition-all italic disabled:opacity-50">Save Draft</button>
-          <button type="button" onClick={() => handleSubmit(null, true)} disabled={uploading} className="flex-[2] py-5 bg-primary-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-pink-100 hover:scale-[1.02] active:scale-95 transition-all italic flex items-center justify-center gap-2 disabled:opacity-50">
-            {uploading ? <FiLoader className="animate-spin" /> : <FiGlobe />} {editingBlog ? 'Update' : 'Publish'}
+        <div className="px-12 py-8 border-t border-gray-100 flex gap-4 bg-gray-50/50 relative z-10 rounded-b-3xl">
+          <button type="button" onClick={() => handleSubmit(null, false)} disabled={uploading} className="flex-1 py-5 bg-white border border-gray-200 text-gray-500 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] hover:border-gray-900 hover:text-gray-900 transition-all shadow-sm disabled:opacity-50 hover:-translate-y-0.5">Save Draft</button>
+          <button type="button" onClick={() => handleSubmit(null, true)} disabled={uploading} className="flex-[2] py-5 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] hover:from-[#D4AF37] hover:to-[#F4D03F] hover:text-black text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-premium hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+            {uploading ? <FiLoader className="animate-spin" /> : <FiGlobe />} {editingBlog ? 'Update Post' : 'Publish Post'}
           </button>
         </div>
       </Modal>

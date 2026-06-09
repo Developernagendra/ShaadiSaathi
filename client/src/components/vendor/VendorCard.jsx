@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toggleWishlist } from '../../store/slices/authSlice'
 import StarRating from '../common/StarRating'
 import { formatPrice, truncate } from '../../utils/helpers'
-import { FiHeart, FiMapPin, FiAward, FiCheck, FiArrowRight } from 'react-icons/fi'
+import { FiHeart, FiMapPin, FiAward, FiCheck, FiArrowRight, FiCheckCircle } from 'react-icons/fi'
 import { toast } from 'react-hot-toast'
 
 export default function VendorCard({ vendor }) {
@@ -83,8 +83,25 @@ export default function VendorCard({ vendor }) {
 
           {/* Overlay badges */}
           <div className="absolute top-5 left-5 flex flex-wrap gap-2 z-20">
-            {vendor.isFeatured && <span className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-lg shadow-xl backdrop-blur-md">⭐ Top Vendor</span>}
-            {vendor.isTrending && <span className="bg-white/90 backdrop-blur-md text-[#C2185B] text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-lg shadow-xl border border-pink-100">🔥 Trending</span>}
+            {vendor.subscription?.plan === 'elite' && vendor.subscription?.status === 'active' && (
+              <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none">
+                <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
+                <span>👑 Elite Partner</span>
+              </span>
+            )}
+            {vendor.subscription?.plan === 'premium' && vendor.subscription?.status === 'active' && (
+              <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none">
+                <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
+                <span>⭐ Featured Partner</span>
+              </span>
+            )}
+            {vendor.isFeatured && !['premium', 'elite'].includes(vendor.subscription?.plan) && (
+              <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none">
+                <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
+                <span>⭐ Top Vendor</span>
+              </span>
+            )}
+            {vendor.isTrending && <span className="bg-white/95 backdrop-blur-md text-[#C2185B] text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-lg shadow-xl border border-pink-200">🔥 Trending</span>}
           </div>
 
           {/* Wishlist Icon */}

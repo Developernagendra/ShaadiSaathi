@@ -77,9 +77,9 @@ export default function AdminRevenuePage() {
         new Date(t.createdAt).toLocaleDateString()
       ]);
 
-      const csvContent = "data:text/csv;charset=utf-8," 
+      const csvContent = "data:text/csv;charset=utf-8,"
         + [headers.join(','), ...rows.map(e => e.map(val => `"${val}"`).join(','))].join('\n');
-      
+
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
@@ -97,8 +97,8 @@ export default function AdminRevenuePage() {
     window.print();
   };
 
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-  
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
   // Format Month/Year from Backend Aggregate
   const rawChartData = useMemo(() => {
     if (!data?.monthlyBookings) return [];
@@ -113,7 +113,7 @@ export default function AdminRevenuePage() {
   const filteredChartData = useMemo(() => {
     let base = [...rawChartData];
     if (base.length === 0) return [];
-    
+
     // Adjust scale based on mock duration toggles
     if (timeRange === '7days') base = base.slice(-2);
     else if (timeRange === 'today') base = base.slice(-1);
@@ -123,7 +123,7 @@ export default function AdminRevenuePage() {
     return base.map(item => {
       let revenue = item.revenue;
       let bookings = item.bookings;
-      
+
       if (sourceFilter === 'service') {
         revenue = Math.round(item.revenue * 0.70);
         bookings = Math.round(item.bookings * 0.75);
@@ -146,10 +146,10 @@ export default function AdminRevenuePage() {
   // Compute 6 Top Summary metrics dynamically
   const stats = useMemo(() => {
     if (!data?.stats) return [];
-    
+
     let totalRev = data.stats.totalRevenue || 0;
     let totalBk = data.stats.totalBookings || 0;
-    
+
     if (sourceFilter === 'service') {
       totalRev = Math.round(totalRev * 0.70);
       totalBk = Math.round(totalBk * 0.75);
@@ -162,55 +162,55 @@ export default function AdminRevenuePage() {
     }
 
     const latestMonthRevenue = data.monthlyBookings?.[0]?.revenue || 0;
-    
+
     return [
-      { 
-        label: 'Total Revenue', 
-        value: formatPrice(totalRev), 
+      {
+        label: 'Total Revenue',
+        value: formatPrice(totalRev),
         desc: 'All-time platform earnings',
-        icon: <FiDollarSign size={20} />, 
-        color: 'text-amber-600', 
-        bg: 'bg-amber-50 border-amber-100/50' 
+        icon: <FiDollarSign size={20} />,
+        color: 'text-amber-600',
+        bg: 'bg-amber-50 border-amber-100/50'
       },
-      { 
-        label: 'Monthly Revenue', 
-        value: formatPrice(latestMonthRevenue), 
+      {
+        label: 'Monthly Revenue',
+        value: formatPrice(latestMonthRevenue),
         desc: 'Current month earnings',
-        icon: <FiTrendingUp size={20} />, 
-        color: 'text-indigo-600', 
-        bg: 'bg-indigo-50 border-indigo-100/50' 
+        icon: <FiTrendingUp size={20} />,
+        color: 'text-indigo-600',
+        bg: 'bg-indigo-50 border-indigo-100/50'
       },
-      { 
-        label: 'Total Bookings', 
-        value: totalBk, 
+      {
+        label: 'Total Bookings',
+        value: totalBk,
         desc: 'Placed platform reservations',
-        icon: <FiBriefcase size={20} />, 
-        color: 'text-emerald-600', 
-        bg: 'bg-emerald-50 border-emerald-100/50' 
+        icon: <FiBriefcase size={20} />,
+        color: 'text-emerald-600',
+        bg: 'bg-emerald-50 border-emerald-100/50'
       },
-      { 
-        label: 'Active Vendors', 
-        value: data.stats.totalVendors || 0, 
+      {
+        label: 'Active Vendors',
+        value: data.stats.totalVendors || 0,
         desc: 'Moderated profile listings',
-        icon: <FiUsers size={20} />, 
-        color: 'text-pink-600', 
-        bg: 'bg-pink-50 border-pink-100/50' 
+        icon: <FiUsers size={20} />,
+        color: 'text-pink-600',
+        bg: 'bg-pink-50 border-pink-100/50'
       },
-      { 
-        label: 'Pending Payments', 
-        value: data.stats.pendingPayments || 0, 
+      {
+        label: 'Pending Payments',
+        value: data.stats.pendingPayments || 0,
         desc: 'Awaiting admin verifications',
-        icon: <FiCreditCard size={20} />, 
-        color: 'text-rose-600', 
-        bg: 'bg-rose-50 border-rose-100/50' 
+        icon: <FiCreditCard size={20} />,
+        color: 'text-rose-600',
+        bg: 'bg-rose-50 border-rose-100/50'
       },
-      { 
-        label: 'Completed Orders', 
-        value: data.stats.completedBookings || 0, 
+      {
+        label: 'Completed Orders',
+        value: data.stats.completedBookings || 0,
         desc: 'Successfully served events',
-        icon: <FiCheckCircle size={20} />, 
-        color: 'text-teal-600', 
-        bg: 'bg-teal-50 border-teal-100/50' 
+        icon: <FiCheckCircle size={20} />,
+        color: 'text-teal-600',
+        bg: 'bg-teal-50 border-teal-100/50'
       },
     ];
   }, [data, sourceFilter]);
@@ -247,7 +247,7 @@ export default function AdminRevenuePage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7]/40 pb-20 pt-24 px-4 md:px-8 print:pt-0 print:pb-0">
       <div className="max-w-7xl mx-auto space-y-10">
-        
+
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-gray-100 print:hidden">
           <div>
@@ -259,15 +259,15 @@ export default function AdminRevenuePage() {
             <h1 className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Revenue Analytics</h1>
             <p className="text-gray-500 mt-2 font-medium italic">Track bookings, payments, vendor growth, and marketplace revenue.</p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-3">
-            <button 
+            <button
               onClick={handleExportCSV}
               className="bg-white border border-gray-200 hover:border-[#D4AF37] text-gray-700 font-bold text-xs uppercase tracking-wider py-4 px-6 rounded-2xl transition-all shadow-sm flex items-center gap-2 active:scale-95"
             >
               <FiDownload size={14} className="text-[#D4AF37]" /> Export CSV
             </button>
-            <button 
+            <button
               onClick={handleDownloadPDF}
               className="bg-gray-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider py-4 px-6 rounded-2xl transition-all shadow-lg flex items-center gap-2 active:scale-95"
             >
@@ -308,11 +308,10 @@ export default function AdminRevenuePage() {
                     <button
                       key={btn.id}
                       onClick={() => setTimeRange(btn.id)}
-                      className={`py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-                        timeRange === btn.id 
-                          ? 'bg-white text-gray-900 shadow-sm border border-gray-100/50' 
+                      className={`py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${timeRange === btn.id
+                          ? 'bg-white text-gray-900 shadow-sm border border-gray-100/50'
                           : 'text-gray-400 hover:text-gray-600'
-                      }`}
+                        }`}
                     >
                       {btn.label}
                     </button>
@@ -338,8 +337,8 @@ export default function AdminRevenuePage() {
             {/* Top Summary Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
               {stats.map((s, idx) => (
-                <div 
-                  key={s.label} 
+                <div
+                  key={s.label}
                   className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-premium hover:shadow-premium-hover transition-all duration-300 relative overflow-hidden group hover:scale-[1.02] flex flex-col justify-between"
                   style={{ animationDelay: `${idx * 50}ms` }}
                 >
@@ -357,7 +356,7 @@ export default function AdminRevenuePage() {
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
+
               {/* Revenue Trend Chart */}
               <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-gray-100 shadow-premium lg:col-span-8 flex flex-col justify-between">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -374,11 +373,10 @@ export default function AdminRevenuePage() {
                       <button
                         key={tab.id}
                         onClick={() => setTrendView(tab.id)}
-                        className={`py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-                          trendView === tab.id 
-                            ? 'bg-white text-gray-900 shadow-sm' 
+                        className={`py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${trendView === tab.id
+                            ? 'bg-white text-gray-900 shadow-sm'
                             : 'text-gray-400 hover:text-gray-600'
-                        }`}
+                          }`}
                       >
                         {tab.label}
                       </button>
@@ -391,14 +389,14 @@ export default function AdminRevenuePage() {
                     <AreaChart data={filteredChartData}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f5f5f5" />
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} tickFormatter={v => `₹${v/1000}k`} />
-                      <Tooltip 
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} tickFormatter={v => `₹${v / 1000}k`} />
+                      <Tooltip
                         contentStyle={{ borderRadius: '20px', border: '1px solid #FFF8E7', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.05)', backgroundColor: '#fff' }}
                         formatter={(v) => [formatPrice(v), 'Revenue']}
                       />
@@ -464,7 +462,7 @@ export default function AdminRevenuePage() {
                       <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f5f5f5" />
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} />
-                      <Tooltip 
+                      <Tooltip
                         cursor={{ fill: '#FAF6F0', opacity: 0.4 }}
                         contentStyle={{ borderRadius: '20px', border: '1px solid #FFF8E7', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.05)' }}
                       />
@@ -486,14 +484,14 @@ export default function AdminRevenuePage() {
                     <AreaChart data={filteredChartData}>
                       <defs>
                         <linearGradient id="colorVendors" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f5f5f5" />
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ borderRadius: '20px', border: '1px solid #E6F4EA', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.05)' }}
                       />
                       <Area type="monotone" dataKey="bookings" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorVendors)" name="New Vendors" />
@@ -580,15 +578,14 @@ export default function AdminRevenuePage() {
                             </td>
                             <td className="py-4 font-display font-black text-gray-900">{formatPrice(t.amount || t.totalPrice)}</td>
                             <td className="py-4">
-                              <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                                t.status === 'completed' 
-                                  ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
+                              <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${t.status === 'completed'
+                                  ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
                                   : t.status === 'confirmed'
-                                  ? 'bg-blue-50 border-blue-100 text-blue-700'
-                                  : t.status === 'cancelled' || t.status === 'rejected'
-                                  ? 'bg-rose-50 border-rose-100 text-rose-700'
-                                  : 'bg-amber-50 border-amber-100 text-amber-700'
-                              }`}>
+                                    ? 'bg-blue-50 border-blue-100 text-blue-700'
+                                    : t.status === 'cancelled' || t.status === 'rejected'
+                                      ? 'bg-rose-50 border-rose-100 text-rose-700'
+                                      : 'bg-amber-50 border-amber-100 text-amber-700'
+                                }`}>
                                 {t.status}
                               </span>
                             </td>
@@ -621,15 +618,14 @@ export default function AdminRevenuePage() {
                             </span>
                             <h4 className="font-display font-black text-gray-900 text-lg mt-1">{formatPrice(t.amount || t.totalPrice)}</h4>
                           </div>
-                          <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                            t.status === 'completed' 
-                              ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
+                          <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${t.status === 'completed'
+                              ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
                               : t.status === 'confirmed'
-                              ? 'bg-blue-50 border-blue-100 text-blue-700'
-                              : t.status === 'cancelled' || t.status === 'rejected'
-                              ? 'bg-rose-50 border-rose-100 text-rose-700'
-                              : 'bg-amber-50 border-amber-100 text-amber-700'
-                          }`}>
+                                ? 'bg-blue-50 border-blue-100 text-blue-700'
+                                : t.status === 'cancelled' || t.status === 'rejected'
+                                  ? 'bg-rose-50 border-rose-100 text-rose-700'
+                                  : 'bg-amber-50 border-amber-100 text-amber-700'
+                            }`}>
                             {t.status}
                           </span>
                         </div>

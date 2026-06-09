@@ -14,11 +14,11 @@ router.get('/', catchAsync(async (req, res, next) => {
   const query = { isActive: true, status: 'approved' };
 
   if (city) query.city = { $regex: city, $options: 'i' };
-  
+
   if (categorySlug) {
     const Category = require('mongoose').model('Category');
     const searchSlug = categorySlug.toLowerCase();
-    
+
     // Alias mapping to resolve frontend category mismatches
     const slugMap = {
       'fleet': 'cab-service',
@@ -27,20 +27,20 @@ router.get('/', catchAsync(async (req, res, next) => {
       'tents': 'tent-house',
       'venues': 'venue'
     };
-    
+
     const mappedSlug = slugMap[searchSlug] || searchSlug;
     const cat = await Category.findOne({ slug: mappedSlug }).lean();
-    
+
     if (cat) {
       query.category = cat._id;
     } else {
       // If slug doesn't exist even after mapping, return empty results safely
-      query.category = new (require('mongoose').Types.ObjectId)(); 
+      query.category = new (require('mongoose').Types.ObjectId)();
     }
   } else if (category) {
     query.category = category;
   }
-  
+
   if (minPrice || maxPrice) {
     query.startingPrice = {};
     if (minPrice) query.startingPrice.$gte = Number(minPrice);
@@ -76,10 +76,10 @@ router.get('/', catchAsync(async (req, res, next) => {
     status: 'success',
     results: services.length,
     services,
-    pagination: { 
-      total, 
-      page: Number(page), 
-      pages: Math.ceil(total / Number(limit)) 
+    pagination: {
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit))
     }
   });
 }));
@@ -98,7 +98,7 @@ router.get('/my-services', protect, authorize('vendor', 'admin'), verified, catc
     if (!vendor) return next(new AppError('Vendor profile not found.', 404));
     queryVendorId = vendor._id;
   }
-  
+
   const total = await Service.countDocuments({ vendor: queryVendorId });
   const services = await Service.find({ vendor: queryVendorId })
     .populate('category', 'name icon')
@@ -108,10 +108,10 @@ router.get('/my-services', protect, authorize('vendor', 'admin'), verified, catc
     .limit(Number(limit))
     .lean();
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-    status: 'success', 
-    results: services.length, 
+    status: 'success',
+    results: services.length,
     services,
     pagination: {
       total,
@@ -162,7 +162,7 @@ router.post('/', protect, authorize('vendor', 'admin'), verified, restrictToAppr
 ]), catchAsync(async (req, res, next) => {
   const images = req.files['images']?.map((f) => ({ url: f.path, publicId: f.filename })) || [];
   const videos = req.files['videos']?.map((f) => ({ url: f.path, publicId: f.filename })) || [];
-  
+
   // Parse JSON fields
   let { packages, features, vendorId, coverImageIndex, category } = req.body;
   if (typeof packages === 'string') packages = JSON.parse(packages);
@@ -196,11 +196,11 @@ router.post('/', protect, authorize('vendor', 'admin'), verified, restrictToAppr
   const cvIdx = coverImageIndex !== undefined ? Number(coverImageIndex) : 0;
   const coverImage = images.length > 0 ? (images[cvIdx]?.url || images[0].url) : req.body.coverImage;
 
-  const service = await Service.create({ 
-    ...req.body, 
+  const service = await Service.create({
+    ...req.body,
     category,
-    vendor: targetVendorId, 
-    images, 
+    vendor: targetVendorId,
+    images,
     coverImage,
     videos,
     packages,
@@ -229,7 +229,7 @@ router.post('/', protect, authorize('vendor', 'admin'), verified, restrictToAppr
   try {
     const { sendNotification } = require('../services/notificationService');
     const { User } = require('../models/index');
-    
+
     // Notify Admins
     const admins = await User.find({ role: 'admin' }).select('_id');
     for (const admin of admins) {
@@ -255,7 +255,7 @@ router.post('/', protect, authorize('vendor', 'admin'), verified, restrictToAppr
   } catch (err) {
     console.error('Notification dispatch error during service creation:', err);
   }
-  
+
   const populatedService = await Service.findById(service._id).populate('category', 'name icon');
   res.status(201).json({ success: true, status: 'success', message: 'Service created successfully.', service: populatedService });
 }));
@@ -277,11 +277,11 @@ router.put('/:id', protect, authorize('vendor', 'admin'), verified, restrictToAp
   if (!service) return next(new AppError('Service not found or unauthorized.', 404));
 
   const updateData = { ...req.body };
-  
+
   // Parse JSON fields if they are strings
   if (typeof req.body.packages === 'string') updateData.packages = JSON.parse(req.body.packages);
   if (typeof req.body.features === 'string') updateData.features = JSON.parse(req.body.features);
-  
+
   // Handle existing media sync if sent from frontend
   if (req.body.existingImages) {
     updateData.images = typeof req.body.existingImages === 'string' ? JSON.parse(req.body.existingImages) : req.body.existingImages;
@@ -347,7 +347,7 @@ router.put('/:id', protect, authorize('vendor', 'admin'), verified, restrictToAp
   try {
     const { sendNotification } = require('../services/notificationService');
     const { User } = require('../models/index');
-    
+
     // Notify Admins
     const admins = await User.find({ role: 'admin' }).select('_id');
     for (const admin of admins) {
@@ -390,7 +390,7 @@ router.delete('/:id', protect, authorize('vendor', 'admin'), verified, restrictT
 
   const service = await Service.findOneAndDelete(query);
   if (!service) return next(new AppError('Service not found or unauthorized.', 404));
-  
+
   res.status(200).json({ status: 'success', message: 'Service deleted successfully.' });
 }));
 

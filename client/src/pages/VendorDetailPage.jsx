@@ -12,7 +12,7 @@ import api from '../utils/api'
 import toast from 'react-hot-toast'
 import {
   FiMapPin, FiPhone, FiMail, FiHeart, FiMessageCircle, FiLock,
-  FiCalendar, FiCheck, FiShare2, FiImage, FiEye, FiChevronLeft, FiChevronRight, FiX, FiClock, FiUsers, FiGlobe, FiAward, FiStar, FiShield
+  FiCalendar, FiCheck, FiShare2, FiImage, FiEye, FiChevronLeft, FiChevronRight, FiX, FiClock, FiUsers, FiGlobe, FiAward, FiStar, FiShield, FiCheckCircle
 } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReviewModal from '../components/common/ReviewModal'
@@ -123,175 +123,182 @@ export default function VendorDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pb-32 relative selection:bg-[#D4AF37]/20 selection:text-[#D4AF37]">
-      {/* ── ✨ Premium Full-Width Cover Photo ── */}
-      <div className="relative h-64 sm:h-80 md:h-[500px] w-full bg-black overflow-hidden rounded-b-[40px] shadow-2xl group">
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ duration: 1 }}
-          className="absolute inset-0 bg-gray-900 animate-pulse"
-        />
+      {/* ── ✨ PREMIUM HERO SECTION ── */}
+      <div className="relative h-[60vh] md:h-[70vh] w-full bg-gray-900 overflow-hidden shadow-2xl">
         {coverUrl && (
-          <motion.img 
-            initial={{ scale: 1.1, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 0.8 }} 
-            transition={{ duration: 1.5, ease: "easeOut" }} 
-            src={coverUrl} 
-            alt={vendor.businessName} 
-            className="absolute inset-0 w-full h-full object-cover bg-center mix-blend-overlay group-hover:scale-105 transition-transform duration-[3s]" 
-            loading="lazy" 
+          <motion.img
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.6 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            src={coverUrl}
+            alt={vendor.businessName}
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            loading="lazy"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90" />
-        
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
+
         {/* Top actions within banner (Share/Wishlist) */}
-        <div className="absolute top-6 right-6 flex gap-4 z-20">
-          <button onClick={() => isAuthenticated ? dispatch(toggleWishlist(id)) : navigate('/login')} className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl border transition-all shadow-xl active:scale-95 group/btn ${isWishlisted ? 'bg-white text-[#C2185B] border-white' : 'bg-black/30 text-white border-white/20 hover:bg-black/50'}`}>
+        <div className="absolute top-6 right-6 md:top-10 md:right-10 flex gap-4 z-20">
+          <button onClick={() => isAuthenticated ? dispatch(toggleWishlist(id)) : navigate('/login')} className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl border transition-all shadow-xl hover:scale-105 active:scale-95 group/btn ${isWishlisted ? 'bg-white text-[#C2185B] border-white' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}`}>
             <FiHeart fill={isWishlisted ? '#C2185B' : 'none'} size={20} className="group-hover/btn:scale-110 transition-transform" />
           </button>
-          <button onClick={handleShare} className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 bg-black/30 text-white hover:bg-black/50 transition-all shadow-xl active:scale-95 group/btn">
+          <button onClick={handleShare} className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-all shadow-xl hover:scale-105 active:scale-95 group/btn">
             <FiShare2 size={20} className="group-hover/btn:scale-110 transition-transform" />
           </button>
         </div>
+
+        {/* Floating Glassmorphism Profile Card */}
+        <div className="absolute bottom-0 left-0 w-full z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 pb-8 md:pb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-6 md:p-10 border border-white/20 shadow-[0_30px_60px_rgba(0,0,0,0.3)] flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 max-w-5xl"
+            >
+              {/* Profile Image */}
+              <div className="w-32 h-32 md:w-44 md:h-44 rounded-[2rem] border-[6px] border-white shadow-2xl overflow-hidden bg-white flex items-center justify-center shrink-0 relative group">
+                {vendor.logo?.url ? (
+                  <img src={vendor.logo.url} alt={vendor.businessName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                ) : vendor.user?.avatar?.url ? (
+                  <img src={vendor.user.avatar.url} alt={vendor.businessName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                ) : (
+                  <span className="text-5xl md:text-7xl font-display font-black text-[#D4AF37]">{getInitials(vendor.businessName || vendor.user?.name)}</span>
+                )}
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1 text-center md:text-left text-white">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
+                  <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-white/30 shadow-sm animate-fade-in">
+                    {vendor.category?.name || 'Wedding Service'}
+                  </span>
+                  {vendor.subscription?.plan === 'elite' && vendor.subscription?.status === 'active' && (
+                    <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-lg border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none animate-fade-in">
+                      <FiCheckCircle className="text-black" size={14} strokeWidth={3} />
+                      👑 Elite Partner
+                    </span>
+                  )}
+                  {vendor.subscription?.plan === 'premium' && vendor.subscription?.status === 'active' && (
+                    <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-lg border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none animate-fade-in">
+                      <FiCheckCircle className="text-black" size={14} strokeWidth={3} />
+                      ⭐ Featured Partner
+                    </span>
+                  )}
+                  {(vendor.approvalStatus === 'approved' && vendor.user?.isVerified) && !['premium', 'elite'].includes(vendor.subscription?.plan) && (
+                    <span className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg flex items-center gap-1.5 animate-fade-in">
+                      <FiShield size={14} /> Premium Verified
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="text-3xl md:text-6xl font-display font-black mb-3 drop-shadow-xl tracking-tight">
+                  {vendor.businessName || vendor.user?.name}
+                </h1>
+
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-5 md:gap-8 text-sm font-medium text-gray-200">
+                  <div className="flex items-center gap-2">
+                    <FiMapPin className="text-[#D4AF37]" size={18} />
+                    <span className="text-white/90">{vendor.location?.city || 'India'}{vendor.location?.state ? `, ${vendor.location.state}` : ''}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FiStar className="text-[#D4AF37] fill-[#D4AF37]" size={18} />
+                    <span className="text-white font-bold text-base">{vendor.dynamicRating?.average?.toFixed(1) || vendor.rating?.average?.toFixed(1) || 'New'}</span>
+                    <span className="text-white/70">({vendor.dynamicRating?.count || vendor.rating?.count || 0} Reviews)</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </div>
 
-      {/* ── Profile Details Overlay Card ── */}
-      <div className="max-w-7xl mx-auto px-4 relative z-30 -mt-24 md:-mt-32 mb-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.2 }}
-          className="bg-white/90 backdrop-blur-2xl rounded-[2.5rem] p-6 md:p-10 shadow-[0_30px_60px_rgba(0,0,0,0.12)] border border-white/50 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10"
-        >
-          {/* Profile Image */}
-          <div className="w-32 h-32 md:w-48 md:h-48 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden bg-gray-50 flex items-center justify-center shrink-0 -mt-16 md:-mt-24 relative">
-            {vendor.logo?.url ? (
-              <img src={vendor.logo.url} alt={vendor.businessName} className="w-full h-full object-cover" />
-            ) : vendor.user?.avatar?.url ? (
-              <img src={vendor.user.avatar.url} alt={vendor.businessName} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-5xl md:text-7xl font-display font-black text-[#D4AF37]">{getInitials(vendor.businessName || vendor.user?.name)}</span>
-            )}
-          </div>
+      {/* ── MAIN CONTENT AREA ── */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12 relative z-20 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
 
-          {/* Profile Info */}
-          <div className="flex-1 text-center md:text-left mt-2 md:mt-0">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
-              <span className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
-                {vendor.category?.name || 'Wedding Service'}
-              </span>
-              {(vendor.approvalStatus === 'approved' && vendor.user?.isVerified) && (
-                <span className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-md flex items-center gap-2">
-                  <FiShield size={12} /> Premium Verified
-                </span>
-              )}
-            </div>
-            
-            <h1 className="text-3xl md:text-5xl font-display font-black text-gray-900 mb-2 tracking-tight">
-              {vendor.businessName || vendor.user?.name}
-            </h1>
-            
-            <p className="text-gray-500 font-medium font-serif italic mb-5 leading-relaxed text-sm md:text-base">
-              "{vendor.tagline || 'Crafting unforgettable wedding experiences with passion and elegance.'}"
-            </p>
-            
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 md:gap-6 text-sm">
-              <div className="flex items-center gap-2 text-gray-700 font-bold bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                <FiMapPin className="text-[#C2185B]" size={16} /> {vendor.location?.city || 'India'}{vendor.location?.state ? `, ${vendor.location.state}` : ''}
-              </div>
-              <div className="flex items-center gap-2 text-gray-700 font-bold bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                <FiStar className="text-[#D4AF37] fill-[#D4AF37]" size={16} /> {vendor.dynamicRating?.average?.toFixed(1) || vendor.rating?.average?.toFixed(1) || 'New'} ({vendor.dynamicRating?.count || vendor.rating?.count || 0} Reviews)
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ── Main Content Area ── */}
-      <div className="max-w-7xl mx-auto px-4 relative z-20 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          
           {/* LEFT COLUMN */}
-          <div className="lg:col-span-8 space-y-8 md:space-y-12">
+          <div className="lg:col-span-8 space-y-12">
 
-            {/* Profile Statistics Glass Cards */}
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 relative z-30"
+            {/* Quick Stats Grid */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
             >
               {[
                 { icon: <FiStar />, label: 'Rating', value: `${vendor.dynamicRating?.average?.toFixed(1) || vendor.rating?.average?.toFixed(1) || 'New'}`, sub: `${vendor.dynamicRating?.count || vendor.rating?.count || 0} Reviews` },
                 { icon: <FiCheck />, label: 'Bookings', value: vendor.completedBookings > 0 ? `${vendor.completedBookings}+` : 'New', sub: 'Completed' },
                 { icon: <FiClock />, label: 'Experience', value: `${vendor.calculatedExperience || 1}+ Yrs`, sub: 'In Industry' },
-                { icon: <FiAward />, label: 'Response', value: vendor.responseTime || 'Fast', sub: 'Usually 1hr' },
+                { icon: <FiUsers />, label: 'Customers', value: vendor.customersServed || '10+', sub: 'Served' },
               ].map((stat, i) => (
-                <div key={i} className="bg-white/80 backdrop-blur-2xl p-6 rounded-3xl text-center border border-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] transition-all duration-300 group">
-                  <div className="w-10 h-10 mx-auto bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 text-[#D4AF37] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
+                <div key={i} className="bg-white p-6 rounded-[2rem] text-center border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group">
+                  <div className="w-12 h-12 mx-auto bg-[#D4AF37]/10 text-[#D4AF37] rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform group-hover:bg-[#D4AF37] group-hover:text-white">
                     {stat.icon}
                   </div>
-                  <p className="text-gray-900 font-display font-black text-xl md:text-2xl">{stat.value}</p>
-                  <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mt-1">{stat.label}</p>
+                  <p className="text-gray-900 font-display font-black text-2xl md:text-3xl tracking-tight">{stat.value}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-1">{stat.label}</p>
                 </div>
               ))}
             </motion.section>
-            
-            {/* Vendor Overview */}
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              viewport={{ once: true }} 
-              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-premium border border-gray-50 relative overflow-hidden"
+
+            {/* About Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100"
             >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
-              
-              <div className="inline-flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-                <div className="w-8 h-px bg-[#D4AF37]" /> The Story
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-px bg-[#D4AF37]" />
+                <span className="text-[#D4AF37] text-[11px] font-black uppercase tracking-[0.3em]">The Story</span>
               </div>
-              <h3 className="font-display text-3xl md:text-4xl font-black text-gray-900 mb-8 tracking-tight">
+              <h3 className="font-display text-3xl md:text-4xl font-black text-gray-900 mb-6 tracking-tight">
                 About {vendor.businessName}
               </h3>
-              <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-line font-medium relative z-10">
-                {vendor.description || 'Welcome to our premium wedding service. We are dedicated to making your special day extraordinary.'}
+              <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-line font-medium">
+                {vendor.description || 'Welcome to our premium wedding service. We are dedicated to making your special day extraordinary with our unmatched expertise and attention to detail. Let us turn your vision into reality.'}
               </p>
             </motion.section>
 
-            {/* Visual Portfolio (Masonry-like Gallery) */}
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
+            {/* Visual Portfolio Gallery */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-premium border border-gray-50"
+              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100"
             >
-              <div className="inline-flex items-center gap-2 text-[#C2185B] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-                <div className="w-8 h-px bg-[#C2185B]" /> Masterpieces
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-px bg-[#C2185B]" />
+                <span className="text-[#C2185B] text-[11px] font-black uppercase tracking-[0.3em]">Masterpieces</span>
               </div>
               <h3 className="font-display text-3xl md:text-4xl font-black text-gray-900 mb-8 tracking-tight">
                 Visual Portfolio
               </h3>
-              
+
               {images.length === 0 ? (
-                <div className="text-center py-20 bg-[#FAFAFA] rounded-[2rem] border border-dashed border-gray-200">
+                <div className="text-center py-20 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200">
                   <FiImage className="mx-auto text-5xl text-gray-300 mb-4" />
                   <p className="text-gray-500 font-medium italic">Portfolio is currently being updated with stunning captures.</p>
                 </div>
               ) : (
-                <div className="columns-2 md:columns-3 gap-4 space-y-4">
+                <div className="columns-1 sm:columns-2 md:columns-3 gap-6 space-y-6">
                   {images.map((img, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => setGalleryModal({ open: true, index: i })} 
-                      className="break-inside-avoid rounded-2xl overflow-hidden cursor-pointer group relative shadow-sm border border-gray-100"
+                    <div
+                      key={i}
+                      onClick={() => setGalleryModal({ open: true, index: i })}
+                      className="break-inside-avoid rounded-3xl overflow-hidden cursor-pointer group relative shadow-md border border-gray-100"
                     >
-                      <img 
-                        src={getOptimizedUrl(img.url, 600)} 
-                        alt="Gallery Image" 
-                        className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
-                        loading="lazy" 
+                      <img
+                        src={getOptimizedUrl(img.url, 600)}
+                        alt="Gallery"
+                        className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                        <FiEye className="text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-50 group-hover:scale-100 drop-shadow-md" size={32} />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-500 flex items-center justify-center">
+                        <FiEye className="text-white opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100 drop-shadow-xl" size={40} />
                       </div>
                     </div>
                   ))}
@@ -299,105 +306,106 @@ export default function VendorDetailPage() {
               )}
             </motion.section>
 
-            {/* Packages / Pricing */}
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
+            {/* Premium Packages Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-premium border border-gray-50"
+              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100"
             >
-              <div className="inline-flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-                <div className="w-8 h-px bg-[#D4AF37]" /> Investments
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-px bg-[#D4AF37]" />
+                <span className="text-[#D4AF37] text-[11px] font-black uppercase tracking-[0.3em]">Investments</span>
               </div>
               <h3 className="font-display text-3xl md:text-4xl font-black text-gray-900 mb-8 tracking-tight">
                 Premium Packages
               </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {vendor.packages?.length > 0 ? vendor.packages.map((pkg, i) => (
-                  <div key={i} className={`relative p-8 md:p-10 rounded-[2.5rem] border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full group ${pkg.isPopular ? 'border-[#D4AF37] bg-gradient-to-b from-[#FFFDF9] to-white shadow-[0_10px_40px_rgba(212,175,55,0.1)]' : 'border-gray-100 bg-white hover:border-[#D4AF37]/50'}`}>
-                    {pkg.isPopular && <div className="absolute -top-4 right-8 bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black text-[9px] font-black uppercase tracking-[0.2em] px-5 py-2 rounded-full shadow-lg">Most Popular</div>}
-                    
+                  <div key={i} className={`relative p-8 md:p-10 rounded-[2.5rem] border transition-all duration-500 hover:-translate-y-2 flex flex-col h-full group ${pkg.isPopular ? 'border-[#D4AF37] bg-[#FFFBF0] shadow-[0_20px_50px_rgba(212,175,55,0.15)]' : 'border-gray-200 bg-white hover:border-[#D4AF37]/50 hover:shadow-xl'}`}>
+                    {pkg.isPopular && <div className="absolute -top-4 right-8 bg-[#D4AF37] text-white text-[9px] font-black uppercase tracking-[0.2em] px-5 py-2 rounded-full shadow-lg">Most Popular</div>}
+
                     <h4 className="text-2xl font-black text-gray-900 mb-2 font-display group-hover:text-[#D4AF37] transition-colors">{pkg.name}</h4>
                     <div className="mb-8 flex items-baseline gap-2">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Starting At</span>
                       <span className="text-4xl font-display font-black text-[#C2185B]">{formatPrice(pkg.price)}</span>
                     </div>
-                    
+
                     <ul className="space-y-4 mb-10 flex-grow">
                       {pkg.features?.map((feat, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-3 text-sm font-bold text-gray-600 leading-relaxed">
-                          <div className="bg-[#D4AF37]/10 p-1 rounded-full text-[#D4AF37] mt-0.5">
-                            <FiCheck size={12} strokeWidth={3} />
+                        <li key={fIdx} className="flex items-start gap-3 text-sm font-bold text-gray-700 leading-relaxed">
+                          <div className="bg-[#D4AF37]/10 p-1 rounded-full text-[#D4AF37] mt-0.5 shrink-0">
+                            <FiCheck size={14} strokeWidth={3} />
                           </div>
                           {feat}
                         </li>
                       ))}
                     </ul>
-                    
+
                     {(!isAuthenticated || user?.role === 'user') && (
-                      <button 
+                      <button
                         onClick={() => setBookingModalOpen(true)}
                         disabled={!pkg.price}
-                        className={`w-full py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-md hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 ${pkg.isPopular ? 'bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900' : 'bg-gray-50 text-gray-900 hover:bg-gray-100'}`}
+                        className={`w-full py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${pkg.isPopular ? 'bg-gray-900 text-white hover:bg-black shadow-lg hover:shadow-2xl' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
                       >
                         {pkg.price ? 'Select Package' : 'Contact for Price'}
                       </button>
                     )}
                   </div>
                 )) : (
-                  <div className="col-span-1 md:col-span-2 text-center py-20 bg-[#FAFAFA] rounded-[2rem] border border-dashed border-gray-200">
-                    <p className="text-gray-500 font-medium italic">Standard packages are not listed. Contact the vendor directly for a customized premium quote.</p>
+                  <div className="col-span-1 md:col-span-2 text-center py-20 bg-gray-50 rounded-[2.5rem] border border-dashed border-gray-200">
+                    <p className="text-gray-500 font-medium italic text-lg">Standard packages are not listed. Contact the vendor directly for a customized premium quote.</p>
                   </div>
                 )}
               </div>
             </motion.section>
 
-            {/* Reviews */}
-            <motion.section 
-              initial={{ opacity: 0, y: 20 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
+            {/* Reviews Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-premium border border-gray-50"
+              className="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100"
             >
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
                 <div>
-                  <div className="inline-flex items-center gap-2 text-[#C2185B] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-                    <div className="w-8 h-px bg-[#C2185B]" /> Client Love
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-px bg-[#C2185B]" />
+                    <span className="text-[#C2185B] text-[11px] font-black uppercase tracking-[0.3em]">Client Love</span>
                   </div>
                   <h3 className="font-display text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
                     Trusted Experiences
                   </h3>
                 </div>
                 {isAuthenticated && (
-                  <button onClick={() => setReviewModalOpen(true)} className="bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 active:scale-95">
+                  <button onClick={() => setReviewModalOpen(true)} className="bg-gray-900 hover:bg-black text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all hover:-translate-y-1 active:scale-95">
                     Write a Review
                   </button>
                 )}
               </div>
 
-              <div className="flex flex-col md:flex-row gap-10">
+              <div className="flex flex-col lg:flex-row gap-10">
                 {/* Score Summary */}
-                <div className="w-full md:w-1/3 bg-gradient-to-br from-[#FAFAFA] to-white p-10 rounded-[2.5rem] border border-gray-100 text-center flex flex-col justify-center shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/5 rounded-bl-full" />
-                  <p className="text-7xl font-display font-black text-gray-900 mb-4 tracking-tighter relative z-10">
+                <div className="w-full lg:w-1/3 bg-gray-50 p-10 rounded-[2.5rem] border border-gray-100 text-center flex flex-col justify-center items-center shadow-inner">
+                  <p className="text-7xl font-display font-black text-gray-900 mb-4 tracking-tighter">
                     {vendor.dynamicRating?.average?.toFixed(1) || vendor.rating?.average?.toFixed(1) || 'New'}
                   </p>
-                  <div className="flex justify-center mb-4 relative z-10">
+                  <div className="mb-4">
                     <StarRating rating={vendor.dynamicRating?.average || vendor.rating?.average || 0} showCount={false} size="lg" />
                   </div>
-                  <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] relative z-10">
+                  <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">
                     Based on {vendor.dynamicRating?.count || vendor.rating?.count || 0} Reviews
                   </p>
                 </div>
 
                 {/* Review List */}
-                <div className="w-full md:w-2/3 space-y-6">
+                <div className="w-full lg:w-2/3 space-y-6">
                   {reviews.length === 0 ? (
-                    <p className="text-gray-500 font-medium italic mt-8 text-center md:text-left">No reviews available yet. Be the first to share your experience!</p>
+                    <p className="text-gray-500 font-medium italic mt-8 text-center lg:text-left">No reviews available yet. Be the first to share your experience!</p>
                   ) : (
                     reviews.map(rev => (
-                      <div key={rev._id} className="p-8 rounded-[2rem] bg-white border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] relative group hover:shadow-[0_10px_30px_rgb(0,0,0,0.06)] transition-all">
+                      <div key={rev._id} className="p-8 rounded-[2rem] bg-white border border-gray-100 shadow-sm relative group hover:shadow-lg transition-all">
                         {user?._id === rev.user?._id && (
                           <div className="absolute top-6 right-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={() => { setEditReviewData(rev); setReviewModalOpen(true); }} className="text-blue-500 text-[10px] font-black uppercase tracking-widest hover:underline">Edit</button>
@@ -406,26 +414,19 @@ export default function VendorDetailPage() {
                         )}
                         <div className="flex items-center justify-between mb-5">
                           <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#F4D03F] flex items-center justify-center font-black text-white text-lg shadow-md border-2 border-white">
+                            <div className="w-14 h-14 rounded-full bg-[#D4AF37] flex items-center justify-center font-black text-white text-lg shadow-md">
                               {getInitials(rev.user?.name)}
                             </div>
                             <div>
-                              <div className="flex items-center gap-2">
-                                <p className="font-bold text-gray-900 text-lg">{rev.user?.name}</p>
-                                {rev.status !== 'approved' && user?._id === rev.user?._id && (
-                                  <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${rev.status === 'rejected' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-yellow-50 text-yellow-600 border border-yellow-100'}`}>
-                                    {rev.status}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mt-1">{formatDate(rev.createdAt)}</p>
+                              <p className="font-bold text-gray-900 text-lg">{rev.user?.name}</p>
+                              <p className="text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase mt-1">{formatDate(rev.createdAt)}</p>
                             </div>
                           </div>
                         </div>
                         <div className="mb-4">
                           <StarRating rating={rev.rating} size="sm" showCount={false} />
                         </div>
-                        <p className="text-gray-600 font-medium leading-relaxed italic text-sm md:text-base">"{rev.comment}"</p>
+                        <p className="text-gray-700 font-medium leading-relaxed italic text-base">"{rev.comment}"</p>
                       </div>
                     ))
                   )}
@@ -435,94 +436,93 @@ export default function VendorDetailPage() {
 
           </div>
 
-          {/* RIGHT COLUMN - Sticky Sidebar (Luxury Booking Card) */}
-          <div className="lg:col-span-4 relative hidden lg:block">
-            <div className="sticky top-28 space-y-6">
-              
-              {/* Premium Booking Card */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }} 
-                animate={{ opacity: 1, x: 0 }} 
+          {/* RIGHT COLUMN - Sticky Sidebar (Contact Section) */}
+          <div className="lg:col-span-4 hidden lg:block">
+            <div className="sticky top-28 space-y-8">
+
+              {/* Premium Book Now Card */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-gray-100 p-10 relative overflow-hidden text-center z-20"
+                className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-gray-100 p-10 text-center"
               >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#C2185B]/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-                
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4 relative z-10">Starting Investment</p>
-                <h4 className="text-5xl font-display font-black text-gray-900 tracking-tighter mb-10 relative z-10 drop-shadow-sm">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Starting Investment</p>
+                <h4 className="text-5xl font-display font-black text-gray-900 tracking-tighter mb-10">
                   {formatPrice(vendor.price)}
                 </h4>
 
-                <div className="space-y-4 relative z-10">
+                <div className="space-y-4">
                   {(!isAuthenticated || user?.role === 'user') && (
-                    <button 
-                      onClick={() => setBookingModalOpen(true)} 
+                    <button
+                      onClick={() => setBookingModalOpen(true)}
                       disabled={!vendor.price}
-                      className="w-full py-5 bg-gradient-to-r from-[#C2185B] to-[#9B1248] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(194,24,91,0.3)] hover:shadow-[0_15px_40px_rgba(194,24,91,0.5)] transition-all flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-5 bg-[#C2185B] hover:bg-[#9B1248] text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(194,24,91,0.3)] transition-all flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FiCalendar size={18} /> Book Your Date
                     </button>
                   )}
-                  
-                  <button onClick={() => { isAuthenticated ? dispatch(startChat(id)).then(() => navigate('/chat')) : navigate('/login') }} className="w-full py-5 bg-white border-2 border-gray-100 text-gray-700 hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-[#FAFAFA] rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95 shadow-sm">
-                    <FiMessageCircle size={18} /> Inquire Now
+
+                  <button onClick={() => { isAuthenticated ? dispatch(startChat(id)).then(() => navigate('/chat')) : navigate('/login') }} className="w-full py-5 bg-gray-50 border border-gray-200 text-gray-900 hover:border-gray-900 hover:bg-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 hover:-translate-y-1 active:scale-95 shadow-sm">
+                    <FiMessageCircle size={18} /> Send Inquiry
                   </button>
                 </div>
               </motion.div>
 
-              {/* Contact Info Dark Luxury Card */}
-              <motion.div 
-                initial={{ opacity: 0, x: 20 }} 
-                animate={{ opacity: 1, x: 0 }} 
+              {/* Direct Contact Sticky Card */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-gray-950 rounded-[3rem] p-10 text-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative overflow-hidden z-10"
+                className="bg-gray-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-[50px] pointer-events-none" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-[#D4AF37]/20 rounded-full blur-[60px] pointer-events-none" />
                 <h4 className="font-display text-2xl font-black mb-8 relative z-10">Connect Directly</h4>
-                
-                <div className="space-y-6 relative z-10">
-                  <div className="flex items-center gap-5 group">
-                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:scale-110 transition-transform group-hover:bg-[#D4AF37]/10">
-                      <FiMapPin size={22} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">Base Location</p>
-                      <p className="font-bold text-white text-sm">{vendor.location?.city}</p>
-                    </div>
-                  </div>
 
+                <div className="space-y-6 relative z-10">
                   {vendor.isContactLocked ? (
-                    <div className="p-5 bg-white/5 rounded-2xl border border-white/10 mt-6 backdrop-blur-md">
+                    <div className="p-6 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-md">
                       <div className="flex items-center gap-3 text-[#D4AF37] mb-3">
-                        <FiLock size={18} /> <span className="text-[10px] font-black uppercase tracking-widest">Locked details</span>
+                        <FiLock size={18} /> <span className="text-[10px] font-black uppercase tracking-widest">Details Locked</span>
                       </div>
-                      <p className="text-xs text-gray-400 font-medium leading-relaxed">
-                        Direct contact number and email will be unlocked automatically after a booking or inquiry.
+                      <p className="text-xs text-gray-300 font-medium leading-relaxed">
+                        Direct phone number and email will be unlocked automatically after you book or inquire.
                       </p>
                     </div>
                   ) : (
                     <>
                       {vendor.phone && (
-                        <div className="flex items-center gap-5 group">
-                          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:scale-110 transition-transform group-hover:bg-[#D4AF37]/10">
-                            <FiPhone size={22} />
+                        <a href={`tel:${vendor.phone}`} className="flex items-center gap-5 group w-full bg-white/5 hover:bg-white/10 p-4 rounded-2xl transition-all border border-transparent hover:border-white/20">
+                          <div className="w-12 h-12 rounded-xl bg-[#D4AF37] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                            <FiPhone size={20} />
                           </div>
                           <div>
-                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">Phone Number</p>
-                            <a href={`tel:${vendor.phone}`} className="font-bold text-white text-sm hover:text-[#D4AF37] transition-colors">+91 {vendor.phone}</a>
+                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">Call Now</p>
+                            <p className="font-bold text-white text-base">+91 {vendor.phone}</p>
                           </div>
-                        </div>
+                        </a>
+                      )}
+                      {vendor.phone && (
+                        <a href={`https://wa.me/91${vendor.phone}?text=Hi%20${vendor.businessName},%20I%20found%20you%20on%20ShaadiSaathi!`} target="_blank" rel="noreferrer" className="flex items-center gap-5 group w-full bg-white/5 hover:bg-white/10 p-4 rounded-2xl transition-all border border-transparent hover:border-white/20">
+                          <div className="w-12 h-12 rounded-xl bg-green-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                            <FiMessageCircle size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">WhatsApp</p>
+                            <p className="font-bold text-white text-base">Chat with us</p>
+                          </div>
+                        </a>
                       )}
                       {vendor.email && (
-                        <div className="flex items-center gap-5 group">
-                          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:scale-110 transition-transform group-hover:bg-[#D4AF37]/10">
-                            <FiMail size={22} />
+                        <a href={`mailto:${vendor.email}`} className="flex items-center gap-5 group w-full bg-white/5 hover:bg-white/10 p-4 rounded-2xl transition-all border border-transparent hover:border-white/20">
+                          <div className="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border border-white/20">
+                            <FiMail size={20} />
                           </div>
                           <div>
-                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">Email Address</p>
-                            <a href={`mailto:${vendor.email}`} className="font-bold text-white text-sm hover:text-[#D4AF37] transition-colors">{truncate(vendor.email, 22)}</a>
+                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">Email</p>
+                            <p className="font-bold text-white text-sm truncate max-w-[150px]">{vendor.email}</p>
                           </div>
-                        </div>
+                        </a>
                       )}
                     </>
                   )}
@@ -535,21 +535,21 @@ export default function VendorDetailPage() {
       </div>
 
       {/* ── Mobile Sticky Bottom CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-2xl border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 lg:hidden flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-2xl border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 lg:hidden flex gap-4">
         {(!isAuthenticated || user?.role === 'user') && (
-          <button 
-            onClick={() => setBookingModalOpen(true)} 
+          <button
+            onClick={() => setBookingModalOpen(true)}
             disabled={!vendor.price}
-            className="flex-1 py-4 bg-gradient-to-r from-[#C2185B] to-[#9B1248] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg disabled:opacity-50 active:scale-95 transition-transform"
+            className="flex-1 py-4 bg-[#C2185B] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg disabled:opacity-50 active:scale-95 transition-transform flex items-center justify-center gap-2"
           >
-            Book Now
+            <FiCalendar size={16} /> Book
           </button>
         )}
-        <button 
+        <button
           onClick={() => { isAuthenticated ? dispatch(startChat(id)).then(() => navigate('/chat')) : navigate('/login') }}
-          className="flex-1 py-4 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
+          className="flex-1 py-4 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
         >
-          Inquire
+          <FiMessageCircle size={16} /> Inquire
         </button>
       </div>
 
@@ -559,7 +559,7 @@ export default function VendorDetailPage() {
       <AnimatePresence>
         {galleryModal.open && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl flex items-center justify-center">
-            <button onClick={() => setGalleryModal({ open: false, index: 0 })} className="absolute top-6 right-6 md:top-10 md:right-10 text-white/50 hover:text-white transition-colors bg-white/10 w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-md z-50 shadow-2xl hover:bg-white/20">
+            <button onClick={() => setGalleryModal({ open: false, index: 0 })} className="absolute top-6 right-6 md:top-10 md:right-10 text-white/70 hover:text-white transition-colors bg-white/10 w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-md z-50 shadow-2xl hover:bg-white/20">
               <FiX size={28} />
             </button>
 
@@ -591,8 +591,8 @@ export default function VendorDetailPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      <ReviewModal 
+
+      <ReviewModal
         isOpen={reviewModalOpen}
         onClose={() => { setReviewModalOpen(false); setEditReviewData(null); }}
         targetId={id}

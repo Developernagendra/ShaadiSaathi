@@ -22,7 +22,9 @@ const {
   getAllServicesAdmin,
   getConfigAdmin,
   updateConfigAdmin,
-  getBookingByIdAdmin
+  getBookingByIdAdmin,
+  getSubscriptionsAdmin,
+  updateVendorSubscriptionAdmin
 } = require('../controllers/adminController');
 const multer = require('multer');
 
@@ -69,6 +71,8 @@ router.get('/bookings', getAllBookingsAdmin);
 router.get('/bookings/:id', getBookingByIdAdmin);
 router.get('/vendors', getAllVendorsAdmin);
 router.patch('/vendors/:id/status', updateVendorStatus);
+router.get('/subscriptions', getSubscriptionsAdmin);
+router.patch('/vendors/:id/subscription', updateVendorSubscriptionAdmin);
 
 router.get('/services', getAllServicesAdmin);
 router.get('/services/pending', getPendingServicesAdmin);

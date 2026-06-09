@@ -332,34 +332,17 @@ exports.createBooking = catchAsync(async (req, res, next) => {
 // @access  Private
 exports.createCabBooking = catchAsync(async (req, res, next) => {
   let {
-    cabId, packageId, bundleId, city, pickupLocation, dropLocation, eventDate, contactName, contactPhone, message, guestCount, selectedVehicles, packageType, totalAmount, specialRequests, subtotal, gst, advance
+    fleetSelection, selectedVehicles, cabId, packageId, city, pickupLocation, dropLocation, eventDate, contactName, contactPhone, message, guestCount, packageType, totalAmount, specialRequests, subtotal, gst, advance, activeBundleId
   } = req.body;
 
-  // Root cause resolve: Safely handle undefined/null/empty strings
-  let activeCabId = cabId;
-  let activeBundleId = bundleId;
-
-  if (activeCabId === 'undefined' || activeCabId === 'null' || activeCabId === '') {
-    activeCabId = null;
-  }
-  if (activeBundleId === 'undefined' || activeBundleId === 'null' || activeBundleId === '') {
-    activeBundleId = null;
-  }
-
-  if (!activeCabId && activeBundleId) {
-    let query = { 'bundlePackages._id': activeBundleId };
-    if (mongoose.Types.ObjectId.isValid(activeBundleId)) {
-      query = {
-        $or: [
-          { 'bundlePackages._id': activeBundleId },
-          { 'bundlePackages._id': new mongoose.Types.ObjectId(activeBundleId) }
-        ]
-      };
-    }
-    const parentCab = await Cab.findOne(query);
-    if (parentCab) {
-      activeCabId = parentCab._id;
-    }
+  // Map selectedVehicles to fleetSelection format for CustomBundleBuilderPage
+  if (!fleetSelection && selectedVehicles && Array.isArray(selectedVehicles)) {
+    fleetSelection = selectedVehicles.map(v => ({
+      cabId: v.vehicleId,
+      count: Number(v.quantity || 1),
+      pricePerVehicle: v.pricePerVehicle,
+      totalFare: v.totalFare
+    }));
   }
 
   // Resolve input aliases for payload compatibility
@@ -369,110 +352,232 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
   const remarks = message || specialRequests || req.body.specialRequirements || '';
   const guests = Number(guestCount || req.body.guestCount) || 1;
   const dropLoc = dropLocation || req.body.dropLocation || 'Same as Pickup / Local Event';
-  const pkgType = packageType || req.body.packageType || (activeBundleId ? 'bundle' : (packageId ? 'package' : 'custom'));
+  const pkgType = packageType || req.body.packageType || 'custom_fleet';
 
-  // Defensive specific validations to return perfect diagnostic messages
-  if (!activeCabId) {
-    return next(new AppError('Please provide all required fields in bundle booking cab (Vehicle/Bundle reference is missing)', 400));
-  }
-  if (!city) {
-    return next(new AppError('Please provide all required fields in bundle booking cab (Missing city/region)', 400));
-  }
-  if (!pickupLocation) {
-    return next(new AppError('Please provide all required fields in bundle booking cab (Missing pickup location address)', 400));
-  }
-  if (!eventDate) {
-    return next(new AppError('Please provide all required fields in bundle booking cab (Missing event date)', 400));
-  }
-  if (!name) {
-    return next(new AppError('Please provide all required fields in bundle booking cab (Missing customer name)', 400));
-  }
-  if (!phone) {
-    return next(new AppError('Please provide all required fields in bundle booking cab (Missing customer phone)', 400));
-  }
+  if (!city) return next(new AppError('Please provide all required fields in bundle booking cab (Missing city/region)', 400));
+  if (!pickupLocation) return next(new AppError('Please provide all required fields in bundle booking cab (Missing pickup location address)', 400));
+  if (!eventDate) return next(new AppError('Please provide all required fields in bundle booking cab (Missing event date)', 400));
+  if (!name) return next(new AppError('Please provide all required fields in bundle booking cab (Missing customer name)', 400));
+  if (!phone) return next(new AppError('Please provide all required fields in bundle booking cab (Missing customer phone)', 400));
 
-  const cab = await Cab.findById(activeCabId);
-  if (!cab) return next(new AppError('Cab vehicle not found.', 404));
+  let finalPrice = 0;
+  let serviceName = 'Baraat Custom Fleet';
+  let vendorsSet = new Set();
+  let primaryVendorProfileId = null;
+  let primaryVendorId = null;
+  let processedFleet = [];
 
-  let cabPrice = 0;
-  let packageSelected = undefined;
-  let serviceName = cab.brand || cab.model || cab.vehicleName || cab.name || 'Baraat Cab';
-  let vehiclesList = [];
+  // Track cabs to update inventory if booking is successful
+  const inventoryUpdates = [];
 
-  if (activeBundleId && cab.bundlePackages) {
-    const bundle = cab.bundlePackages.find(b => b._id.toString() === activeBundleId.toString());
-    if (!bundle) return next(new AppError('Bundle not found in the fleet.', 404));
+  if (fleetSelection && Array.isArray(fleetSelection) && fleetSelection.length > 0) {
+    for (const item of fleetSelection) {
+      if (!item.cabId) continue;
+      const cabDoc = await Cab.findById(item.cabId);
+      if (!cabDoc) continue;
 
-    cabPrice = bundle.discountedPrice || bundle.totalPrice;
-    serviceName = bundle.bundleName;
-    packageSelected = {
-      name: bundle.bundleName,
-      price: cabPrice,
-      features: bundle.features || [],
-      isBundle: true
-    };
+      const requestedQty = Number(item.count || 1);
+      const maxFleetSize = Number(cabDoc.totalFleet || cabDoc.quantityAvailable || 1);
 
-    vehiclesList = bundle.vehicles.map(v => ({
-      vehicleId: v.vehicleId,
-      vehicleType: 'bundle_vehicle',
-      count: v.quantity,
-      includedHours: v.includedHours,
-      includedKm: v.includedKm
-    }));
-  } else {
-    // Legacy cab / single package logic
-    cabPrice = Number(cab.price || (cab.pricing && cab.pricing.baseFare));
+      // Date-Specific Conflict Detection Algorithm
+      const queryDate = new Date(eventDate);
+      const startOfDay = new Date(queryDate.setHours(0,0,0,0));
+      const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+
+      const overlappingBookings = await Booking.find({
+        eventDate: { $gte: startOfDay, $lte: endOfDay },
+        status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+        bookingType: { $in: ['cab', 'baraat-cab'] },
+        $or: [
+          { "fleetSelection.cabId": cabDoc._id },
+          { "cabIds": cabDoc._id },
+          { "cab": cabDoc._id }
+        ]
+      });
+
+      let totalBooked = 0;
+      for (const b of overlappingBookings) {
+        if (b.fleetSelection && b.fleetSelection.length > 0) {
+          const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cabDoc._id.toString());
+          if (match) totalBooked += (match.count || 1);
+        } else if (b.vehicles && b.vehicles.length > 0) {
+          const idx = b.cabIds?.findIndex(id => id.toString() === cabDoc._id.toString());
+          if (idx !== -1 && b.vehicles[idx]) {
+            totalBooked += (b.vehicles[idx].count || 1);
+          } else {
+            totalBooked += 1;
+          }
+        } else {
+          totalBooked += 1;
+        }
+      }
+
+      const availableQty = maxFleetSize - totalBooked;
+
+      // Validate Overbooking
+      if (requestedQty > availableQty) {
+        return next(new AppError(`Only ${availableQty} vehicles available for selected date.`, 400));
+      }
+
+      inventoryUpdates.push({
+        cabDoc,
+        newQty: availableQty - requestedQty,
+        requestedQty
+      });
+
+      let vId = cabDoc.vendor;
+      if (!vId) {
+        const ownerVendor = await Vendor.findOne({ user: cabDoc.createdBy });
+        if (ownerVendor) vId = ownerVendor._id;
+      }
+      
+      if (vId) {
+        const vData = await Vendor.findById(vId);
+        if (vData) {
+          vendorsSet.add(vData.user.toString());
+          if (!primaryVendorProfileId) {
+            primaryVendorProfileId = vData._id;
+            primaryVendorId = vData.user;
+          }
+        }
+      }
+
+      const itemTotal = Number(item.totalFare) || (Number(item.pricePerVehicle || cabDoc.price) * requestedQty);
+      finalPrice += itemTotal;
+
+      processedFleet.push({
+        cabId: cabDoc._id,
+        vendorId: primaryVendorId,
+        count: requestedQty,
+        pricePerVehicle: Number(item.pricePerVehicle || cabDoc.price),
+        totalFare: itemTotal,
+        vehicleType: cabDoc.type,
+        name: cabDoc.name || cabDoc.vehicleName
+      });
+    }
+  } else if (cabId && cabId !== 'undefined' && cabId !== 'null') {
+    // Fallback to individual
+    const cab = await Cab.findById(cabId);
+    if (!cab) return next(new AppError('Cab vehicle not found.', 404));
+
+    const requestedQty = 1;
+    const maxFleetSize = Number(cab.totalFleet || cab.quantityAvailable || 1);
+
+    const queryDate = new Date(eventDate);
+    const startOfDay = new Date(queryDate.setHours(0,0,0,0));
+    const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+
+    const overlappingBookings = await Booking.find({
+      eventDate: { $gte: startOfDay, $lte: endOfDay },
+      status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+      bookingType: { $in: ['cab', 'baraat-cab'] },
+      $or: [
+        { "fleetSelection.cabId": cab._id },
+        { "cabIds": cab._id },
+        { "cab": cab._id }
+      ]
+    });
+
+    let totalBooked = 0;
+    for (const b of overlappingBookings) {
+      if (b.fleetSelection && b.fleetSelection.length > 0) {
+        const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cab._id.toString());
+        if (match) totalBooked += (match.count || 1);
+      } else if (b.vehicles && b.vehicles.length > 0) {
+        const idx = b.cabIds?.findIndex(id => id.toString() === cab._id.toString());
+        if (idx !== -1 && b.vehicles[idx]) {
+          totalBooked += (b.vehicles[idx].count || 1);
+        } else {
+          totalBooked += 1;
+        }
+      } else {
+        totalBooked += 1;
+      }
+    }
+
+    const availableQty = maxFleetSize - totalBooked;
+
+    // Validate Overbooking
+    if (requestedQty > availableQty) {
+      return next(new AppError(`Only ${availableQty} vehicles available for selected date.`, 400));
+    }
+
+    inventoryUpdates.push({
+      cabDoc: cab,
+      newQty: availableQty - requestedQty,
+      requestedQty
+    });
+
+    let cabPrice = Number(cab.price || (cab.pricing && cab.pricing.baseFare));
+    serviceName = cab.brand || cab.model || cab.vehicleName || cab.name || 'Baraat Cab';
     if (packageId && cab.packages) {
       const pkg = cab.packages.find(p => p._id.toString() === packageId.toString());
       if (pkg) {
         cabPrice = pkg.price;
-        packageSelected = {
-          name: pkg.name,
-          price: pkg.price,
-          features: pkg.features || []
-        };
+        serviceName = pkg.name;
       }
     }
-    vehiclesList = [{
-      vehicleType: cab.type,
-      count: 1,
+    finalPrice = cabPrice;
+    
+    let vId = cab.vendor;
+    if (!vId) {
+      const ownerVendor = await Vendor.findOne({ user: cab.createdBy });
+      if (ownerVendor) vId = ownerVendor._id;
+    }
+    const vendorData = await Vendor.findById(vId);
+    if (vendorData) {
+      vendorsSet.add(vendorData.user.toString());
+      primaryVendorProfileId = vendorData._id;
+      primaryVendorId = vendorData.user;
+    }
+
+    processedFleet.push({
+      cabId: cab._id,
+      vendorId: primaryVendorId,
+      count: requestedQty,
       pricePerVehicle: cabPrice,
-      totalFare: cabPrice
-    }];
+      totalFare: cabPrice,
+      vehicleType: cab.type,
+      name: serviceName
+    });
+  } else {
+    return next(new AppError('Please provide fleet selection or cab id.', 400));
   }
 
-  if (!cabPrice && totalAmount) {
-    cabPrice = Number(totalAmount);
+  if (!finalPrice && totalAmount) {
+    finalPrice = Number(totalAmount);
   }
 
-  if (!cabPrice || isNaN(cabPrice)) {
-    return next(new AppError('Cab price missing or invalid. Please contact the vendor or support.', 400));
+  if (!finalPrice || isNaN(finalPrice)) {
+    return next(new AppError('Cab price missing or invalid. Please contact support.', 400));
   }
 
-  const totalPrice = cabPrice;
+  // Date-based inventory is validated dynamically above using overlappingBookings.
+  // We no longer deduct from cab.quantityAvailable to preserve max fleet size.
 
-  // Ensure we have a valid Vendor ID
-  let vendorId = cab.vendor;
-  if (!vendorId) {
-    const ownerVendor = await Vendor.findOne({ user: cab.createdBy });
-    if (ownerVendor) vendorId = ownerVendor._id;
-  }
+  const bookingId = `FLEET-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-  if (!vendorId) return next(new AppError('No vendor found for this vehicle.', 400));
-
-  const vendorData = await Vendor.findById(vendorId);
-  if (!vendorData) return next(new AppError('Vendor profile not found.', 404));
-
-  const bookingId = `CAB-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+  // Sync vehicles array and cabIds for backward compatibility and UI rendering consistency
+  const bookingVehicles = processedFleet.map(item => ({
+    vehicleType: item.vehicleType,
+    count: item.count,
+    pricePerVehicle: item.pricePerVehicle,
+    totalFare: item.totalFare
+  }));
+  const cabIdsArray = processedFleet.map(f => f.cabId);
 
   const cabBooking = await Booking.create({
     bookingId,
     userId: req.user._id,
     user: req.user._id,
-    vendorId: vendorData.user,
-    vendor: vendorData.user,
-    vendorProfileId: vendorId,
-    bookingType: 'cab',
+    vendorId: primaryVendorId, // Primary backward compat
+    vendor: primaryVendorId,
+    vendorProfileId: primaryVendorProfileId,
+    vendorIds: Array.from(vendorsSet), // NEW
+    fleetSelection: processedFleet, // NEW
+    vehicles: bookingVehicles, // Sync vehicles field
+    cabIds: cabIdsArray, // Sync cabIds field
+    bookingType: 'baraat-cab',
     packageType: pkgType,
     serviceName: serviceName,
     serviceCategory: 'Baraat Cab',
@@ -489,39 +594,45 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
     guestCount: guests,
     message: remarks,
     specialRequests: remarks,
-    packageSelected,
-    vehicles: vehiclesList,
-    cabIds: [cab._id],
-    cab: cab._id,
-    totalPrice: totalPrice,
-    amount: totalPrice, // Use total price as standard amount
-    subtotal: subtotal || totalPrice,
+    totalPrice: finalPrice,
+    amount: finalPrice, // Use total price as standard amount
+    subtotal: subtotal || finalPrice,
     gst: gst || 0,
-    totalAmount: totalAmount || totalPrice,
+    totalAmount: totalAmount || finalPrice,
     advance: advance || 0,
     advanceAmount: advance || 0,
-    status: 'pending',
-    timeline: [{ status: 'pending', note: 'Cab booking request submitted. Awaiting vendor confirmation.' }]
+    status: 'confirmed',
+    timeline: [{ status: 'confirmed', note: 'Cab booking confirmed.' }]
   });
 
   // DEBUG LOGS AS REQUESTED
   console.log('BOOKING CREATED:', cabBooking);
   console.log('VENDOR ID:', cabBooking.vendor);
 
-
-
-
-
-  // 1. Notify Vendor
-  await sendNotification({
-    recipient: vendorData.user,
-    sender: req.user._id,
-    type: 'booking',
-    title: 'New Booking Request',
-    message: `New booking request from ${req.user.name}`,
-    link: '/vendor/dashboard/customer-bookings',
-    data: { bookingId: cabBooking._id, type: 'cab' }
+  // Add explicit logs for selectedQuantity, availableQuantity, savedQuantity
+  processedFleet.forEach((item, idx) => {
+    const origUpdate = inventoryUpdates.find(u => u.cabDoc._id.toString() === item.cabId.toString());
+    const availQty = origUpdate ? origUpdate.cabDoc.quantityAvailable : 'N/A';
+    const savedQty = cabBooking.fleetSelection[idx]?.count || (cabBooking.vehicles && cabBooking.vehicles[idx]?.count) || 'N/A';
+    console.log(`[Quantity Audit] Index: ${idx} | Vehicle: ${item.name} | selectedQuantity: ${item.count} | availableQuantity: ${availQty} | savedQuantity: ${savedQty}`);
   });
+
+
+
+
+
+  // 1. Notify Vendors
+  for (const vId of vendorsSet) {
+    await sendNotification({
+      recipient: vId,
+      sender: req.user._id,
+      type: 'booking',
+      title: 'New Booking Request',
+      message: `New booking request from ${req.user.name}`,
+      link: '/vendor/dashboard/customer-bookings',
+      data: { bookingId: cabBooking._id, type: 'cab' }
+    });
+  }
 
   // 2. Notify all Admins
   const admins = await User.find({ role: 'admin' });
@@ -531,7 +642,7 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
       sender: req.user._id,
       type: 'booking',
       title: 'New Booking Created',
-      message: `New booking created for ${cab.brand || cab.model || 'Baraat Cab'}`,
+      message: `New booking created for ${serviceName || 'Baraat Cab'}`,
       link: '/admin/bookings',
       data: { bookingId: cabBooking._id, type: 'cab' }
     });
@@ -541,8 +652,10 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
   const io = req.app.get('io');
   if (io) {
     io.to(`user_${req.user._id}`).emit('booking_updated', { booking: cabBooking });
-    io.to(`user_${vendorData.user}`).emit('new_booking', { booking: cabBooking });
-    io.to(vendorData.user.toString()).emit('newBooking', cabBooking);
+    for (const vId of vendorsSet) {
+      io.to(`user_${vId}`).emit('new_booking', { booking: cabBooking });
+      io.to(vId.toString()).emit('newBooking', cabBooking);
+    }
     io.to('admin').emit('new_booking_admin', { booking: cabBooking });
   }
 
@@ -574,24 +687,28 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
       bookingId: bookingWithDetails.bookingId,
       serviceName: bookedServiceName,
       date: new Date(eventDate).toLocaleDateString('en-IN'),
-      amount: totalPrice,
+      amount: finalPrice,
     });
     await sendEmail({ to: req.user.email, ...template });
 
-    // 2. Send Vendor Alert Email (if vendor email exists)
-    if (vendorData && vendorData.email) {
+    // 2. Send Vendor Alert Email(s)
+    for (const vId of vendorsSet) {
       try {
-        const vendorTemplate = emailTemplates.vendorBookingAlert(
-          vendorData.businessName || 'Cab Vendor Partner',
-          req.user.name,
-          {
-            bookingId: bookingWithDetails.bookingId,
-            serviceName: bookedServiceName,
-            date: new Date(eventDate).toLocaleDateString('en-IN'),
-            amount: totalPrice,
-          }
-        );
-        await sendEmail({ to: vendorData.email, ...vendorTemplate });
+        const vUser = await User.findById(vId);
+        if (vUser && vUser.email) {
+          const vProfile = await Vendor.findOne({ user: vId });
+          const vendorTemplate = emailTemplates.vendorBookingAlert(
+            vProfile ? vProfile.businessName : 'Cab Vendor Partner',
+            req.user.name,
+            {
+              bookingId: bookingWithDetails.bookingId,
+              serviceName: bookedServiceName,
+              date: new Date(eventDate).toLocaleDateString('en-IN'),
+              amount: finalPrice,
+            }
+          );
+          await sendEmail({ to: vUser.email, ...vendorTemplate });
+        }
       } catch (err) {
         console.error("❌ Failed to send cab vendor booking alert email:", err.message);
       }
@@ -605,12 +722,12 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
           const adminTemplate = emailTemplates.adminBookingAlert(
             adm.name || 'Administrator',
             req.user.name,
-            vendorData ? vendorData.businessName : 'Cab Vendor Partner',
+            'Cab Vendor Partner(s)',
             {
               bookingId: bookingWithDetails.bookingId,
               serviceName: bookedServiceName,
               date: new Date(eventDate).toLocaleDateString('en-IN'),
-              amount: totalPrice,
+              amount: finalPrice,
             }
           );
           await sendEmail({ to: adm.email, ...adminTemplate });
@@ -927,6 +1044,9 @@ exports.updateBookingStatus = catchAsync(async (req, res, next) => {
       }
       await availability.save();
     }
+
+    // Inventory is restored implicitly because booking status changes to 'cancelled' or 'rejected',
+    // which removes it from the Date-Specific Conflict Detection Algorithm.
   }
   // --- END AVAILABILITY RESTORE ---
 
@@ -1041,6 +1161,9 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
 
     await availability.save();
   }
+
+  // Inventory is restored implicitly because booking status changes to 'cancelled',
+  // which removes it from the Date-Specific Conflict Detection Algorithm.
   // --- END AVAILABILITY RESTORE ---
 
   await booking.save();
@@ -1102,7 +1225,7 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
 // @access  Private
 exports.getBookingById = catchAsync(async (req, res, next) => {
   const booking = await Booking.findById(req.params.id)
-    .populate('vendorProfileId', 'businessName phone email images location user')
+    .populate('vendorProfileId', 'businessName phone email socialLinks images location user')
     .populate('vendorId', 'name email phone')
     .populate('vendor', 'name email phone')
     .populate('userId', 'name email phone avatar')

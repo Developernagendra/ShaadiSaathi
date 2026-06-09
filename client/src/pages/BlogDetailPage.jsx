@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion, useScroll, useSpring } from 'framer-motion'
-import { FiCalendar, FiUser, FiClock, FiTag, FiArrowLeft, FiShare2, FiHeart, FiBookmark, FiMessageCircle, FiFacebook, FiTwitter, FiInstagram } from 'react-icons/fi'
+import { FiCalendar, FiUser, FiClock, FiTag, FiArrowLeft, FiShare2, FiHeart, FiBookmark, FiMessageCircle, FiFacebook, FiTwitter, FiInstagram, FiArrowRight } from 'react-icons/fi'
 import api from '../utils/api'
 import LoadingScreen from '../components/common/LoadingScreen'
 import { optimizeImage } from '../utils/helpers'

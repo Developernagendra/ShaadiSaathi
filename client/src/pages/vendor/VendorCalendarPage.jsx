@@ -56,24 +56,28 @@ export default function VendorCalendarPage() {
   }, [dispatch, currentMonth])
 
   const renderHeader = () => (
-    <div className="flex items-center justify-between mb-8">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 relative z-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Availability Calendar</h1>
-        <p className="text-gray-500">Manage your slots and blocked dates</p>
+        <div className="divider-luxe !justify-start mb-3 !gap-3">
+          <div className="divider-line !bg-[#D4AF37]/30 !w-8" />
+          <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] italic">Schedule & Capacity</span>
+        </div>
+        <h1 className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Availability Calendar</h1>
+        <p className="text-gray-500 font-medium italic mt-2">Manage your slots, blocked dates, and booking capacity</p>
       </div>
-      <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex items-center gap-4 bg-white/80 backdrop-blur-md p-2 rounded-[1.5rem] shadow-sm border border-white">
         <button 
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+          className="p-3 hover:bg-gray-50 hover:text-[#C2185B] rounded-xl transition-colors text-gray-500 hover:shadow-sm"
         >
           <FiChevronLeft size={20} />
         </button>
-        <span className="font-bold text-lg min-w-[140px] text-center">
+        <span className="font-display font-black text-xl min-w-[160px] text-center text-gray-900 drop-shadow-sm">
           {format(currentMonth, 'MMMM yyyy')}
         </span>
         <button 
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+          className="p-3 hover:bg-gray-50 hover:text-[#C2185B] rounded-xl transition-colors text-gray-500 hover:shadow-sm"
         >
           <FiChevronRight size={20} />
         </button>
@@ -103,63 +107,64 @@ export default function VendorCalendarPage() {
     const calendarDays = eachDayOfInterval({ start: startDate, end: endDate })
 
     return (
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-2 md:gap-3">
         {calendarDays.map((day, idx) => {
           const availability = vendorAvailability.find(a => isSameDay(new Date(a.date), day))
           const isSelected = selectedDate && isSameDay(day, selectedDate)
           const isCurrentMonth = isSameMonth(day, monthStart)
           
-          let bgColor = 'bg-white'
+          let bgColor = 'bg-white/50 backdrop-blur-sm'
           let textColor = 'text-gray-900'
           let statusLabel = ''
 
           if (availability) {
             if (availability.isBlocked) {
-              bgColor = 'bg-gray-100'
+              bgColor = 'bg-gray-100/80 backdrop-blur-sm'
               statusLabel = 'Blocked'
             } else if (availability.status === 'booked') {
-              bgColor = 'bg-red-50'
+              bgColor = 'bg-red-50/80 backdrop-blur-sm'
               textColor = 'text-red-700'
               statusLabel = 'Full'
             } else if (availability.status === 'partially_booked') {
-              bgColor = 'bg-yellow-50'
-              textColor = 'text-yellow-700'
+              bgColor = 'bg-amber-50/80 backdrop-blur-sm'
+              textColor = 'text-amber-700'
               statusLabel = `${availability.bookedCount}/${availability.maxBookings}`
             } else {
-              bgColor = 'bg-green-50'
-              textColor = 'text-green-700'
+              bgColor = 'bg-[#FDFBF7]/80 backdrop-blur-sm'
+              textColor = 'text-[#D4AF37]'
               statusLabel = 'Available'
             }
           }
 
           if (!isCurrentMonth) {
             textColor = 'text-gray-300'
-            bgColor = 'bg-gray-50/50'
+            bgColor = 'bg-gray-50/30'
           }
 
           return (
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={isCurrentMonth ? { scale: 1.02, y: -2 } : {}}
+              whileTap={isCurrentMonth ? { scale: 0.98 } : {}}
               key={idx}
               onClick={() => handleDateClick(day, availability)}
-              className={`relative h-24 md:h-32 p-3 border rounded-2xl transition-all text-left flex flex-col justify-between ${
-                isSelected ? 'ring-2 ring-primary-500 border-primary-500' : 'border-gray-100'
-              } ${bgColor}`}
+              disabled={!isCurrentMonth}
+              className={`relative h-24 md:h-32 p-3 md:p-4 rounded-[1.5rem] transition-all text-left flex flex-col justify-between shadow-sm border ${
+                isSelected ? 'ring-2 ring-[#C2185B] border-[#C2185B] shadow-md' : 'border-white hover:shadow-md'
+              } ${bgColor} ${!isCurrentMonth && 'opacity-50 cursor-not-allowed'}`}
             >
-              <div className="flex justify-between items-start">
-                <span className={`text-sm font-bold ${isToday(day) ? 'bg-primary-600 text-white w-7 h-7 flex items-center justify-center rounded-full -mt-1 -ml-1 shadow-md' : textColor}`}>
+              <div className="flex justify-between items-start w-full">
+                <span className={`text-sm md:text-base font-black ${isToday(day) ? 'bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-white w-8 h-8 flex items-center justify-center rounded-xl -mt-1 -ml-1 shadow-md' : textColor}`}>
                   {format(day, 'd')}
                 </span>
-                {availability?.isBlocked && <FiLock size={12} className="text-gray-400" />}
+                {availability?.isBlocked && <FiLock size={14} className="text-gray-400 mt-1" />}
               </div>
               
               {isCurrentMonth && statusLabel && (
-                <div className={`text-[10px] font-bold px-2 py-1 rounded-lg self-start ${
-                  availability?.status === 'booked' ? 'bg-red-100 text-red-700' :
-                  availability?.status === 'partially_booked' ? 'bg-yellow-100 text-yellow-700' :
-                  availability?.isBlocked ? 'bg-gray-200 text-gray-600' :
-                  'bg-green-100 text-green-700'
+                <div className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg self-start shadow-sm ${
+                  availability?.status === 'booked' ? 'bg-red-100/80 text-red-700 border border-red-200' :
+                  availability?.status === 'partially_booked' ? 'bg-amber-100/80 text-amber-700 border border-amber-200' :
+                  availability?.isBlocked ? 'bg-gray-200/80 text-gray-600 border border-gray-300' :
+                  'bg-white border border-[#D4AF37]/30 text-[#D4AF37]'
                 }`}>
                   {statusLabel}
                 </div>
@@ -220,37 +225,39 @@ export default function VendorCalendarPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
+    <div className="pb-24 animate-fade-in relative max-w-7xl mx-auto px-4 md:px-8 pt-8">
+      <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
       {renderHeader()}
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 relative z-10">
         {/* Legend & Stats */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="font-bold text-gray-900 mb-4">Legend</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 bg-green-100 border border-green-200 rounded-md" />
-                <span className="text-sm text-gray-600">Available</span>
+          <div className="bg-white/80 backdrop-blur-2xl p-8 rounded-[2.5rem] shadow-sm border border-white">
+            <h3 className="font-display text-2xl font-black text-gray-900 mb-6">Status Legend</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 bg-[#FDFBF7]/50 p-3 rounded-xl border border-gray-100/50">
+                <div className="w-5 h-5 bg-[#FDFBF7] border border-[#D4AF37]/30 rounded-lg shadow-inner" />
+                <span className="text-xs font-bold text-gray-700">Available</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 bg-yellow-100 border border-yellow-200 rounded-md" />
-                <span className="text-sm text-gray-600">Partially Booked</span>
+              <div className="flex items-center gap-4 bg-amber-50/30 p-3 rounded-xl border border-gray-100/50">
+                <div className="w-5 h-5 bg-amber-50 border border-amber-200 rounded-lg shadow-inner" />
+                <span className="text-xs font-bold text-gray-700">Partially Booked</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 bg-red-100 border border-red-200 rounded-md" />
-                <span className="text-sm text-gray-600">Fully Booked</span>
+              <div className="flex items-center gap-4 bg-red-50/30 p-3 rounded-xl border border-gray-100/50">
+                <div className="w-5 h-5 bg-red-50 border border-red-200 rounded-lg shadow-inner" />
+                <span className="text-xs font-bold text-gray-700">Fully Booked</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-4 h-4 bg-gray-100 border border-gray-200 rounded-md" />
-                <span className="text-sm text-gray-600">Blocked / Leave</span>
+              <div className="flex items-center gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                <div className="w-5 h-5 bg-gray-100 border border-gray-200 rounded-lg shadow-inner" />
+                <span className="text-xs font-bold text-gray-700">Blocked / Leave</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-6 rounded-3xl shadow-lg text-white">
-            <h3 className="font-bold mb-4">Quick Actions</h3>
-            <div className="space-y-3">
+          <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] p-8 rounded-[2.5rem] shadow-premium text-white relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+            <h3 className="font-display text-2xl font-black mb-6 flex items-center gap-3"><FiClock className="text-[#D4AF37]" /> Quick Actions</h3>
+            <div className="space-y-4 relative z-10">
               <button 
                 onClick={() => {
                   const today = new Date();
@@ -260,16 +267,16 @@ export default function VendorCalendarPage() {
                     action: 'available'
                   }))
                 }}
-                className="w-full bg-white/10 hover:bg-white/20 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-white/10 hover:bg-white/20 border border-white/10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5 shadow-sm"
               >
-                <FiUnlock size={16} /> Mark Next 30 Days Available
+                <FiUnlock size={14} /> Open Next 30 Days
               </button>
             </div>
           </div>
         </div>
 
         {/* Calendar Grid */}
-        <div className="lg:col-span-3 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div className="lg:col-span-3 bg-white/80 backdrop-blur-2xl p-8 rounded-[3rem] shadow-sm border border-white">
           {renderDays()}
           {renderCells()}
         </div>
@@ -282,24 +289,24 @@ export default function VendorCalendarPage() {
         title={selectedDate ? `Manage: ${format(selectedDate, 'do MMMM yyyy')}` : ''}
         size="lg"
       >
-        <div className="p-6 space-y-6">
+        <div className="p-6 md:p-8 space-y-8">
           {/* Top Toggles */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl ${editForm.isBlocked ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                {editForm.isBlocked ? <FiLock size={20} /> : <FiUnlock size={20} />}
+          <div className="flex items-center justify-between p-6 bg-gray-50/50 rounded-[2rem] border border-gray-100/50">
+            <div className="flex items-center gap-4">
+              <div className={`p-4 rounded-2xl ${editForm.isBlocked ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                {editForm.isBlocked ? <FiLock size={24} /> : <FiUnlock size={24} />}
               </div>
               <div>
-                <p className="font-bold text-gray-900">{editForm.isBlocked ? 'Date is Blocked' : 'Date is Available'}</p>
-                <p className="text-xs text-gray-500">Toggle status for this specific date</p>
+                <p className="font-display font-black text-lg text-gray-900">{editForm.isBlocked ? 'Date is Blocked' : 'Date is Available'}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mt-1">Toggle status for this specific date</p>
               </div>
             </div>
             <button 
               onClick={() => setEditForm(prev => ({ ...prev, isBlocked: !prev.isBlocked }))}
-              className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+              className={`px-8 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
                 editForm.isBlocked 
-                ? 'bg-green-600 text-white shadow-lg shadow-green-200' 
-                : 'bg-red-600 text-white shadow-lg shadow-red-200'
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:-translate-y-0.5' 
+                : 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:-translate-y-0.5'
               }`}
             >
               {editForm.isBlocked ? 'Mark Available' : 'Block Date'}
@@ -309,101 +316,104 @@ export default function VendorCalendarPage() {
           {!editForm.isBlocked ? (
             <>
               {/* Capacity */}
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Daily Booking Capacity</label>
-                  <div className="flex items-center gap-3">
-                    <FiUsers className="text-primary-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Daily Booking Capacity</label>
+                  <div className="flex items-center gap-4 bg-gray-50/50 px-5 py-4 rounded-2xl border border-gray-100/50">
+                    <FiUsers className="text-[#D4AF37]" size={20} />
                     <input 
                       type="number" 
                       min="1" 
                       value={editForm.maxBookings}
                       onChange={(e) => setEditForm(prev => ({ ...prev, maxBookings: parseInt(e.target.value) }))}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full bg-transparent font-black text-xl text-gray-900 focus:outline-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Slots */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                    <FiClock className="text-primary-500" /> Time Slots (Optional)
+              <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h4 className="font-display font-black text-lg text-gray-900 flex items-center gap-3">
+                    <span className="p-2 bg-pink-50 text-[#C2185B] rounded-xl"><FiClock size={16} /></span> Time Slots (Optional)
                   </h4>
                   <button 
                     onClick={handleAddSlot}
-                    className="text-primary-600 text-sm font-bold flex items-center gap-1 hover:underline"
+                    className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm"
                   >
-                    <FiPlus /> Add Slot
+                    <FiPlus size={14} /> Add Slot
                   </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {editForm.slots.map((slot, i) => (
-                    <div key={i} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 border border-gray-100 rounded-2xl bg-gray-50/50">
+                    <div key={i} className="flex flex-col md:flex-row items-center gap-4 p-5 border border-gray-100 rounded-2xl bg-gray-50/30 group">
                       <input 
                         placeholder="Slot Name (e.g. Morning)" 
                         value={slot.name}
                         onChange={(e) => handleSlotChange(i, 'name', e.target.value)}
-                        className="px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                        className="w-full md:w-1/3 px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:border-[#C2185B]"
                       />
                       <input 
                         type="time" 
                         value={slot.startTime}
                         onChange={(e) => handleSlotChange(i, 'startTime', e.target.value)}
-                        className="px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                        className="w-full md:w-auto px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 focus:outline-none focus:border-[#C2185B]"
                       />
                       <input 
                         type="time" 
                         value={slot.endTime}
                         onChange={(e) => handleSlotChange(i, 'endTime', e.target.value)}
-                        className="px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                        className="w-full md:w-auto px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 focus:outline-none focus:border-[#C2185B]"
                       />
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                         <input 
                           type="number" 
                           placeholder="Capacity" 
                           value={slot.maxBookings}
                           onChange={(e) => handleSlotChange(i, 'maxBookings', parseInt(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                          className="w-24 px-4 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:border-[#C2185B]"
                         />
-                        <button onClick={() => handleRemoveSlot(i)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg">
-                          <FiX />
+                        <button onClick={() => handleRemoveSlot(i)} className="text-gray-400 p-3 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors">
+                          <FiX size={18} />
                         </button>
                       </div>
                     </div>
                   ))}
                   {editForm.slots.length === 0 && (
-                    <p className="text-sm text-gray-400 italic">No specific slots defined. User will book for the full day.</p>
+                    <div className="flex flex-col items-center justify-center py-8 text-gray-400 bg-gray-50/50 rounded-2xl border border-gray-100/50 border-dashed">
+                      <FiClock size={32} className="mb-3 opacity-20" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">No specific slots defined. User will book for the full day.</p>
+                    </div>
                   )}
                 </div>
               </div>
             </>
           ) : (
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Block Reason (Internal)</label>
+            <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">Block Reason (Internal)</label>
               <textarea 
                 value={editForm.blockReason}
                 onChange={(e) => setEditForm(prev => ({ ...prev, blockReason: e.target.value }))}
                 placeholder="e.g. Personal vacation, Offline booking at venue..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 outline-none h-32 resize-none"
+                className="w-full px-5 py-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 focus:border-[#C2185B] focus:ring-1 focus:ring-[#C2185B] outline-none h-32 resize-none font-medium text-gray-900"
               />
             </div>
           )}
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col md:flex-row gap-4 pt-6 border-t border-gray-100">
             <button 
               onClick={() => setIsEditModalOpen(false)}
-              className="flex-1 py-3 border border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-4 border border-gray-200 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button 
               onClick={handleSave}
-              className="flex-1 py-3 bg-primary-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all"
+              className="flex-1 py-4 bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
-              <FiSave /> Save Changes
+              <FiSave size={14} /> Save Changes
             </button>
           </div>
         </div>

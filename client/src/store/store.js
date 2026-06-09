@@ -7,6 +7,7 @@ import notificationReducer from './slices/notificationSlice'
 import chatReducer from './slices/chatSlice'
 import featureReducer from './slices/featureSlice'
 import availabilityReducer from './slices/availabilitySlice'
+import invitationReducer from './slices/invitationSlice'
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     chat: chatReducer,
     feature: featureReducer,
     availability: availabilityReducer,
+    invitation: invitationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -15,8 +15,8 @@ exports.uploadCabImage = catchAsync(async (req, res, next) => {
     resource_type: 'auto'
   });
 
-  res.status(200).json({ 
-    status: 'success', 
+  res.status(200).json({
+    status: 'success',
     url: result.secure_url,
     publicId: result.public_id
   });
@@ -54,7 +54,9 @@ exports.createCab = catchAsync(async (req, res, next) => {
     isAdminVehicle,
     createdBy: req.user._id,
     ownerRole: req.user.role === 'admin' ? 'admin' : 'vendor',
-    ownerType: req.user.role === 'admin' ? 'admin' : 'vendor'
+    ownerType: req.user.role === 'admin' ? 'admin' : 'vendor',
+    status: req.user.role === 'admin' ? 'approved' : (req.body.status === 'draft' ? 'draft' : 'pending'),
+    isAvailable: true
   });
 
   res.status(201).json({ status: 'success', cab });
@@ -123,22 +125,20 @@ exports.deleteCab = catchAsync(async (req, res, next) => {
 
 // @desc    Get all cabs for browsing (Public)
 exports.getCabs = catchAsync(async (req, res, next) => {
-  const { type, city, vendor, seating, minPrice, maxPrice } = req.query;
+  const { type, city, vendor, seating, minPrice, maxPrice, date } = req.query;
 
-  // Base filter: Only show available and APPROVED vehicles
-  const filter = { isAvailable: true, status: 'approved' };
+  // Base filter: Only show available, active and APPROVED vehicles
+  const filter = { isAvailable: true, isActive: true, status: 'approved' };
 
   // 1. Vehicle Type Filter
-  if (type === 'bundles') {
-    filter['bundlePackages'] = { $exists: true, $not: { $size: 0 } };
-  } else if (type && type.trim() !== '') {
+  if (type && type.trim() !== '') {
     filter.type = type;
   }
 
   // 2. City Filter (Case-insensitive to handle legacy data)
   if (city && city.trim() !== '') {
     const trimmedCity = city.trim();
-    filter['location.city'] = new RegExp(`^\\s*${trimmedCity}\\s*$`, 'i');
+    filter['location.city'] = { $regex: new RegExp(`^\\s*${trimmedCity}\\s*$`, 'i') };
   }
 
   // 3. Ownership Filter (Admin vs Vendor)
@@ -170,16 +170,70 @@ exports.getCabs = catchAsync(async (req, res, next) => {
   console.log('🚛 [Fleet Integration] Fetching vehicles with filter:', JSON.stringify(filter));
 
   const cabs = await Cab.find(filter)
-    .populate('vendor', 'businessName rating images location')
+    .populate('vendor', 'businessName rating images location badges verified')
     .sort({ isAdminVehicle: -1, 'rating.average': -1 })
     .lean(); // Prioritize Admin vehicles then by rating
 
   console.log(`✅ [Fleet Integration] Surfaced ${cabs.length} vehicles for current request.`);
 
+  // --- Dynamic Inventory Engine ---
+  let targetDate = null;
+  if (date) {
+    const qDate = new Date(date);
+    if (!isNaN(qDate.getTime())) {
+      targetDate = qDate;
+    }
+  }
+
+  // Use requested date, or default to today's snapshot for base context
+  const queryDate = targetDate ? new Date(targetDate) : new Date();
+  const startOfDay = new Date(queryDate.setHours(0,0,0,0));
+  const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+
+  // Find overlapping bookings
+  const activeBookings = await Booking.find({
+    eventDate: { $gte: startOfDay, $lte: endOfDay },
+    status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+    bookingType: { $in: ['cab', 'baraat-cab'] }
+  }).lean();
+
+  const enrichedCabs = cabs.map(cab => {
+    let bookedFleet = 0;
+    const totalFleet = cab.totalFleet || cab.quantityAvailable || 1;
+
+    activeBookings.forEach(b => {
+      // Count fleet selection matches
+      if (b.fleetSelection && b.fleetSelection.length > 0) {
+        const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cab._id.toString());
+        if (match) bookedFleet += (match.count || 1);
+      } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+        const idx = b.cabIds.findIndex(id => id && id.toString() === cab._id.toString());
+        if (idx !== -1 && b.vehicles[idx]) {
+          bookedFleet += (b.vehicles[idx].count || 1);
+        } else if (idx !== -1) {
+          bookedFleet += 1;
+        }
+      } else {
+        // legacy match
+        if (b.cab && b.cab.toString() === cab._id.toString()) {
+          bookedFleet += 1;
+        }
+      }
+    });
+
+    const availableFleet = Math.max(0, totalFleet - bookedFleet);
+    return {
+      ...cab,
+      totalFleet,
+      bookedFleet,
+      availableFleet
+    };
+  });
+
   res.status(200).json({
     status: 'success',
-    results: cabs.length,
-    cabs
+    results: enrichedCabs.length,
+    cabs: enrichedCabs
   });
 });
 
@@ -230,13 +284,55 @@ exports.getAdminFleet = catchAsync(async (req, res, next) => {
     .populate('vendor', 'businessName')
     .sort({ status: 1, createdAt: -1 })
     .lean(); // Pending first
-  res.status(200).json({ status: 'success', results: cabs.length, cabs });
+
+  // Dynamic Inventory calculation for today
+  const queryDate = new Date();
+  const startOfDay = new Date(queryDate.setHours(0,0,0,0));
+  const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+
+  const activeBookings = await Booking.find({
+    eventDate: { $gte: startOfDay, $lte: endOfDay },
+    status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+    bookingType: { $in: ['cab', 'baraat-cab'] }
+  }).lean();
+
+  const enrichedCabs = cabs.map(cab => {
+    let bookedFleet = 0;
+    const totalFleet = cab.totalFleet || cab.quantityAvailable || 1;
+
+    activeBookings.forEach(b => {
+      if (b.fleetSelection && b.fleetSelection.length > 0) {
+        const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cab._id.toString());
+        if (match) bookedFleet += (match.count || 1);
+      } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+        const idx = b.cabIds.findIndex(id => id && id.toString() === cab._id.toString());
+        if (idx !== -1 && b.vehicles[idx]) {
+          bookedFleet += (b.vehicles[idx].count || 1);
+        } else if (idx !== -1) {
+          bookedFleet += 1;
+        }
+      } else {
+        if (b.cab && b.cab.toString() === cab._id.toString()) {
+          bookedFleet += 1;
+        }
+      }
+    });
+
+    return {
+      ...cab,
+      totalFleet,
+      bookedFleet,
+      availableFleet: Math.max(0, totalFleet - bookedFleet)
+    };
+  });
+
+  res.status(200).json({ status: 'success', results: enrichedCabs.length, cabs: enrichedCabs });
 });
 
 // @desc    Moderate a cab (Admin Only)
 exports.moderateCab = catchAsync(async (req, res, next) => {
   const { status, reason, verificationChecklist, adminRemarks, rejectionReason, internalNotes, isFeatured } = req.body;
-  
+
   const allowedStatuses = ['approved', 'rejected', 'suspended', 'changes_requested', 'pending'];
   if (status && !allowedStatuses.includes(status)) {
     return next(new AppError('Invalid status', 400));
@@ -244,6 +340,18 @@ exports.moderateCab = catchAsync(async (req, res, next) => {
 
   const cab = await Cab.findById(req.params.id);
   if (!cab) return next(new AppError('Cab not found', 404));
+
+  const auditAction = status ? status : 'updated_remarks';
+  const auditReason = (status === 'changes_requested' || status === 'rejected') ? (rejectionReason || adminRemarks) : (adminRemarks || 'Action processed via Verification Audit Room');
+
+  if (!cab.auditLogs) cab.auditLogs = [];
+  cab.auditLogs.unshift({
+    adminId: req.user._id,
+    adminName: req.user.name || 'System Admin',
+    action: auditAction,
+    reason: auditReason,
+    date: new Date()
+  });
 
   if (status) cab.status = status;
   if (verificationChecklist) cab.verificationChecklist = verificationChecklist;
@@ -295,7 +403,50 @@ exports.getVendorCabs = catchAsync(async (req, res, next) => {
   }
 
   const cabs = await Cab.find({ vendor: vendor._id }).lean();
-  res.status(200).json({ status: 'success', cabs });
+
+  // Dynamic Inventory calculation for today
+  const queryDate = new Date();
+  const startOfDay = new Date(queryDate.setHours(0,0,0,0));
+  const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+
+  const activeBookings = await Booking.find({
+    vendorId: req.user._id,
+    eventDate: { $gte: startOfDay, $lte: endOfDay },
+    status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+    bookingType: { $in: ['cab', 'baraat-cab'] }
+  }).lean();
+
+  const enrichedCabs = cabs.map(cab => {
+    let bookedFleet = 0;
+    const totalFleet = cab.totalFleet || cab.quantityAvailable || 1;
+
+    activeBookings.forEach(b => {
+      if (b.fleetSelection && b.fleetSelection.length > 0) {
+        const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cab._id.toString());
+        if (match) bookedFleet += (match.count || 1);
+      } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+        const idx = b.cabIds.findIndex(id => id && id.toString() === cab._id.toString());
+        if (idx !== -1 && b.vehicles[idx]) {
+          bookedFleet += (b.vehicles[idx].count || 1);
+        } else if (idx !== -1) {
+          bookedFleet += 1;
+        }
+      } else {
+        if (b.cab && b.cab.toString() === cab._id.toString()) {
+          bookedFleet += 1;
+        }
+      }
+    });
+
+    return {
+      ...cab,
+      totalFleet,
+      bookedFleet,
+      availableFleet: Math.max(0, totalFleet - bookedFleet)
+    };
+  });
+
+  res.status(200).json({ status: 'success', cabs: enrichedCabs });
 });
 
 // @desc    Get vendor cab bookings
@@ -409,7 +560,7 @@ exports.updateCabBookingStatus = catchAsync(async (req, res, next) => {
 // @desc    Get featured cabs (Public)
 exports.getFeaturedCabs = catchAsync(async (req, res, next) => {
   const cabs = await Cab.find({ isFeatured: true, status: 'approved', isAvailable: true })
-    .populate('vendor', 'businessName rating images location')
+    .populate('vendor', 'businessName rating images location badges verified')
     .limit(10)
     .lean();
   res.status(200).json({ status: 'success', results: cabs.length, cabs });

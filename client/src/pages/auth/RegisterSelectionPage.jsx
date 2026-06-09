@@ -14,20 +14,20 @@ export default function RegisterSelectionPage() {
       <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
 
       <div className="w-full max-w-5xl relative z-10">
-        
+
         {/* Header */}
         <div className="text-center mb-16">
           <Link to="/" className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#C2185B] to-[#8E244D] rounded-3xl mb-8 shadow-[0_10px_40px_rgba(194,24,91,0.3)] hover:scale-105 transition-transform">
             <span className="text-4xl text-white">💒</span>
           </Link>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="font-display text-5xl md:text-6xl font-black text-gray-900 mb-4 tracking-tight"
           >
             Join ShaadiSaathi
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -39,7 +39,7 @@ export default function RegisterSelectionPage() {
 
         {/* Selection Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto">
-          
+
           {/* Card 1: User */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -48,20 +48,20 @@ export default function RegisterSelectionPage() {
             className="group relative h-full"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-white rounded-[3rem] transform group-hover:-translate-y-2 group-hover:scale-[1.02] transition-all duration-500 shadow-xl border border-pink-50" />
-            
+
             <Link to="/register/user" className="relative h-full flex flex-col p-10 z-10 outline-none">
               <div className="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-8 border border-pink-100 group-hover:shadow-md transition-shadow">
                 <FiUser size={36} className="text-[#C2185B]" />
               </div>
-              
+
               <h2 className="font-display text-4xl font-black text-gray-900 mb-4">
                 💍 Join as User
               </h2>
-              
+
               <p className="text-gray-600 font-medium text-lg mb-10 leading-relaxed flex-grow">
                 Book trusted wedding services, manage guests, and plan your special day seamlessly.
               </p>
-              
+
               <div className="mt-auto flex items-center justify-between">
                 <span className="text-[11px] font-black text-[#C2185B] uppercase tracking-[0.2em]">
                   Continue as User
@@ -81,22 +81,22 @@ export default function RegisterSelectionPage() {
             className="group relative h-full"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black rounded-[3rem] transform group-hover:-translate-y-2 group-hover:scale-[1.02] transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-800" />
-            
+
             <Link to="/register/vendor" className="relative h-full flex flex-col p-10 z-10 outline-none">
               <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-[40px] pointer-events-none" />
-              
+
               <div className="w-20 h-20 bg-gray-800 rounded-2xl shadow-sm flex items-center justify-center mb-8 border border-gray-700 group-hover:border-[#D4AF37]/50 transition-colors">
                 <FiBriefcase size={36} className="text-[#D4AF37]" />
               </div>
-              
+
               <h2 className="font-display text-4xl font-black text-white mb-4">
                 🏪 Join as Vendor
               </h2>
-              
+
               <p className="text-gray-400 font-medium text-lg mb-10 leading-relaxed flex-grow">
                 Grow your wedding business, reach more couples, and get premium bookings easily.
               </p>
-              
+
               <div className="mt-auto flex items-center justify-between">
                 <span className="text-[11px] font-black text-[#D4AF37] uppercase tracking-[0.2em]">
                   Continue as Vendor

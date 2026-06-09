@@ -32,7 +32,7 @@ export default function BundleDetailPage() {
   }, [bundleId])
 
   if (loading) return <LoadingScreen />
-  
+
   if (error || !bundle) return (
     <div className="min-h-screen flex flex-col items-center justify-center pt-20 bg-[#FFF8F0]/30">
       <div className="text-6xl mb-6">📦</div>
@@ -50,18 +50,18 @@ export default function BundleDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-24 selection:bg-[#C2185B]/20 selection:text-[#C2185B]">
-      
+
       {/* ── ✨ Hero Section ── */}
       <div className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 overflow-hidden bg-gray-900 mx-4 md:mx-8 mt-4 md:mt-8 rounded-[3rem] shadow-2xl">
         <div className="absolute inset-0">
-          <img 
-            src={bundle.images?.[0]?.url || "https://images.unsplash.com/photo-1563720223185-11003d516935?w=1600"} 
-            className="w-full h-full object-cover opacity-50" 
-            alt="Bundle Cover" 
+          <img
+            src={bundle.images?.[0]?.url || "https://images.unsplash.com/photo-1563720223185-11003d516935?w=1600"}
+            className="w-full h-full object-cover opacity-50"
+            alt="Bundle Cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-900/60 to-transparent" />
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 text-center lg:text-left flex flex-col lg:flex-row items-center lg:items-end justify-between gap-10">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="max-w-3xl">
             <div className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-6">
@@ -102,10 +102,10 @@ export default function BundleDetailPage() {
 
       <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-20">
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
-          
+
           {/* ── LEFT: INCLUDED VEHICLES & FEATURES ── */}
           <div className="lg:col-span-8 space-y-10">
-            
+
             {/* Quick Overview Strip */}
             <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-pink-50 grid grid-cols-2 md:grid-cols-4 gap-4 divide-x divide-gray-100">
               <div className="text-center px-4">
@@ -133,20 +133,20 @@ export default function BundleDetailPage() {
             {/* Included Fleet List */}
             <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-premium border border-pink-50 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-pink-50 rounded-full blur-[80px] pointer-events-none" />
-              
+
               <div className="inline-flex items-center gap-2 text-[#C2185B] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
                 <div className="w-8 h-px bg-[#C2185B]" /> Included Services
               </div>
               <h2 className="font-display text-3xl md:text-4xl font-black text-gray-900 mb-10 tracking-tight">
                 Your Premium Fleet
               </h2>
-              
+
               <div className="space-y-6">
                 {bundle.vehicles?.map((v, idx) => {
                   const cab = v.vehicleId || {}
                   if (!cab || !cab.name) return null;
                   return (
-                    <motion.div 
+                    <motion.div
                       key={idx}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -155,16 +155,16 @@ export default function BundleDetailPage() {
                       className="flex flex-col sm:flex-row gap-6 p-6 rounded-[2rem] bg-gray-50 border border-gray-100 hover:border-pink-200 hover:shadow-[0_10px_30px_rgba(194,24,91,0.06)] transition-all duration-300 group"
                     >
                       <div className="w-full sm:w-56 h-40 rounded-[1.5rem] overflow-hidden flex-shrink-0 relative">
-                        <img 
-                          src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400'} 
-                          alt={cab.name} 
+                        <img
+                          src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400'}
+                          alt={cab.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                         />
                         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-[#C2185B] font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
                           Qty: {v.quantity}
                         </div>
                       </div>
-                      
+
                       <div className="flex-1 flex flex-col justify-center">
                         <div className="flex justify-between items-start mb-3">
                           <h3 className="font-display font-black text-2xl text-gray-900 group-hover:text-[#C2185B] transition-colors">{cab.name}</h3>
@@ -175,7 +175,7 @@ export default function BundleDetailPage() {
                         <p className="text-sm font-medium text-gray-500 italic mb-5 leading-relaxed">
                           Premium {cab.brand || ''} {cab.model || ''} equipped with luxury interiors and experienced chauffeurs.
                         </p>
-                        
+
                         <div className="flex flex-wrap gap-6 pt-5 border-t border-gray-200 mt-auto">
                           <div>
                             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Included Hours</p>
@@ -203,8 +203,8 @@ export default function BundleDetailPage() {
                 <h3 className="font-display text-2xl md:text-3xl font-black text-gray-900 mb-8 tracking-tight">Package Highlights & Inclusions</h3>
                 <div className="grid sm:grid-cols-2 gap-6">
                   {bundle.features.map((feat, i) => (
-                    <motion.div 
-                      key={i} 
+                    <motion.div
+                      key={i}
                       initial={{ opacity: 0, x: -10 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -224,7 +224,7 @@ export default function BundleDetailPage() {
 
           {/* ── RIGHT: PRICING & BOOKING SIDEBAR ── */}
           <div className="lg:col-span-4 space-y-6">
-            
+
             {/* Main Booking Card */}
             <div className="bg-white rounded-[3rem] p-8 shadow-[0_20px_60px_rgba(194,24,91,0.08)] border border-pink-100 sticky top-32">
               <div className="text-center mb-8 border-b border-gray-100 pb-8">
@@ -241,7 +241,7 @@ export default function BundleDetailPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <span className="text-gray-500 font-bold text-sm">Total Fleet Size</span>
@@ -253,7 +253,7 @@ export default function BundleDetailPage() {
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => navigate(`/baraat-cabs/book?bundleId=${bundleId}`)}
                 className="w-full bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white rounded-full py-5 font-black text-[11px] uppercase tracking-[0.2em] hover:shadow-[0_15px_40px_rgba(194,24,91,0.5)] transition-all flex items-center justify-center gap-3 active:scale-95 mb-4"
               >
@@ -275,9 +275,9 @@ export default function BundleDetailPage() {
                 <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-4">Service Provided By</p>
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-[#D4AF37] p-1 shadow-inner flex-shrink-0">
-                    <img 
-                      src={vendor.profileImage?.url || `https://ui-avatars.com/api/?name=${vendor.businessName}&background=random`} 
-                      alt={vendor.businessName} 
+                    <img
+                      src={vendor.profileImage?.url || `https://ui-avatars.com/api/?name=${vendor.businessName}&background=random`}
+                      alt={vendor.businessName}
                       className="w-full h-full rounded-full object-cover"
                     />
                   </div>

@@ -7,6 +7,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiShield } from 'react-icons/fi'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { useNotificationSound } from '../../context/NotificationSoundContext'
 
 const LoginSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -22,12 +23,14 @@ export default function LoginPage() {
   const { loading } = useSelector((s) => s.auth)
   const [showPass, setShowPass] = useState(false)
   const { t } = useTranslation()
+  const { playSound } = useNotificationSound()
 
   const from = location.state?.from?.pathname || '/'
 
   const handleSubmit = async (values) => {
     const result = await dispatch(loginUser(values))
     if (!result.error) {
+      playSound('success')
       const userRole = result.payload?.user?.role
       if (userRole === 'admin') {
         navigate('/admin', { replace: true })

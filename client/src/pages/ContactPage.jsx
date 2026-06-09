@@ -26,9 +26,10 @@ export default function ContactPage() {
   }
 
   const quickLinks = [
-    { icon: <FiHelpCircle />, title: 'FAQs', desc: 'Find answers quickly', link: '/faqs' },
-    { icon: <FiUserCheck />, title: 'Vendor Support', desc: 'Help with your listing', link: '/vendor/support' },
-    { icon: <FiCalendar />, title: 'Booking Help', desc: 'Assistance with bookings', link: '/services' },
+    { icon: <FiHelpCircle />, title: 'Quick Help', desc: 'Find answers quickly', link: '/help' },
+    { icon: <FiGrid />, title: 'FAQs', desc: 'Browse common questions', link: '/faq' },
+    { icon: <FiUserCheck />, title: 'Vendor Support', desc: 'Help with your listing', link: '/vendor-support' },
+    { icon: <FiCalendar />, title: 'Booking Help', desc: 'Assistance with bookings', link: '/booking-help' },
     { icon: <FiGrid />, title: 'AI Planner', desc: 'Try our smart planner', link: '/ai-planner' },
   ]
 

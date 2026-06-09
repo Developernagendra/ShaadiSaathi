@@ -20,10 +20,15 @@ const generateToken = (id, role) => {
 
 // ---------------- REGISTER USER ----------------
 const register = catchAsync(async (req, res, next) => {
-  const { name, email, password, phone, role } = req.body;
+  const { name, email, password, phone, role, vendorType } = req.body;
 
   if (!name || !email || !password) {
     return next(new AppError('Name, email, and password are required.', 400));
+  }
+
+  // Validate vendorType if role is vendor
+  if (role === 'vendor' && !['service', 'cab'].includes(vendorType)) {
+    return next(new AppError('Invalid or missing vendorType. Must be either "service" or "cab".', 400));
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -49,14 +54,11 @@ const register = catchAsync(async (req, res, next) => {
         const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
         const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
-        try {
-          const template = emailTemplates.verification(existingUser.name, verificationUrl);
-          await sendEmail({ to: existingUser.email, subject: template.subject, html: template.html, text: template.text });
-          console.log(`[AUTH] Resent verification email to unverified account: ${existingUser.email}`);
-        } catch (err) {
-          console.error('[AUTH] Failed to resend verification email:', err.message);
-          console.error("EMAIL ERROR FULL:", err);
-        }
+        // Fire-and-forget: don't block the HTTP response
+        const template = emailTemplates.verification(existingUser.name, verificationUrl);
+        sendEmail({ to: existingUser.email, subject: template.subject, html: template.html, text: template.text })
+          .then(() => console.log(`[AUTH] Resent verification email to unverified account: ${existingUser.email}`))
+          .catch((err) => console.error('[AUTH] Failed to resend verification email:', err.message));
 
         return res.status(400).json({
           success: false,
@@ -107,6 +109,7 @@ const register = catchAsync(async (req, res, next) => {
 
     const vendorProfile = await Vendor.create({
       user: user._id,
+      vendorType: vendorType,
       businessName: `${name}'s Business (Pending)`,
       email: normalizedEmail,
       phone: normalizedPhone || '0000000000',
@@ -114,8 +117,7 @@ const register = catchAsync(async (req, res, next) => {
       profileCompletion: 0,
     });
 
-    console.log('[REGISTRATION] ✅ Vendor Created successfully');
-    console.log('VENDOR REGISTERED');
+    console.log(`[REGISTRATION] ✅ Vendor Created successfully with type: ${vendorType}`);
     console.log('VENDOR PROFILE CREATED');
 
     user.vendorProfile = vendorProfile._id;
@@ -124,46 +126,54 @@ const register = catchAsync(async (req, res, next) => {
   // Generate email verification token
   const token = user.generateEmailVerificationToken();
   console.log('[REGISTRATION] 🔑 Verification Token Generated');
-  
+
   // Auto-verify in development/local environment so they don't need to click any links
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
     user.isVerified = true;
     user.isEmailVerified = true;
     console.log(`[DEVELOPMENT] ✅ Auto-verified user ${user.email} on registration`);
   }
-  
+
   await user.save({ validateBeforeSave: false });
 
   const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
 
   const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
-  console.log('[REGISTRATION] 📨 Email Attempt Started');
-  let emailSent = true;
-  try {
-    const template = emailTemplates.verification(
-      user.name,
-      verificationUrl
-    );
+  console.log('[REGISTRATION] 📨 Email Attempt Started (Background)');
 
-    const emailResult = await sendEmail({
-      to: user.email,
-      subject: template.subject,
-      html: template.html,
-      text: template.text,
+  const template = emailTemplates.verification(
+    user.name,
+    verificationUrl
+  );
+
+  // Background execution: Fire and forget
+  sendEmail({
+    to: user.email,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  })
+    .then((emailResult) => {
+      console.log('[VERIFY_EMAIL] ✅ Verification Email Success');
+      console.log(`[SMTP]    → To        : ${user.email}`);
+      console.log(`[SMTP]    → MessageID : ${emailResult?.messageId || 'N/A'}`);
+    })
+    .catch((error) => {
+      console.error('[VERIFY_EMAIL] ❌ Verification Email Failed:', error.message);
     });
 
-    console.log('[SMTP] ✅ VERIFICATION EMAIL DISPATCHED');
-    console.log(`[SMTP]    → To        : ${user.email}`);
-    console.log(`[SMTP]    → MessageID : ${emailResult?.messageId || 'N/A'}`);
-    console.log('[REGISTRATION] ✅ Email Success');
-  } catch (error) {
-    console.error('[SMTP] ❌ VERIFICATION EMAIL FAILED:', error.message);
-    console.error("EMAIL ERROR:", error);
-    console.log('[REGISTRATION] ❌ Email Failed:', error.message);
-    emailSent = false;
-    // User registration must not fail because email sending failed.
-    // Proceed to return success response.
+  console.log('[REGISTER] ✅ Response Sent - Account created');
+
+  if (user.role === 'vendor') {
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('auth-event', {
+        type: 'VENDOR_REGISTER',
+        role: 'vendor',
+        message: 'A new vendor has registered'
+      });
+    }
   }
 
   // Do not generate token or set cookie upon registration.
@@ -171,10 +181,7 @@ const register = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: emailSent
-      ? 'Registration successful. Please check your email.'
-      : 'Account created successfully',
-    emailSent,
+    message: 'Registration successful. Please check your email.',
     user: {
       _id: user._id,
       name: user.name,
@@ -227,13 +234,19 @@ const login = catchAsync(async (req, res, next) => {
     );
   }
 
-  // No email issue should block login
+  // No email issue should block login in development, but production requires verification
   if (!user.isVerified && user.role !== 'admin') {
-    console.log(`[AUTH] User ${user.email} logged in without prior verification. Auto-verifying account (fail-safe bypass).`);
-    user.isVerified = true;
-    user.isEmailVerified = true;
-    await user.save({ validateBeforeSave: false });
+    if (process.env.NODE_ENV === 'production') {
+      return next(new AppError('Please verify your email.', 403));
+    } else {
+      console.log(`[LOGIN] Development mode: User ${user.email} logged in without prior verification. Auto-verifying account.`);
+      user.isVerified = true;
+      user.isEmailVerified = true;
+      await user.save({ validateBeforeSave: false });
+    }
   }
+
+  console.log(`[LOGIN] ✅ User authenticated successfully: ${user.email}`);
 
   // Update login time
   user.lastLogin = Date.now();
@@ -257,6 +270,24 @@ const login = catchAsync(async (req, res, next) => {
   };
   res.cookie('token', token, cookieOptions);
 
+  let vendorProfile = null;
+  if (user.role === 'vendor') {
+    const Vendor = require('../models/Vendor');
+    vendorProfile = await Vendor.findOne({ user: user._id })
+      .select('businessName approvalStatus isFeatured coverImage logo rating user category vendorType')
+      .populate('category', 'name slug')
+      .lean();
+  }
+
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('auth-event', {
+      type: user.role === 'vendor' ? 'VENDOR_LOGIN' : 'USER_LOGIN',
+      role: user.role,
+      message: `${user.name} logged in successfully`
+    });
+  }
+
   res.status(200).json({
     status: 'success',
     message: 'Login successful.',
@@ -269,6 +300,7 @@ const login = catchAsync(async (req, res, next) => {
       isVerified: user.isVerified,
       avatar: user.avatar,
       phone: user.phone,
+      vendorProfile: vendorProfile,
     },
   });
 });
@@ -357,50 +389,36 @@ const forgotPassword = catchAsync(async (req, res, next) => {
   const resetUrl =
     `${clientUrl}/reset-password/${resetToken}`;
 
-  try {
-    const template =
-      emailTemplates.resetPassword(
-        user.name,
-        resetUrl
-      );
+  const template =
+    emailTemplates.resetPassword(
+      user.name,
+      resetUrl
+    );
 
-    await sendEmail({
-      to: user.email,
-      ...template,
-    });
+  console.log('[FORGOT_PASSWORD] 📨 Reset Email Attempt Started (Background)');
 
-    res.status(200).json({
-      status: 'success',
-      message:
-        'Password reset email sent successfully.',
-    });
+  sendEmail({
+    to: user.email,
+    ...template,
+  }).then(() => {
+    console.log('[FORGOT_PASSWORD] ✅ Reset Email Success');
+  }).catch(async (err) => {
+    console.error('[FORGOT_PASSWORD] ❌ Reset Email Failed:', err.message);
 
-  } catch (err) {
-    console.error('[SMTP] ❌ PASSWORD RESET EMAIL FAILED:', err.message);
-    console.error("EMAIL ERROR:", err);
-
+    // Clean up token if background task fails
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+  });
 
-    await user.save({
-      validateBeforeSave: false,
-    });
-
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
-      console.log(`[DEVELOPMENT] 🔗 Password Reset Link: ${resetUrl}`);
-      return res.status(200).json({
-        status: 'success',
-        message: 'Password reset link generated! (Check your server console since SMTP is failing locally)',
-      });
-    }
-
-    return next(
-      new AppError(
-        'Failed to send password reset email. Please try again.',
-        500
-      )
-    );
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+    console.log(`[DEVELOPMENT] 🔗 Password Reset Link: ${resetUrl}`);
   }
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Password reset email sent successfully.',
+  });
 });
 
 // ---------------- RESET PASSWORD ----------------
@@ -477,7 +495,7 @@ const getMe = catchAsync(async (req, res, next) => {
   if (user.role === 'vendor') {
     const Vendor = require('../models/Vendor');
     vendorProfile = await Vendor.findOne({ user: user._id })
-      .select('businessName approvalStatus isFeatured coverImage logo rating user category')
+      .select('businessName approvalStatus isFeatured coverImage logo rating user category vendorType')
       .populate('category', 'name slug')
       .lean();
 
@@ -494,7 +512,7 @@ const getMe = catchAsync(async (req, res, next) => {
       await User.findByIdAndUpdate(user._id, { vendorProfile: newProfile._id });
 
       vendorProfile = await Vendor.findById(newProfile._id)
-        .select('businessName approvalStatus isFeatured coverImage logo rating user category')
+        .select('businessName approvalStatus isFeatured coverImage logo rating user category vendorType')
         .populate('category', 'name slug')
         .lean();
     }
@@ -596,43 +614,27 @@ const resendVerification = catchAsync(async (req, res, next) => {
 
   console.log(`[DEVELOPMENT] 🔗 Resend Verification Link: ${verificationUrl}`);
 
-  try {
-
-    const template =
-      emailTemplates.verification(
-        user.name,
-        verificationUrl
-      );
-
-    await sendEmail({
-      to: user.email,
-      ...template,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message:
-        'Verification link sent to your email.',
-    });
-
-  } catch (error) {
-    console.error('[SMTP] ❌ RESEND VERIFICATION EMAIL FAILED:', error.message);
-    console.error("EMAIL ERROR:", error);
-
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
-      return res.status(200).json({
-        status: 'success',
-        message: 'Verification link generated! (Check your server console since SMTP is failing locally)',
-      });
-    }
-
-    return next(
-      new AppError(
-        'Failed to send verification email. Please try again later.',
-        500
-      )
+  const template =
+    emailTemplates.verification(
+      user.name,
+      verificationUrl
     );
-  }
+
+  console.log('[VERIFY_EMAIL] 📨 Resend Attempt Started (Background)');
+
+  sendEmail({
+    to: user.email,
+    ...template,
+  }).then(() => {
+    console.log('[VERIFY_EMAIL] ✅ Resend Success');
+  }).catch((error) => {
+    console.error('[VERIFY_EMAIL] ❌ Resend Failed:', error.message);
+  });
+
+  return res.status(200).json({
+    status: 'success',
+    message: 'Verification link sent to your email.',
+  });
 });
 
 // ---------------- LOGOUT ----------------
@@ -654,6 +656,15 @@ const logout = catchAsync(async (req, res, next) => {
         ? 'none'
         : 'lax',
   });
+
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('auth-event', {
+      type: 'USER_LOGOUT',
+      role: 'user',
+      message: 'User logged out'
+    });
+  }
 
   res.status(200).json({
     status: 'success',

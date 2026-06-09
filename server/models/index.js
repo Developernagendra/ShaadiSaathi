@@ -128,18 +128,30 @@ const bookingSchema = new mongoose.Schema({
   },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  vendorProfileId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true },
+  vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  vendor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  vendorProfileId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' },
   bookingType: {
     type: String,
-    enum: ['service', 'cab'],
+    enum: ['service', 'cab', 'baraat-cab'],
     required: true
   },
   service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
   serviceName: { type: String, required: true },
   serviceCategory: { type: String },
   cab: { type: mongoose.Schema.Types.ObjectId, ref: 'Cab' },
+
+  // Custom Baraat Fleet
+  vendorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  fleetSelection: [{
+    cabId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cab' },
+    vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    count: { type: Number, default: 1 },
+    pricePerVehicle: { type: Number, default: 0 },
+    totalFare: { type: Number, default: 0 },
+    vehicleType: String,
+    name: String
+  }],
   packageSelected: {
     name: String,
     price: Number,
@@ -374,6 +386,8 @@ const cabSchema = new mongoose.Schema({
   },
   ac: { type: Boolean, default: true },
   seatingCapacity: { type: Number, required: true },
+  totalFleet: { type: Number, default: 1 },
+  quantityAvailable: { type: Number, default: 1 }, // Deprecated alias
   vehicleNumber: { type: String, required: true, unique: true },
   registrationNumber: { type: String }, // Alias/Sync field
   description: String,
@@ -453,22 +467,6 @@ const cabSchema = new mongoose.Schema({
     isPopular: { type: Boolean, default: false }
   }],
 
-  // Multi-Vehicle Bundles (Luxury Baraat Fleets)
-  bundlePackages: [{
-    bundleName: { type: String, required: true },
-    description: String,
-    totalPrice: { type: Number, required: true },
-    discountedPrice: Number,
-    vehicles: [{
-      vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cab', required: true },
-      quantity: { type: Number, default: 1, min: 1 },
-      includedHours: { type: Number, default: 8 },
-      includedKm: { type: Number, default: 80 }
-    }],
-    features: [String],
-    isPopular: { type: Boolean, default: false },
-    isLuxury: { type: Boolean, default: false }
-  }],
 
   features: {
     driverIncluded: { type: Boolean, default: true },
@@ -511,7 +509,14 @@ const cabSchema = new mongoose.Schema({
   adminRemarks: String,
   rejectionReason: String,
   internalNotes: String,
-  isFeatured: { type: Boolean, default: false }
+  isFeatured: { type: Boolean, default: false },
+  auditLogs: [{
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    adminName: String,
+    action: String,
+    reason: String,
+    date: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 cabSchema.index({ vendor: 1 });
@@ -600,6 +605,14 @@ cabSchema.pre('validate', function (next) {
       this.pricing.baseFare = this.price;
     }
   }
+
+  // Sync totalFleet and quantityAvailable for backward compatibility
+  if (this.totalFleet !== undefined && this.quantityAvailable === 1) {
+    this.quantityAvailable = this.totalFleet;
+  } else if (this.quantityAvailable !== undefined && this.totalFleet === 1) {
+    this.totalFleet = this.quantityAvailable;
+  }
+
   next();
 });
 
@@ -639,7 +652,10 @@ const SystemConfig = mongoose.model('SystemConfig', systemConfigSchema);
 const User = require('./User');
 const Vendor = require('./Vendor');
 const Availability = require('./Availability');
+const Offer = require('./Offer');
 const { Lead, Guest, Checklist, Blog, Testimonial, HomeStats } = require('./FeatureModels');
+const NewsletterSubscriber = require('./NewsletterSubscriber');
+const NewsletterCampaign = require('./NewsletterCampaign');
 
 module.exports = {
   User,
@@ -659,6 +675,9 @@ module.exports = {
   HomeStats,
   Cab,
   Chat,
-  SystemConfig
+  SystemConfig,
+  Offer,
+  NewsletterSubscriber,
+  NewsletterCampaign
 };
 

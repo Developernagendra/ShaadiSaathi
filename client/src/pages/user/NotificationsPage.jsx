@@ -33,7 +33,7 @@ export default function NotificationsPage() {
   return (
     <div className="pb-24 animate-fade-in relative min-h-[60vh]">
       <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
-      
+
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
@@ -45,7 +45,7 @@ export default function NotificationsPage() {
             <h1 className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Your Notifications</h1>
           </div>
           {notifications.length > 0 && (
-            <button 
+            <button
               onClick={() => dispatch(markAllRead())}
               className="bg-white border border-pink-100 text-[#C2185B] font-black text-[10px] uppercase tracking-[0.2em] px-8 py-4 rounded-2xl shadow-xl hover:bg-[#C2185B] hover:text-white transition-all active:scale-95 italic flex items-center gap-3"
             >
@@ -55,7 +55,7 @@ export default function NotificationsPage() {
         </div>
 
         {notifications.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-[3rem] p-20 text-center shadow-premium border border-pink-50 relative overflow-hidden"
@@ -76,7 +76,7 @@ export default function NotificationsPage() {
           <div className="space-y-4">
             <AnimatePresence mode="popLayout">
               {notifications.map((n, idx) => (
-                <motion.div 
+                <motion.div
                   key={n._id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -91,9 +91,8 @@ export default function NotificationsPage() {
                       navigate('/dashboard')
                     }
                   }}
-                  className={`group bg-white rounded-[2rem] p-6 md:p-8 shadow-premium border transition-all hover:shadow-premium-hover hover:border-[#C2185B]/30 relative overflow-hidden cursor-pointer ${
-                    n.isRead ? 'border-pink-50 opacity-80' : 'border-[#C2185B]/20 bg-gradient-to-r from-white to-[#FFF8F0]/30'
-                  }`}
+                  className={`group bg-white rounded-[2rem] p-6 md:p-8 shadow-premium border transition-all hover:shadow-premium-hover hover:border-[#C2185B]/30 relative overflow-hidden cursor-pointer ${n.isRead ? 'border-pink-50 opacity-80' : 'border-[#C2185B]/20 bg-gradient-to-r from-white to-[#FFF8F0]/30'
+                    }`}
                 >
                   <div className="flex gap-6 md:gap-8 relative z-10">
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm transition-transform group-hover:rotate-6 ${getBg(n.type)}`}>
@@ -112,9 +111,9 @@ export default function NotificationsPage() {
                       <p className="text-gray-500 font-medium italic leading-relaxed text-sm">
                         {n.message}
                       </p>
-                      
+
                       {n.link && (
-                        <div 
+                        <div
                           className="mt-6 inline-flex items-center gap-3 text-[10px] font-black text-[#C2185B] uppercase tracking-[0.2em] italic hover:gap-5 transition-all"
                         >
                           View Details <FiArrowRight />
@@ -122,7 +121,7 @@ export default function NotificationsPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Subtle decorative element */}
                   <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-5 pointer-events-none ${getBg(n.type)}`} />
                 </motion.div>
@@ -137,6 +136,6 @@ export default function NotificationsPage() {
 
 const FiArrowRight = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12h14m-7-7 7 7-7 7"/>
+    <path d="M5 12h14m-7-7 7 7-7 7" />
   </svg>
 );

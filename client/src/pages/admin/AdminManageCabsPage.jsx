@@ -4,7 +4,7 @@ import {
   FiCheck, FiX, FiSearch, FiMapPin, 
   FiStar, FiFilter, FiAlertCircle, FiEye, 
   FiShield, FiActivity, FiBriefcase, FiFileText, FiUser, FiCalendar, FiChevronRight,
-  FiImage
+  FiImage, FiClock
 } from 'react-icons/fi'
 import { FaTruck } from 'react-icons/fa'
 import { toast } from 'react-hot-toast'
@@ -292,7 +292,8 @@ export default function AdminManageCabsPage() {
                        { id: 'specs', label: 'Specs & Pricing', icon: <FaTruck /> },
                        { id: 'photos', label: 'Showcase Photos', icon: <FiImage /> },
                        { id: 'documents', label: 'Legal Docs', icon: <FiFileText /> },
-                       { id: 'driver', label: 'Chauffeur Profile', icon: <FiUser /> }
+                       { id: 'driver', label: 'Chauffeur Profile', icon: <FiUser /> },
+                       { id: 'audit', label: 'Audit History', icon: <FiClock /> }
                      ].map(tab => (
                        <button
                          key={tab.id}
@@ -460,6 +461,53 @@ export default function AdminManageCabsPage() {
                                <span className="font-bold text-gray-900 text-xs uppercase">{selectedCab.driverDetails?.uniformAvailable ? 'Formals/Uniform Available ✅' : 'Standard casual/dress'}</span>
                              </div>
                            </div>
+                         </div>
+                       </motion.div>
+                     )}
+
+                     {/* TAB E: Audit History */}
+                     {activeTab === 'audit' && (
+                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                         <div className="bg-gray-50 border border-gray-100 rounded-[2rem] p-8 max-w-3xl">
+                           <div className="flex items-center gap-4 mb-8 border-b border-gray-200 pb-4">
+                             <div className="w-12 h-12 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg"><FiClock size={20} /></div>
+                             <div>
+                               <h4 className="text-xl font-black text-gray-900 tracking-tight">Timeline & Activity Logs</h4>
+                               <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic mt-1">Official Moderation Records</p>
+                             </div>
+                           </div>
+
+                           {(!selectedCab.auditLogs || selectedCab.auditLogs.length === 0) ? (
+                             <div className="text-center py-10 bg-white rounded-3xl border border-dashed border-gray-200">
+                               <p className="text-gray-400 font-medium italic text-sm">No audit logs available for this vehicle yet.</p>
+                             </div>
+                           ) : (
+                             <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200">
+                               {selectedCab.auditLogs.map((log, idx) => (
+                                 <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                   <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-100 text-gray-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10">
+                                     {log.action === 'approved' ? <FiCheck className="text-green-600" /> : log.action === 'rejected' ? <FiX className="text-red-600" /> : <FiAlertCircle className="text-blue-600" />}
+                                   </div>
+                                   <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-5 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 group-hover:border-gray-300 transition-colors relative">
+                                     <div className="flex items-center justify-between mb-3">
+                                       <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
+                                         log.action === 'approved' ? 'bg-green-50 text-green-700' : 
+                                         log.action === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
+                                       }`}>
+                                         {log.action.replace('_', ' ')}
+                                       </span>
+                                       <span className="text-[9px] font-bold text-gray-400 flex items-center gap-1"><FiCalendar size={10} /> {new Date(log.date).toLocaleDateString()} {new Date(log.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                     </div>
+                                     <p className="text-sm font-semibold text-gray-800 leading-snug mb-4">"{log.reason}"</p>
+                                     <div className="flex items-center gap-3 pt-3 border-t border-gray-50">
+                                       <div className="w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-[10px] font-black text-gray-500">{log.adminName?.charAt(0) || 'A'}</div>
+                                       <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{log.adminName} (Auditor)</span>
+                                     </div>
+                                   </div>
+                                 </div>
+                               ))}
+                             </div>
+                           )}
                          </div>
                        </motion.div>
                      )}

@@ -14,7 +14,7 @@ export const registerUser = createAsyncThunk('auth/register', async (data, { rej
     }
     return { ...res.data, token, user, message }
   } catch (err) {
-    const msg = err?.message || err?.response?.data?.message || (typeof err === 'string' ? err : 'Registration failed');
+    const msg = err?.response?.data?.message || err?.message || (typeof err === 'string' ? err : 'Registration failed');
     return rejectWithValue(msg)
   }
 })
@@ -30,7 +30,7 @@ export const loginUser = createAsyncThunk('auth/login', async (data, { rejectWit
     }
     return { ...res.data, token, user, message }
   } catch (err) {
-    const msg = err?.message || err?.response?.data?.message || (typeof err === 'string' ? err : 'Login failed');
+    const msg = err?.response?.data?.message || err?.message || (typeof err === 'string' ? err : 'Login failed');
     return rejectWithValue(msg)
   }
 })
@@ -255,8 +255,10 @@ const authSlice = createSlice({
       })
 
       .addCase(toggleWishlist.fulfilled, (state, action) => {
-        if (state.user) state.user.wishlist = action.payload.wishlist
-        toast.success(action.payload.message)
+        if (state.user) {
+          state.user = { ...state.user, wishlist: action.payload.wishlist || [] }
+        }
+        toast.success(action.payload.message || 'Wishlist updated!')
       })
 
       .addCase(resendVerification.fulfilled, (_, action) => {

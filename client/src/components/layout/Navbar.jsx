@@ -11,6 +11,11 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
+import api from '../../utils/api'
+import { apiCache } from '../../utils/apiCache'
+
+// Preload component chunk
+const preloadBaraatCabsChunk = () => import('../../pages/BaraatCabsPage')
 
 export default function Navbar() {
   const dispatch = useDispatch()
@@ -67,7 +72,7 @@ export default function Navbar() {
     { to: '/services', label: t('nav.vendors', 'Vendors'), icon: <FiSearch /> },
     { to: '/ai-planner', label: t('nav.aiPlanner', 'AI Planner'), icon: <FiGrid /> },
     { to: '/budget-calculator', label: t('nav.budget', 'Budget'), icon: <FiCalendar /> },
-    { to: '/cab-booking', label: t('nav.cabs', 'Baraat Cabs'), icon: '🚗' },
+    { to: '/baraat-cabs', label: t('nav.cabs', 'Baraat Cabs'), icon: '🚗' },
   ]
 
   const navLinks = !isAuthenticated
@@ -88,13 +93,30 @@ export default function Navbar() {
           { to: '/dashboard', label: t('nav.userDashboard', 'Dashboard') },
           { to: '/bookings', label: t('nav.booking', 'Bookings') },
           { to: '/wishlist', label: 'Wishlist' },
-          { to: '/cab-booking', label: 'Baraat Cabs' },
+          { to: '/baraat-cabs', label: 'Baraat Cabs' },
         ]
 
   const getDashboardLink = () => {
     if (user?.role === 'admin') return '/admin'
     if (user?.role === 'vendor') return '/vendor/dashboard'
     return '/dashboard'
+  }
+
+  const handlePreloadBaraatCabs = () => {
+    // 1. Preload the React Component Chunk
+    preloadBaraatCabsChunk().catch(() => {});
+    
+    // 2. Preload the initial API data (if not already cached)
+    // Must match the exact key BaraatCabsPage uses on mount (empty city = empty params)
+    const cacheKey = `/fleet/browse?`;
+    
+    if (!apiCache.has(cacheKey)) {
+      api.get(cacheKey).then(res => {
+        if (res.data?.status === 'success') {
+          apiCache.set(cacheKey, res.data);
+        }
+      }).catch(() => {});
+    }
   }
 
   return (
@@ -121,11 +143,12 @@ export default function Navbar() {
             {/* ── Desktop Nav Links ── */}
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => {
-                const isCabs = link.to === '/cab-booking';
+                const isCabs = link.to === '/baraat-cabs';
                 return (
                   <Link
                     key={link.to}
                     to={link.to}
+                    onMouseEnter={isCabs ? handlePreloadBaraatCabs : undefined}
                     className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 relative group flex items-center gap-2 ${
                       isCabs 
                         ? (navTransparent ? 'bg-white/10 text-white border border-white/30' : 'bg-[#FFF8F0] text-primary-600 border border-gold-200 shadow-sm hover:shadow-md')

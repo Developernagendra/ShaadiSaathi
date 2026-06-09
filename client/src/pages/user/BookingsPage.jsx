@@ -149,7 +149,7 @@ export default function BookingsPage() {
               title="No Reservations Found"
               message={`We couldn't find any ${activeTab === 'all' ? '' : activeTab} ${bookingType} records in your account.`}
               actionLabel={bookingType === 'baraat-cab' ? 'Book a Wedding Cab' : 'Find Wedding Vendors'}
-              actionTo={bookingType === 'baraat-cab' ? '/cab-booking' : '/services'}
+              actionTo={bookingType === 'baraat-cab' ? '/baraat-cabs' : '/services'}
             />
           </motion.div>
         ) : (
@@ -174,7 +174,7 @@ export default function BookingsPage() {
                   >
                     {/* Visual ID */}
                     <div className="w-24 h-24 rounded-3xl bg-[#FFF8F0] flex-shrink-0 overflow-hidden shadow-inner border border-pink-50 flex items-center justify-center text-4xl group-hover:rotate-3 transition-transform">
-                      {bookingType === 'baraat-cab' ? '🚕' : (b.vendor?.images?.[0]?.url ? <img src={b.vendor.images[0].url} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700" /> : '💒')}
+                      {bookingType === 'baraat-cab' ? '🚕' : (b.vendor?.images?.[0]?.url ? <img src={b.vendor?.images?.[0]?.url} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700" /> : '💒')}
                     </div>
 
                     <div className="flex-1 min-w-0">

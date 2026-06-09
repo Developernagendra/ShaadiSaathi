@@ -59,46 +59,46 @@ export default function VendorProfilePage() {
   )
 
   return (
-    <div className="pb-20">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="pb-20 relative">
+      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-4xl font-black text-gray-900 tracking-tight">Business Profile</h1>
-            <p className="text-gray-500 mt-1 font-medium">Control how your business appears to potential clients.</p>
+            <h1 className="font-display text-4xl font-black text-gray-900 tracking-tight drop-shadow-sm">Business Profile</h1>
+            <p className="text-gray-500 mt-2 font-medium">Control how your business appears to potential clients.</p>
           </div>
-          <div className={`px-4 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest ${vendor.approvalStatus === 'approved' ? 'bg-green-100 text-green-700' : 'bg-gold-100 text-gold-700'}`}>
+          <div className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border ${vendor.approvalStatus === 'approved' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
             {vendor.approvalStatus === 'approved' ? '✓ Profile Verified' : '⌚ Awaiting Approval'}
           </div>
         </header>
 
         {/* Cover Image Upload Section */}
-        <section className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden relative group">
-          <div className="h-64 md:h-80 w-full bg-gray-100 relative">
+        <section className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-premium hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white transition-all duration-500 overflow-hidden relative group">
+          <div className="h-64 md:h-80 w-full bg-gray-50 relative">
             {(uploadPreview || vendor.coverImage?.url) ? (
-              <img src={uploadPreview || vendor.coverImage.url} className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-50' : 'opacity-100'}`} alt="Cover" />
+              <img src={uploadPreview || vendor.coverImage.url} className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${isUploading ? 'opacity-50 blur-sm' : 'opacity-100'}`} alt="Cover" />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200">
-                <FiCamera className="text-4xl text-gray-300 mb-2" />
-                <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No Cover Image</p>
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 border-b border-gray-100">
+                <FiCamera className="text-4xl text-gray-300 mb-3" />
+                <p className="text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">No Cover Image</p>
               </div>
             )}
 
             {isUploading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[2px]">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin" />
-                  <p className="text-white font-black text-xs uppercase tracking-widest drop-shadow-md">Uploading...</p>
+              <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-md">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-gray-200 border-t-[#C2185B] rounded-full animate-spin shadow-lg" />
+                  <p className="text-[#C2185B] font-black text-[10px] uppercase tracking-[0.3em] drop-shadow-md">Uploading...</p>
                 </div>
               </div>
             )}
 
-            <div className={`absolute inset-0 bg-black/40 transition-opacity flex items-center justify-center ${isUploading ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
+            <div className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center ${isUploading ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="bg-white text-gray-900 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl hover:scale-105 transition-transform"
+                className="bg-white/90 backdrop-blur-md text-gray-900 px-8 py-4 rounded-full font-black text-[11px] uppercase tracking-widest flex items-center gap-3 shadow-2xl hover:scale-105 hover:bg-white transition-all"
               >
-                <FiUpload /> {vendor.coverImage?.url ? 'Change Cover' : 'Upload Cover'}
+                <FiUpload size={16} /> {vendor.coverImage?.url ? 'Change Cover' : 'Upload Cover'}
               </button>
             </div>
           </div>
@@ -109,14 +109,14 @@ export default function VendorProfilePage() {
             className="hidden"
             accept="image/*"
           />
-          <div className="p-6 bg-white flex items-center justify-between border-t border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 -mt-16 border-4 border-white rounded-3xl bg-primary-100 shadow-xl flex items-center justify-center text-3xl overflow-hidden">
+          <div className="p-8 bg-white/50 backdrop-blur-md flex flex-col sm:flex-row items-center sm:justify-between border-t border-white/50 relative z-10">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-24 h-24 -mt-20 border-4 border-white rounded-[2rem] bg-gradient-to-br from-[#FFF8F0] to-[#FFE0E9] shadow-xl flex items-center justify-center text-4xl overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-500">
                 {vendor.images?.[0]?.url ? <img src={vendor.images[0].url} className="w-full h-full object-cover" /> : vendor.category?.icon || '🏢'}
               </div>
-              <div>
-                <h2 className="font-bold text-gray-900 text-xl">{vendor.businessName}</h2>
-                <p className="text-sm text-gray-400 font-medium">{vendor.category?.name} • {vendor.location?.city}</p>
+              <div className="text-center sm:text-left mt-2 sm:mt-0">
+                <h2 className="font-display font-black text-gray-900 text-2xl tracking-tight">{vendor.businessName}</h2>
+                <p className="text-[11px] text-[#C2185B] font-bold uppercase tracking-widest mt-1">{vendor.category?.name} • {vendor.location?.city}</p>
               </div>
             </div>
           </div>
@@ -155,114 +155,114 @@ export default function VendorProfilePage() {
           {({ isSubmitting }) => (
             <Form className="space-y-8">
               {/* Basic Info */}
-              <div className="bg-white rounded-3xl p-10 shadow-xl shadow-gray-200/50 border border-gray-100">
-                <h3 className="text-xl font-black text-gray-900 mb-8 flex items-center gap-4">
-                  <span className="w-10 h-10 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center"><FiTrendingUp /></span>
+              <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white transition-all duration-500">
+                <h3 className="text-2xl font-display font-black text-gray-900 mb-8 flex items-center gap-4 tracking-tight">
+                  <span className="w-12 h-12 rounded-[1.2rem] bg-gradient-to-br from-[#FFE0E9] to-[#FFF8F0] text-[#C2185B] flex items-center justify-center shadow-inner border border-white"><FiTrendingUp size={20} /></span>
                   Brand Presence
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Business Name</label>
-                    <Field name="businessName" className="input-field bg-gray-50 border-transparent focus:bg-white" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Business Name</label>
+                    <Field name="businessName" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Tagline</label>
-                    <Field name="tagline" placeholder="Ex: Crafting Cinematic Memories" className="input-field bg-gray-50 border-transparent focus:bg-white" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Tagline</label>
+                    <Field name="tagline" placeholder="Ex: Crafting Cinematic Memories" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">About Business</label>
-                    <Field as="textarea" name="description" rows={5} className="input-field bg-gray-50 border-transparent focus:bg-white resize-none" />
+                  <div className="md:col-span-2 space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">About Business</label>
+                    <Field as="textarea" name="description" rows={5} className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-medium resize-none leading-relaxed" />
                   </div>
                 </div>
               </div>
 
               {/* Contact & Pricing */}
-              <div className="bg-white rounded-3xl p-10 shadow-xl shadow-gray-200/50 border border-gray-100">
-                <h3 className="text-xl font-black text-gray-900 mb-8 flex items-center gap-4">
-                  <span className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center"><FiPhone /></span>
+              <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white transition-all duration-500">
+                <h3 className="text-2xl font-display font-black text-gray-900 mb-8 flex items-center gap-4 tracking-tight">
+                  <span className="w-12 h-12 rounded-[1.2rem] bg-gradient-to-br from-[#E0F2FE] to-[#F0F9FF] text-blue-600 flex items-center justify-center shadow-inner border border-white"><FiPhone size={20} /></span>
                   Contact & Economics
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Primary Phone</label>
-                    <Field name="phone" className="input-field bg-gray-50 border-transparent" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Primary Phone</label>
+                    <Field name="phone" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Business Email</label>
-                    <Field name="email" className="input-field bg-gray-50 border-transparent" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Business Email</label>
+                    <Field name="email" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Starting Price (₹)</label>
-                    <Field type="number" name="basePrice" className="input-field bg-gray-50 border-transparent font-bold text-lg" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Starting Price (₹)</label>
+                    <Field type="number" name="basePrice" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-[#C2185B] outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-black text-lg" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Industry Experience (Yrs)</label>
-                    <Field type="number" name="yearsOfExperience" className="input-field bg-gray-50 border-transparent" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Industry Experience (Yrs)</label>
+                    <Field type="number" name="yearsOfExperience" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
                 </div>
               </div>
 
               {/* Location */}
-              <div className="bg-white rounded-3xl p-10 shadow-xl shadow-gray-200/50 border border-gray-100">
-                <h3 className="text-xl font-black text-gray-900 mb-8 flex items-center gap-4">
-                  <span className="w-10 h-10 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center"><FiMapPin /></span>
+              <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white transition-all duration-500">
+                <h3 className="text-2xl font-display font-black text-gray-900 mb-8 flex items-center gap-4 tracking-tight">
+                  <span className="w-12 h-12 rounded-[1.2rem] bg-gradient-to-br from-[#DCFCE7] to-[#F0FDF4] text-green-600 flex items-center justify-center shadow-inner border border-white"><FiMapPin size={20} /></span>
                   Operational Base
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">City</label>
-                    <Field as="select" name="city" className="input-field bg-gray-50 border-transparent">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">City</label>
+                    <Field as="select" name="city" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold appearance-none">
                       <option value="">Select City</option>
                       {INDIAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </Field>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">State / Province</label>
-                    <Field name="state" className="input-field bg-gray-50 border-transparent" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">State / Province</label>
+                    <Field name="state" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Detailed Address</label>
-                    <Field name="address" className="input-field bg-gray-50 border-transparent" />
+                  <div className="md:col-span-2 space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Detailed Address</label>
+                    <Field name="address" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
                 </div>
               </div>
 
               {/* Social */}
-              <div className="bg-white rounded-3xl p-10 shadow-xl shadow-gray-200/50 border border-gray-100">
-                <h3 className="text-xl font-black text-gray-900 mb-8 flex items-center gap-4">
-                  <span className="w-10 h-10 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center"><FiGlobe /></span>
+              <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white transition-all duration-500">
+                <h3 className="text-2xl font-display font-black text-gray-900 mb-8 flex items-center gap-4 tracking-tight">
+                  <span className="w-12 h-12 rounded-[1.2rem] bg-gradient-to-br from-[#FCE7F3] to-[#FDF2F8] text-[#C2185B] flex items-center justify-center shadow-inner border border-white"><FiGlobe size={20} /></span>
                   Digital Presence
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2"><FiInstagram /> Instagram</label>
-                    <Field name="instagram" placeholder="https://instagram.com/..." className="input-field bg-gray-50 border-transparent" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-2"><FiInstagram /> Instagram</label>
+                    <Field name="instagram" placeholder="https://instagram.com/..." className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2"><FiFacebook /> Facebook</label>
-                    <Field name="facebook" placeholder="https://facebook.com/..." className="input-field bg-gray-50 border-transparent" />
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-2"><FiFacebook /> Facebook</label>
+                    <Field name="facebook" placeholder="https://facebook.com/..." className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Official Website</label>
-                    <Field name="website" placeholder="https://yourbrand.com" className="input-field bg-gray-50 border-transparent" />
+                  <div className="md:col-span-2 space-y-3">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Official Website</label>
+                    <Field name="website" placeholder="https://yourbrand.com" className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl px-5 py-4 text-gray-900 outline-none focus:border-[#C2185B] focus:bg-white focus:shadow-[0_0_15px_rgba(194,24,91,0.05)] transition-all font-bold" />
                   </div>
                 </div>
               </div>
 
-              <div className="sticky bottom-6 z-30">
+              <div className="sticky bottom-8 z-30 flex justify-center mt-12">
                 <button
                   type="submit"
                   disabled={actionLoading || isSubmitting}
-                  className="w-full py-6 bg-gradient-to-r from-primary-600 to-pink-600 text-white rounded-3xl font-black text-lg shadow-2xl shadow-primary-200 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-widest"
+                  className="w-full md:w-[60%] py-6 bg-gradient-to-r from-[#C2185B] via-[#8E244D] to-[#C2185B] bg-[length:200%_auto] hover:bg-[100%_auto] text-white rounded-full font-black text-[12px] uppercase tracking-[0.3em] shadow-[0_15px_40px_rgba(194,24,91,0.3)] hover:shadow-[0_20px_50px_rgba(194,24,91,0.5)] hover:-translate-y-1 active:scale-95 transition-all duration-500 disabled:opacity-50 flex items-center justify-center gap-3 group"
                 >
                   {actionLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Synchronizing Data...
                     </>
                   ) : (
                     <>
-                      <FiCheck size={24} />
+                      <FiCheck size={20} className="group-hover:scale-125 transition-transform" />
                       Save All Changes
                     </>
                   )}

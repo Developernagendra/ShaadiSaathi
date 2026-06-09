@@ -69,7 +69,7 @@ const createVendorProfile = catchAsync(async (req, res, next) => {
 
 const getMyVendorProfile = catchAsync(async (req, res, next) => {
   const { vendorId } = req.query;
-  
+
   console.log('FETCHING VENDOR PROFILE');
 
   let query;
@@ -94,7 +94,7 @@ const getMyVendorProfile = catchAsync(async (req, res, next) => {
       approvalStatus: 'pending',
       profileCompletion: 0,
     });
-    
+
     // Import User model explicitly if needed
     const User = require('../models/User');
     await User.findByIdAndUpdate(req.user._id, { vendorProfile: newProfile._id });
@@ -137,7 +137,7 @@ const updateVendorProfile = catchAsync(async (req, res, next) => {
     if (req.body.address !== undefined) vendor.location.address = req.body.address;
     if (req.body.state !== undefined) vendor.location.state = req.body.state;
     if (req.body.pincode !== undefined) vendor.location.pincode = req.body.pincode;
-    
+
     delete req.body.city;
     delete req.body.address;
     delete req.body.state;
@@ -151,32 +151,54 @@ const updateVendorProfile = catchAsync(async (req, res, next) => {
     if (req.body.facebook !== undefined) vendor.socialLinks.facebook = req.body.facebook;
     if (req.body.website !== undefined) vendor.socialLinks.website = req.body.website;
     if (req.body.youtube !== undefined) vendor.socialLinks.youtube = req.body.youtube;
-    
+
     delete req.body.instagram;
     delete req.body.facebook;
     delete req.body.website;
     delete req.body.youtube;
   }
 
-  // Validate packages and calculate starting price
-  if (req.body.packages && Array.isArray(req.body.packages)) {
+  // --- Packages: validate, sanitize and save ---
+  if (req.body.packages !== undefined && Array.isArray(req.body.packages)) {
+    const rawPackages = req.body.packages;
     let minPrice = Infinity;
-    for (const pkg of req.body.packages) {
-      if (!pkg.price || pkg.price <= 0) {
-        return next(new AppError('Every package must have a valid price.', 400));
+    const cleanedPackages = [];
+
+    for (let i = 0; i < rawPackages.length; i++) {
+      const pkg = rawPackages[i];
+      if (!pkg.name || !String(pkg.name).trim()) {
+        return next(new AppError(`Package ${i + 1}: name is required.`, 400));
       }
-      if (pkg.price < minPrice) minPrice = pkg.price;
+      const parsedPrice = Number(pkg.price);
+      if (!parsedPrice || parsedPrice <= 0) {
+        return next(new AppError(`Package "${pkg.name}": price must be greater than 0.`, 400));
+      }
+      if (parsedPrice < minPrice) minPrice = parsedPrice;
+
+      cleanedPackages.push({
+        name: String(pkg.name).trim(),
+        description: pkg.description ? String(pkg.description).trim() : '',
+        price: parsedPrice,
+        advancePercentage: Number(pkg.advancePercentage) || 50,
+        features: Array.isArray(pkg.features) ? pkg.features.filter(f => f && String(f).trim()) : [],
+        isPopular: Boolean(pkg.isPopular),
+      });
     }
+
+    // Use direct assignment so Mongoose marks the array as modified
+    vendor.packages = cleanedPackages;
+    vendor.markModified('packages');
+
     if (minPrice !== Infinity) {
-      req.body.startingPrice = minPrice;
-      req.body.price = minPrice;
-      // Also update vendor basePrice for consistency
       vendor.basePrice = minPrice;
+      vendor.price = minPrice;
     }
+
+    // Remove from req.body so Object.assign below doesn't overwrite it
+    delete req.body.packages;
   }
 
   Object.assign(vendor, req.body);
-
 
   await vendor.save();
 
@@ -201,6 +223,14 @@ const uploadVendorImages = catchAsync(async (req, res, next) => {
 
   const vendor = await Vendor.findOne({ user: req.user._id });
   if (!vendor) return next(new AppError('Vendor profile not found.', 404));
+
+  // Limit Free tier to 5 gallery images
+  const isPremiumOrElite = vendor.subscription?.status === 'active' &&
+    ['premium', 'elite', 'silver', 'gold', 'platinum'].includes(vendor.subscription?.plan);
+
+  if (!isPremiumOrElite && (vendor.images.length + req.files.length) > 5) {
+    return next(new AppError('Free tier accounts are limited to a maximum of 5 gallery images. Please upgrade to Premium or Elite for unlimited image uploads!', 400));
+  }
 
   const newImages = req.files.map((file, index) => ({
     url: file.path,
@@ -274,20 +304,35 @@ const getAllVendors = catchAsync(async (req, res, next) => {
   const {
     page = 1, limit = 12, city, category, minPrice, maxPrice,
     rating, search, sortBy = 'createdAt', order = 'desc', featured,
-    experience
+    experience, marketplace
   } = req.query;
 
-  const query = { 
-    approvalStatus: 'approved', 
-    isActive: true 
+  const query = {
+    approvalStatus: 'approved',
+    isActive: true
   };
 
+  // --- Marketplace separation by vendorType ---
+  // ?marketplace=services → show only service vendors (not cab vendors)
+  // ?marketplace=cabs     → show only cab vendors
+  // (no param)            → default: service vendors only (backwards compatible)
+  if (marketplace === 'cabs') {
+    query.vendorType = 'cab';
+  } else {
+    // Default: exclude cab-type vendors from general vendor listings
+    query.$or = [
+      { vendorType: 'service' },
+      { vendorType: { $exists: false } },
+      { vendorType: null }
+    ];
+  }
+
   if (city) query['location.city'] = { $regex: city, $options: 'i' };
-  
+
   if (category) {
     const { Category } = require('../models/index');
     const mongoose = require('mongoose');
-    
+
     // Check if valid ObjectId, else treat as slug
     if (mongoose.Types.ObjectId.isValid(category)) {
       query.category = category;
@@ -304,7 +349,7 @@ const getAllVendors = catchAsync(async (req, res, next) => {
       }
     }
   }
-  
+
   if (minPrice || maxPrice) {
     query.basePrice = {};
     if (minPrice) query.basePrice.$gte = Number(minPrice);
@@ -325,21 +370,62 @@ const getAllVendors = catchAsync(async (req, res, next) => {
     query.$text = { $search: search };
   }
 
+  const pipeline = [
+    { $match: query },
+    {
+      $addFields: {
+        searchRankScore: {
+          $cond: [
+            {
+              $and: [
+                { $eq: ['$subscription.plan', 'elite'] },
+                { $eq: ['$subscription.status', 'active'] }
+              ]
+            },
+            1000,
+            {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ['$subscription.plan', 'premium'] },
+                    { $eq: ['$subscription.status', 'active'] }
+                  ]
+                },
+                100,
+                {
+                  $cond: [
+                    { $in: ['verified', { $ifNull: ['$badges', []] }] },
+                    10,
+                    1
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ];
+
   const sortOptions = {};
+  sortOptions.searchRankScore = -1;
   if (sortBy === 'price') sortOptions.basePrice = order === 'asc' ? 1 : -1;
   else if (sortBy === 'rating') sortOptions['rating.average'] = -1;
   else if (sortBy === 'bookings') sortOptions.totalBookings = -1;
   else sortOptions[sortBy] = order === 'asc' ? 1 : -1;
 
+  pipeline.push({ $sort: sortOptions });
+  pipeline.push({ $skip: (Number(page) - 1) * Number(limit) });
+  pipeline.push({ $limit: Number(limit) });
+
   const total = await Vendor.countDocuments(query);
-  const vendors = await Vendor.find(query)
-    .populate('category', 'name slug icon')
-    .populate('user', 'name avatar')
-    .select('businessName tagline images coverImage basePrice location rating category isFeatured isTrending yearsOfExperience responseTime')
-    .sort(sortOptions)
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
-    .lean();
+  let vendors = await Vendor.aggregate(pipeline);
+
+  // Populate category and user details
+  vendors = await Vendor.populate(vendors, [
+    { path: 'category', select: 'name slug icon' },
+    { path: 'user', select: 'name avatar' }
+  ]);
 
   // Redact addresses on lists when contact protection is enabled
   const SystemConfig = mongoose.model('SystemConfig');
@@ -409,9 +495,9 @@ const getVendorById = catchAsync(async (req, res, next) => {
 
     // Check if the user is authorized to bypass protection
     if (req.user) {
-      const isSelf = req.user._id.toString() === vendor.user?._id?.toString() || 
-                     req.user._id.toString() === vendor.user?.toString();
-      
+      const isSelf = req.user._id.toString() === vendor.user?._id?.toString() ||
+        req.user._id.toString() === vendor.user?.toString();
+
       if (req.user.role === 'admin' || isSelf) {
         isUnlocked = true;
       } else {
@@ -449,7 +535,7 @@ const getVendorById = catchAsync(async (req, res, next) => {
   }
 
   // --- DYNAMIC DATA ENHANCEMENTS ---
-  
+
   // 1. Calculate dynamic completed bookings
   const completedBookings = await Booking.countDocuments({
     vendorId: vendor.user?._id || vendor.user,
@@ -477,7 +563,7 @@ const getVendorById = catchAsync(async (req, res, next) => {
   let totalRating = 0;
   reviews.forEach(r => { totalRating += r.rating; });
   const avgRating = reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
-  
+
   vendor.dynamicRating = {
     average: parseFloat(avgRating),
     count: reviews.length
@@ -515,13 +601,15 @@ const updateVendorApproval = catchAsync(async (req, res, next) => {
   // Sync approval status
   vendor.approvalStatus = status;
   vendor.approvalNote = note || vendor.approvalNote;
-  
+
   if (status === 'approved') {
     vendor.approvedAt = Date.now();
     vendor.approvedBy = req.user._id;
     // CRITICAL: Update user role to vendor upon approval
     const User = require('../models/User');
-    await User.findByIdAndUpdate(vendor.user._id, { role: 'vendor' });
+    if (vendor.user && vendor.user._id) {
+      await User.findByIdAndUpdate(vendor.user._id, { role: 'vendor' });
+    }
   } else if (status === 'suspended' || status === 'rejected') {
     // Optional: Downgrade role if suspended? Usually we keep it as vendor but block access via middleware
   }
@@ -568,10 +656,10 @@ const updateVendorApproval = catchAsync(async (req, res, next) => {
 // @access  Private (vendor)
 const getVendorDashboard = catchAsync(async (req, res, next) => {
   const { vendorId } = req.query;
-  
+
   const mongoose = require('mongoose');
   let queryVendor;
-  
+
   if (req.user.role === 'admin' && vendorId && vendorId !== 'null' && vendorId !== 'undefined') {
     if (!mongoose.Types.ObjectId.isValid(vendorId)) {
       return next(new AppError('Invalid Vendor ID format', 400));
@@ -707,8 +795,70 @@ const getVendorDashboard = catchAsync(async (req, res, next) => {
   ]);
   console.timeEnd('vendorDashboard-AggregateQuery');
 
+  // Dynamic Daily Fleet Inventory Stats for Vendor Dashboard
+  const CabModel = require('../models/index').Cab;
+  const vendorCabs = await CabModel.find({ vendor: vendor._id }).lean();
+  const totalVehiclesCount = vendorCabs.reduce((acc, curr) => acc + (curr.totalFleet || curr.quantityAvailable || 1), 0);
+
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  const endOfToday = new Date(new Date().setHours(23, 59, 59, 999));
+  const activeBookingsToday = await Booking.find({
+    vendorId: vendor.user,
+    eventDate: { $gte: startOfToday, $lte: endOfToday },
+    status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
+    bookingType: { $in: ['cab', 'baraat-cab'] }
+  }).lean();
+
+  let bookedVehiclesCount = 0;
+  activeBookingsToday.forEach(b => {
+    if (b.fleetSelection && b.fleetSelection.length > 0) {
+      b.fleetSelection.forEach(item => {
+        const hasMyCab = vendorCabs.some(c => c._id.toString() === item.cabId?.toString());
+        if (hasMyCab) bookedVehiclesCount += (item.count || 1);
+      });
+    } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+      b.cabIds.forEach((id, idx) => {
+        const hasMyCab = vendorCabs.some(c => c._id.toString() === id.toString());
+        if (hasMyCab) bookedVehiclesCount += (b.vehicles[idx]?.count || 1);
+      });
+    } else {
+      if (b.cab && vendorCabs.some(c => c._id.toString() === b.cab.toString())) {
+        bookedVehiclesCount += 1;
+      }
+    }
+  });
+
+  const availableVehiclesCount = Math.max(0, totalVehiclesCount - bookedVehiclesCount);
+
+  let soldOutVehiclesCount = 0;
+  vendorCabs.forEach(cab => {
+    let cabBooked = 0;
+    const cabTotal = cab.totalFleet || cab.quantityAvailable || 1;
+    activeBookingsToday.forEach(b => {
+      if (b.fleetSelection && b.fleetSelection.length > 0) {
+        const match = b.fleetSelection.find(f => f.cabId && f.cabId.toString() === cab._id.toString());
+        if (match) cabBooked += (match.count || 1);
+      } else if (b.vehicles && b.vehicles.length > 0 && b.cabIds) {
+        const idx = b.cabIds.findIndex(id => id && id.toString() === cab._id.toString());
+        if (idx !== -1 && b.vehicles[idx]) {
+          cabBooked += (b.vehicles[idx].count || 1);
+        } else if (idx !== -1) {
+          cabBooked += 1;
+        }
+      } else {
+        if (b.cab && b.cab.toString() === cab._id.toString()) {
+          cabBooked += 1;
+        }
+      }
+    });
+    const cabAvailable = Math.max(0, cabTotal - cabBooked);
+    if (cabAvailable === 0) {
+      soldOutVehiclesCount += 1;
+    }
+  });
+
   const totalCount = bookingStats.reduce((acc, curr) => acc + curr.count, 0) + cabStats.reduce((acc, curr) => acc + curr.count, 0);
-  
+
   const totalEarnings = (bookingStats.find(s => s._id === 'completed')?.revenue || 0) + (cabStats.find(s => s._id === 'completed')?.revenue || 0);
 
   const paidCount = paymentStats.find(p => ['paid', 'fully_paid'].includes(p._id))?.count || 0;
@@ -717,7 +867,7 @@ const getVendorDashboard = catchAsync(async (req, res, next) => {
   const pendingEarnings = paymentStats.find(p => ['pending', 'failed', 'unpaid'].includes(p._id))?.revenue || 0;
   const partialPaidCount = paymentStats.find(p => ['partial_paid', 'advance_paid'].includes(p._id))?.count || 0;
   const partialPaidEarnings = paymentStats.find(p => ['partial_paid', 'advance_paid'].includes(p._id))?.revenue || 0;
-  
+
   const stats = {
     totalBookings: totalCount,
     totalEarnings: totalEarnings || vendor.totalEarnings || 0,
@@ -729,6 +879,10 @@ const getVendorDashboard = catchAsync(async (req, res, next) => {
     completedBookings: (bookingStats.find(s => s._id === 'completed')?.count || 0) + (cabStats.find(s => s._id === 'completed')?.count || 0),
     cancelledBookings: (bookingStats.find(s => ['cancelled', 'rejected'].includes(s._id))?.count || 0) + (cabStats.find(s => ['cancelled', 'rejected'].includes(s._id))?.count || 0),
     totalCabs: totalCabs || 0,
+    totalVehicles: totalVehiclesCount,
+    bookedVehicles: bookedVehiclesCount,
+    availableVehicles: availableVehiclesCount,
+    soldOutVehicles: soldOutVehiclesCount,
     paymentStats: {
       paid: { count: paidCount, earnings: paidEarnings },
       pending: { count: pendingCount, earnings: pendingEarnings },
@@ -779,16 +933,68 @@ const updateAvailability = catchAsync(async (req, res, next) => {
 // @route   GET /api/vendors/featured
 // @access  Public
 const getFeaturedVendors = catchAsync(async (req, res, next) => {
+  const typeFilter = req.query.vendorType === 'cab'
+    ? { vendorType: 'cab' }
+    : { $or: [{ vendorType: 'service' }, { vendorType: { $exists: false } }, { vendorType: null }] };
 
-  let vendors = await Vendor.find({
-    isFeatured: true,
-    approvalStatus: 'approved',
-    isActive: true
-  })
-  .populate('category', 'name slug icon')
-  .populate('user', 'name avatar')
-  .select('businessName tagline images coverImage basePrice location rating category isFeatured isTrending yearsOfExperience responseTime')
-  .lean();
+  const pipeline = [
+    {
+      $match: {
+        approvalStatus: 'approved',
+        isActive: true,
+        $or: [
+          { isFeatured: true },
+          {
+            $and: [
+              { 'subscription.plan': { $in: ['premium', 'elite', 'silver', 'gold', 'platinum'] } },
+              { 'subscription.status': 'active' }
+            ]
+          }
+        ],
+        ...typeFilter
+      }
+    },
+    {
+      $addFields: {
+        featuredScore: {
+          $cond: [
+            {
+              $and: [
+                { $eq: ['$subscription.plan', 'elite'] },
+                { $eq: ['$subscription.status', 'active'] }
+              ]
+            },
+            1000,
+            {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ['$subscription.plan', 'premium'] },
+                    { $eq: ['$subscription.status', 'active'] }
+                  ]
+                },
+                100,
+                {
+                  $cond: [
+                    { $eq: ['$isFeatured', true] },
+                    10,
+                    1
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    { $sort: { featuredScore: -1, createdAt: -1 } }
+  ];
+
+  let vendors = await Vendor.aggregate(pipeline);
+  vendors = await Vendor.populate(vendors, [
+    { path: 'category', select: 'name slug icon' },
+    { path: 'user', select: 'name avatar' }
+  ]);
 
   console.log(`[DEBUG] Fetched ${vendors ? vendors.length : 0} explicitly featured vendors.`);
 
@@ -797,13 +1003,14 @@ const getFeaturedVendors = catchAsync(async (req, res, next) => {
     console.log('[DEBUG] No explicitly featured vendors found. Falling back to active and approved vendors.');
     vendors = await Vendor.find({
       approvalStatus: 'approved',
-      isActive: true
+      isActive: true,
+      ...typeFilter
     })
-    .populate('category', 'name slug icon')
-    .populate('user', 'name avatar')
-    .select('businessName tagline images coverImage basePrice location rating category isFeatured isTrending yearsOfExperience responseTime')
-    .limit(8)
-    .lean();
+      .populate('category', 'name slug icon')
+      .populate('user', 'name avatar')
+      .select('businessName tagline images coverImage basePrice location rating category isFeatured isTrending yearsOfExperience responseTime')
+      .limit(8)
+      .lean();
     console.log(`[DEBUG] Fallback fetch complete. Loaded ${vendors ? vendors.length : 0} approved vendors.`);
   }
 
@@ -832,19 +1039,29 @@ const getFeaturedVendors = catchAsync(async (req, res, next) => {
 
 const activateSubscription = catchAsync(async (req, res, next) => {
   const { planName } = req.body;
-  if (!planName || !['free', 'silver', 'gold', 'platinum'].includes(planName.toLowerCase())) {
+  const normalizedPlanName = planName?.toLowerCase();
+
+  if (!planName || !['free', 'premium', 'elite', 'silver', 'gold', 'platinum'].includes(normalizedPlanName)) {
     return next(new AppError('Invalid subscription plan name', 400));
   }
 
   const vendor = await Vendor.findOne({ user: req.user._id });
   if (!vendor) return next(new AppError('Vendor profile not found.', 404));
 
+  let durationDays = 30; // default Premium
+  if (normalizedPlanName === 'elite' || normalizedPlanName === 'platinum') {
+    durationDays = 365;
+  } else if (normalizedPlanName === 'free') {
+    durationDays = 36500; // 100 years
+  }
+
   vendor.subscription = {
-    plan: planName.toLowerCase(),
+    plan: normalizedPlanName,
+    status: 'active',
     startDate: new Date(),
-    expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-    isActive: true,
-    paymentId: 'free_marketplace_activation',
+    endDate: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000),
+    paymentStatus: 'paid',
+    paymentId: `one_click_${normalizedPlanName}_activation`,
     autoRenew: true
   };
 
@@ -857,9 +1074,154 @@ const activateSubscription = catchAsync(async (req, res, next) => {
   });
 });
 
+// @desc    Get leads pipeline for vendor
+// @route   GET /api/vendors/leads/pipeline
+// @access  Private (vendor)
+const getVendorLeadsPipeline = catchAsync(async (req, res, next) => {
+  const { Lead, Booking } = require('../models/index');
+  const vendor = await Vendor.findOne({ user: req.user._id });
+
+  if (!vendor) return next(new AppError('Vendor profile not found', 404));
+
+  // 1. Get leads where vendor has sent quotations
+  const leads = await Lead.find({
+    'quotations.vendor': vendor._id
+  }).populate('user', 'name avatar email phone').populate('serviceType', 'name').lean();
+
+  // 2. Get un-quoted leads in vendor's city/category (New Leads)
+  const newLeads = await Lead.find({
+    city: vendor.location.city,
+    serviceType: vendor.category,
+    status: 'open',
+    'quotations.vendor': { $ne: vendor._id }
+  }).populate('user', 'name avatar email phone').populate('serviceType', 'name').lean();
+
+  // 3. Get Bookings mapped as converted leads
+  const bookings = await Booking.find({
+    $or: [{ vendorId: vendor.user._id }, { vendorId: vendor.user }]
+  }).populate('userId', 'name avatar email phone').lean();
+
+  const formattedLeads = [];
+
+  // Format New Leads
+  newLeads.forEach(l => {
+    formattedLeads.push({
+      id: l._id.toString(),
+      customer: l.user?.name || 'Unknown',
+      type: l.serviceType?.name || 'Service',
+      date: l.eventDate ? l.eventDate.toISOString().split('T')[0] : 'TBD',
+      location: l.city || 'Unknown',
+      budget: `₹${l.budget?.toLocaleString() || 0}`,
+      status: 'new',
+      requestedAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'Recently',
+      notes: l.description || 'New inquiry',
+      customerDetails: l.user,
+      leadType: 'marketplace'
+    });
+  });
+
+  // Format Quoted Leads
+  leads.forEach(l => {
+    const myQuote = l.quotations.find(q => q.vendor.toString() === vendor._id.toString());
+    let uiStatus = 'contacted';
+
+    // In our UI: new, contacted, negotiation, won, lost
+    if (myQuote.status === 'accepted') uiStatus = 'won';
+    else if (myQuote.status === 'rejected') uiStatus = 'lost';
+    else if (l.status === 'assigned' && myQuote.status !== 'accepted') uiStatus = 'lost';
+    else uiStatus = 'negotiation';
+
+    formattedLeads.push({
+      id: l._id.toString(),
+      customer: l.user?.name || 'Unknown',
+      type: l.serviceType?.name || 'Service',
+      date: l.eventDate ? l.eventDate.toISOString().split('T')[0] : 'TBD',
+      location: l.city || 'Unknown',
+      budget: `₹${l.budget?.toLocaleString() || 0}`,
+      status: uiStatus,
+      requestedAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'Recently',
+      notes: l.description || 'Negotiation ongoing',
+      myQuote: myQuote,
+      customerDetails: l.user,
+      leadType: 'marketplace'
+    });
+  });
+
+  // Format Bookings as leads
+  bookings.forEach(b => {
+    let uiStatus = 'contacted';
+    if (b.status === 'pending') uiStatus = 'negotiation';
+    else if (['confirmed', 'in_progress', 'completed'].includes(b.status)) uiStatus = 'won';
+    else if (['cancelled', 'rejected'].includes(b.status)) uiStatus = 'lost';
+
+    formattedLeads.push({
+      id: (b._id || b.bookingId).toString(),
+      customer: b.contactName || b.userId?.name || 'Unknown',
+      type: b.serviceName || (b.bookingType === 'cab' ? 'Cab Booking' : 'Service Booking'),
+      date: b.eventDate ? new Date(b.eventDate).toISOString().split('T')[0] : 'TBD',
+      location: b.eventCity || b.eventVenue || 'Direct Booking',
+      budget: `₹${b.totalPrice?.toLocaleString() || b.amount?.toLocaleString() || 0}`,
+      status: uiStatus,
+      requestedAt: b.createdAt ? new Date(b.createdAt).toLocaleDateString() : 'Recently',
+      notes: b.specialRequirements || b.specialRequests || 'Direct booking request.',
+      customerDetails: b.userId,
+      leadType: 'direct_booking'
+    });
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { leads: formattedLeads }
+  });
+});
+
+// @desc    Update lead pipeline status
+// @route   PATCH /api/vendors/leads/:id/status
+// @access  Private (vendor)
+const updateLeadPipelineStatus = catchAsync(async (req, res, next) => {
+  const { status } = req.body; // new, contacted, negotiation, won, lost
+  const { Lead, Booking } = require('../models/index');
+  const vendor = await Vendor.findOne({ user: req.user._id });
+
+  if (!vendor) return next(new AppError('Vendor not found', 404));
+
+  // Try to find if it's a Booking
+  let booking = await Booking.findById(req.params.id);
+  if (booking) {
+    if (status === 'won') booking.status = 'confirmed';
+    else if (status === 'lost') booking.status = 'rejected';
+    else if (status === 'negotiation') booking.status = 'pending';
+    else if (status === 'contacted') booking.status = 'pending';
+    await booking.save();
+    return res.status(200).json({ status: 'success', message: 'Booking status updated' });
+  }
+
+  // Else it's a Lead
+  let lead = await Lead.findById(req.params.id);
+  if (lead) {
+    let quote = lead.quotations.find(q => q.vendor.toString() === vendor._id.toString());
+    if (!quote && ['contacted', 'negotiation', 'won'].includes(status)) {
+      lead.quotations.push({
+        vendor: vendor._id,
+        amount: lead.budget || 0,
+        message: 'Vendor initiated contact',
+        status: status === 'won' ? 'accepted' : 'pending'
+      });
+    } else if (quote) {
+      if (status === 'won') quote.status = 'accepted';
+      else if (status === 'lost') quote.status = 'rejected';
+      else quote.status = 'pending';
+    }
+    await lead.save();
+    return res.status(200).json({ status: 'success', message: 'Lead status updated' });
+  }
+
+  return next(new AppError('Lead not found', 404));
+});
+
 module.exports = {
   createVendorProfile, getMyVendorProfile, updateVendorProfile,
   uploadVendorImages, deleteVendorImage, uploadVendorCoverImage, getAllVendors, getVendorById,
   updateVendorApproval, getVendorDashboard, updateAvailability, getFeaturedVendors,
-  activateSubscription,
+  activateSubscription, getVendorLeadsPipeline, updateLeadPipelineStatus
 };

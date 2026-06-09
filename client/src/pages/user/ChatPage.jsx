@@ -155,7 +155,7 @@ export default function ChatPage() {
               <div className="p-4 border-b border-gray-100 flex items-center gap-3 flex-shrink-0">
                 <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700 overflow-hidden">
                   {currentChat.vendor?.images?.[0]?.url
-                    ? <img src={currentChat.vendor.images[0].url} className="w-full h-full object-cover" alt="" />
+                    ? <img src={currentChat.vendor?.images?.[0]?.url} className="w-full h-full object-cover" alt="" />
                     : getInitials(currentChat.vendor?.businessName || 'V')}
                 </div>
                 <div>

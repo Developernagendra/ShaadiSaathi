@@ -10,6 +10,8 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
   let message = err.message || 'Internal Server Error';
 
+  console.error('\n❌ [GLOBAL ERROR HANDLER]', err.message, err.stack);
+
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
     statusCode = 400;

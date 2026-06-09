@@ -28,20 +28,26 @@ const vendorSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  vendorType: {
+    type: String,
+    enum: ['service', 'cab'],
+    required: true,
+    default: 'service'
+  },
   businessName: {
     type: String,
-    required: function() { return this.profileCompletion > 0; },
+    required: function () { return this.profileCompletion > 0; },
     trim: true,
     maxlength: [100, 'Business name cannot exceed 100 characters'],
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
-    required: function() { return this.profileCompletion > 0; },
+    required: function () { return this.profileCompletion > 0; },
   },
   description: {
     type: String,
-    required: function() { return this.profileCompletion > 0; },
+    required: function () { return this.profileCompletion > 0; },
     maxlength: [2000, 'Description cannot exceed 2000 characters'],
   },
   tagline: { type: String, maxlength: 200 },
@@ -61,7 +67,7 @@ const vendorSchema = new mongoose.Schema({
   maxPrice: { type: Number, min: 0 },
 
   location: {
-    city: { type: String, required: function() { return this.profileCompletion > 0; } },
+    city: { type: String, required: function () { return this.profileCompletion > 0; } },
     state: String,
     address: String,
     pincode: String,
@@ -71,9 +77,9 @@ const vendorSchema = new mongoose.Schema({
     },
   },
   serviceAreas: [String], // Cities they serve
-  phone: { type: String, required: function() { return this.profileCompletion > 0; } },
+  phone: { type: String, required: function () { return this.profileCompletion > 0; } },
   alternatePhone: String,
-  email: { type: String, required: function() { return this.profileCompletion > 0; } },
+  email: { type: String, required: function () { return this.profileCompletion > 0; } },
   socialLinks: socialLinksSchema,
   yearsOfExperience: { type: Number, min: 0 },
   teamSize: Number,
@@ -119,12 +125,23 @@ const vendorSchema = new mongoose.Schema({
   subscription: {
     plan: {
       type: String,
-      enum: ['free', 'silver', 'gold', 'platinum'],
+      enum: ['free', 'premium', 'elite', 'silver', 'gold', 'platinum'],
       default: 'free'
     },
-    startDate: Date,
+    status: {
+      type: String,
+      enum: ['active', 'expired', 'suspended'],
+      default: 'active'
+    },
+    startDate: { type: Date, default: Date.now },
+    endDate: Date,
+    paymentStatus: {
+      type: String,
+      enum: ['paid', 'pending', 'failed', 'none'],
+      default: 'none'
+    },
     expiryDate: Date,
-    isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     paymentId: String,
     autoRenew: { type: Boolean, default: false }
   },
@@ -158,6 +175,19 @@ vendorSchema.index({ businessName: 'text', description: 'text', tagline: 'text' 
 vendorSchema.pre('save', function (next) {
   if (this.basePrice !== undefined) {
     this.price = this.basePrice;
+  }
+
+  if (this.subscription) {
+    if (this.subscription.status === 'active') {
+      this.subscription.isActive = true;
+    } else {
+      this.subscription.isActive = false;
+    }
+    if (this.subscription.endDate) {
+      this.subscription.expiryDate = this.subscription.endDate;
+    } else if (this.subscription.expiryDate) {
+      this.subscription.endDate = this.subscription.expiryDate;
+    }
   }
   next();
 });

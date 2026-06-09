@@ -1,555 +1,735 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMapPin, FiCalendar, FiClock, FiUsers, FiArrowRight, FiCheck, FiShield, FiStar, FiTrendingUp, FiImage, FiChevronLeft, FiChevronRight, FiX, FiEye } from 'react-icons/fi'
-import { FaWhatsapp, FaTruck } from 'react-icons/fa'
+import {
+  FiMapPin, FiUsers, FiArrowRight, FiFilter,
+  FiStar, FiCheck, FiChevronRight, FiCheckCircle, FiGift, FiPlus, FiMinus, FiInfo, FiCalendar, FiSearch, FiShield, FiThumbsUp, FiAlertTriangle
+} from 'react-icons/fi'
+import { FaTruck, FaCrown, FaWrench } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { LazyLoadImage } from 'react-lazy-load-image-component'
+import 'react-lazy-load-image-component/src/effects/blur.css'
 import api from '../utils/api'
+import { apiCache } from '../utils/apiCache'
 import { formatPrice } from '../utils/helpers'
 import { toast } from 'react-hot-toast'
+import BaraatCabsSkeleton from '../components/common/BaraatCabsSkeleton'
 
 export default function BaraatCabsPage() {
   const navigate = useNavigate()
-  const { user } = useSelector(s => s.auth)
 
-  const [cabs, setCabs] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState(false)
+  // Check cache synchronously so we skip the skeleton entirely on cache hits
+  const getInitialItems = () => {
+    const cachedKey = `/fleet/browse?`
+    const cached = apiCache.get(cachedKey)
+    return cached ? (cached.cabs || cached.data || []) : []
+  }
 
-  const [selectedCab, setSelectedCab] = useState(null)
-  const [galleryModal, setGalleryModal] = useState({ open: false, index: 0 })
-  const [bookingForm, setBookingForm] = useState({
-    pickup: '',
-    drop: '',
-    date: '',
-    time: '',
-    guests: '',
-    contactName: user?.name || '',
-    contactPhone: user?.phone || '',
-    wantsWhatsapp: true
+  const [items, setItems] = useState(getInitialItems)
+  const [loading, setLoading] = useState(() => {
+    return !apiCache.has('/fleet/browse?')
   })
 
-  const formRef = useRef(null)
+  // Full set of filters
+  const [filters, setFilters] = useState({
+    city: '',
+    guests: '',
+    date: '',
+    type: '',
+    availability: '', // 'available', 'limited', 'sold_out'
+    maxPrice: '',
+    vendor: '',
+    minSeats: ''
+  })
+
+  const [showFilters, setShowFilters] = useState(false)
+  const [fleetSelection, setFleetSelection] = useState([]) // Array of { cabId, count, data }
 
   useEffect(() => {
-    loadCabs()
-    window.scrollTo(0, 0)
-  }, [])
+    fetchData()
+  }, [filters.city, filters.date])
 
-  const loadCabs = async () => {
+  const fetchData = async () => {
+    const params = new URLSearchParams()
+    if (filters.city) params.append('city', filters.city)
+    if (filters.date) params.append('date', filters.date)
+    
+    const cacheKey = `/fleet/browse?${params.toString()}`
+    if (apiCache.has(cacheKey)) {
+      const cached = apiCache.get(cacheKey)
+      setItems(cached.cabs || cached.data || [])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
-      const { data } = await api.get('/cab-booking')
-      setCabs(data.cabs || [])
+      const res = await api.get(cacheKey)
+      if (res.data.status === 'success') {
+        apiCache.set(cacheKey, res.data)
+        setItems(res.data.cabs || res.data.data || [])
+      }
     } catch (err) {
       console.error(err)
+      toast.error('Failed to load marketplace fleet.')
     } finally {
       setLoading(false)
     }
   }
 
-  const displayVehicles = cabs.length > 0 ? cabs : [
-    { _id: '1', name: 'Premium Sedan', type: 'sedan', seatingCapacity: 4, pricing: { baseFare: 1500, pricePerKm: 15 }, features: ['A/C', 'Decorated', 'Water Bottles'], images: [{ url: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800' }], rating: 4.8 },
-    { _id: '2', name: 'Luxury SUV', type: 'suv', seatingCapacity: 7, pricing: { baseFare: 2500, pricePerKm: 20 }, features: ['A/C', 'Spacious', 'Music', 'Decorated'], images: [{ url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800' }], rating: 4.9 },
-    { _id: '3', name: 'Vintage Wedding Car', type: 'luxury_car', seatingCapacity: 4, pricing: { baseFare: 12000, pricePerKm: 0 }, features: ['Classic Vintage', 'Floral Decor', 'Chauffeur'], images: [{ url: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=800' }], rating: 5.0 },
-    { _id: '4', name: 'Tempo Traveller', type: 'tempo_traveller', seatingCapacity: 15, pricing: { baseFare: 4500, pricePerKm: 25 }, features: ['A/C', 'Pushback Seats', 'Group Travel'], images: [{ url: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800' }], rating: 4.7 }
-  ]
+  // --- FILTER ENGINE (CLIENT SIDE FOR INSTANT RESPONSIVENESS) ---
+  const filteredItems = useMemo(() => {
+    return items.filter(cab => {
+      // 1. Vehicle Type
+      if (filters.type && cab.type !== filters.type) return false
 
-  const galleryImages = [
-    'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800',
-    'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800',
-    'https://images.unsplash.com/photo-1563720223185-11003d516935?w=800',
-    'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
-    'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800',
-    'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800'
-  ]
+      // 2. Seating capacity
+      if (filters.minSeats && cab.seatingCapacity < Number(filters.minSeats)) return false
 
-  const reviews = [
-    { name: 'Rahul & Priya', text: 'The vintage car was absolutely stunning! The driver was professional and arrived exactly on time. Made our Baraat entry unforgettable.', rating: 5, date: '2 weeks ago' },
-    { name: 'Ankit Sharma', text: 'Booked 3 Tempo Travellers for guest transport. Very clean, great AC, and smooth driving. Highly recommend their fleet service.', rating: 5, date: '1 month ago' },
-    { name: 'Neha Singh', text: 'The luxury SUV was beautifully decorated exactly as we discussed. It added such a premium touch to our wedding photos!', rating: 4.5, date: '3 months ago' }
-  ]
+      // 3. Availability
+      const available = cab.availableFleet ?? cab.totalFleet ?? cab.quantityAvailable ?? 1
+      if (filters.availability) {
+        if (filters.availability === 'available' && available <= 3) return false
+        if (filters.availability === 'limited' && (available > 3 || available === 0)) return false
+        if (filters.availability === 'sold_out' && available > 0) return false
+      }
 
-  const getImageUrl = (cab) => {
-    if (cab.images?.length > 0) return cab.images[0].url || cab.images[0]
-    if (cab.vehicleImages?.length > 0) return cab.vehicleImages[0]
-    return 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'
+      // 4. Price Limit
+      const price = cab.price || cab.pricing?.baseFare || 0
+      if (filters.maxPrice && price > Number(filters.maxPrice)) return false
+
+      // 5. Vendor Filter
+      if (filters.vendor) {
+        const vId = cab.vendor?._id || cab.vendor
+        if (vId?.toString() !== filters.vendor.toString()) return false
+      }
+
+      return true
+    })
+  }, [items, filters])
+
+  // Extract unique vendors from loaded items
+  const uniqueVendors = useMemo(() => {
+    const vendorsMap = {}
+    items.forEach(cab => {
+      const v = cab.vendor
+      const vId = v?._id || cab.vendorId
+      const vName = v?.businessName || cab.vendorName || 'Verified Partner'
+      if (vId) {
+        vendorsMap[vId] = vName
+      }
+    })
+    return Object.entries(vendorsMap).map(([id, name]) => ({ id, name }))
+  }, [items])
+
+  // --- FLEET BUILDER LOGIC ---
+  const handleUpdateCart = (cab, action) => {
+    setFleetSelection(prev => {
+      const existing = prev.find(item => item.cabId === cab._id)
+      const maxLimit = cab.availableFleet ?? cab.totalFleet ?? cab.quantityAvailable ?? 1
+
+      if (action === 'add') {
+        if (existing) {
+          if (existing.count >= maxLimit) {
+            toast.error(`Only ${maxLimit} vehicles of this type available.`)
+            return prev
+          }
+          return prev.map(item => item.cabId === cab._id ? { ...item, count: item.count + 1 } : item)
+        } else {
+          if (maxLimit < 1) {
+            toast.error('Vehicle currently sold out.')
+            return prev
+          }
+          return [...prev, { cabId: cab._id, count: 1, data: cab }]
+        }
+      } else if (action === 'remove') {
+        if (existing && existing.count > 1) {
+          return prev.map(item => item.cabId === cab._id ? { ...item, count: item.count - 1 } : item)
+        } else {
+          return prev.filter(item => item.cabId !== cab._id)
+        }
+      }
+      return prev
+    })
   }
 
-  // Live Pricing Calculation
-  const baseFare = selectedCab?.pricing?.baseFare || 0;
-  const estimatedKm = (bookingForm.pickup && bookingForm.drop) ? 25 : 0;
-  const perKmCharge = selectedCab?.pricing?.pricePerKm || 0;
-  const kmCharges = estimatedKm * perKmCharge;
-  const driverCharge = selectedCab ? 500 : 0;
-  const decorCharge = selectedCab ? 1500 : 0;
-  const subtotal = baseFare + kmCharges + driverCharge + decorCharge;
-  const gst = subtotal * 0.05;
-  const totalAmount = subtotal + gst;
+  const fleetStats = useMemo(() => {
+    let totalCapacity = 0
+    let totalFare = 0
+    let totalVehicles = 0
 
-  const handleBookNow = async (e) => {
-    e.preventDefault();
-    if (!selectedCab) return toast.error('Please select a vehicle to proceed.');
-    if (!bookingForm.pickup || !bookingForm.drop || !bookingForm.date) {
-      return toast.error('Please complete the pickup, drop, and date details.');
-    }
-    if (!bookingForm.contactName || !bookingForm.contactPhone) {
-      return toast.error('Please provide your contact details.');
-    }
-    if (!user) {
-      toast.error('Please login to confirm your booking.');
-      return navigate('/login?redirect=/baraat-cabs');
+    fleetSelection.forEach(item => {
+      totalVehicles += item.count
+      totalCapacity += (item.data.seatingCapacity || 4) * item.count
+      totalFare += (item.data.price || item.data.pricing?.baseFare || 0) * item.count
+    })
+
+    return { totalCapacity, totalFare, totalVehicles }
+  }, [fleetSelection])
+
+  const guestTarget = Number(filters.guests) || 0
+  const capacityProgress = guestTarget > 0 ? Math.min(100, (fleetStats.totalCapacity / guestTarget) * 100) : 0
+
+  const handleSmartRecommend = () => {
+    if (!guestTarget || guestTarget <= 0) {
+      toast.error('Please enter a valid guest count first.')
+      return
     }
 
-    setSubmitting(true);
-    try {
-      const payload = {
-        cabId: selectedCab._id,
-        city: bookingForm.pickup.split(',')[0] || 'Direct Booking',
-        pickupLocation: bookingForm.pickup,
-        dropLocation: bookingForm.drop,
-        eventDate: bookingForm.date,
-        time: bookingForm.time,
-        contactName: bookingForm.contactName,
-        contactPhone: bookingForm.contactPhone,
-        guestCount: bookingForm.guests || selectedCab.seatingCapacity || 4,
-        vendorId: selectedCab.vendor?._id || selectedCab.vendor,
-        subtotal,
-        gst,
-        totalAmount,
-        specialRequests: bookingForm.wantsWhatsapp ? 'Please contact me via WhatsApp for updates.' : ''
-      };
-
-      await api.post('/cab-booking', payload);
-      setSuccess(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to submit booking');
-    } finally {
-      setSubmitting(false);
+    if (items.length === 0) {
+      toast.error('No vehicles available in this city to recommend.')
+      return
     }
+
+    // Sort items by cost per seat (cheapest first)
+    const sortedVehicles = [...items].sort((a, b) => {
+      const cpsA = (a.price || a.pricing?.baseFare || 1) / (a.seatingCapacity || 1)
+      const cpsB = (b.price || b.pricing?.baseFare || 1) / (b.seatingCapacity || 1)
+      return cpsA - cpsB
+    })
+
+    let remainingGuests = guestTarget
+    const newSelection = []
+
+    for (const vehicle of sortedVehicles) {
+      if (remainingGuests <= 0) break
+      const capacity = vehicle.seatingCapacity || 4
+      const maxAvailable = vehicle.availableFleet ?? vehicle.totalFleet ?? vehicle.quantityAvailable ?? 1
+
+      if (maxAvailable <= 0) continue
+
+      let countNeeded = Math.ceil(remainingGuests / capacity)
+      countNeeded = Math.min(countNeeded, maxAvailable)
+
+      if (countNeeded > 0) {
+        newSelection.push({
+          cabId: vehicle._id,
+          count: countNeeded,
+          data: vehicle
+        })
+        remainingGuests -= (capacity * countNeeded)
+      }
+    }
+
+    setFleetSelection(newSelection)
+    toast.success('Smart Recommendation Applied!')
   }
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4 selection:bg-[#D4AF37] selection:text-white">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-[#111] backdrop-blur-3xl rounded-[3rem] p-12 max-w-xl w-full text-center shadow-[0_0_80px_rgba(212,175,55,0.15)] border border-white/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/20 rounded-full blur-[100px] pointer-events-none" />
-          
-          <div className="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#B38D22] rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(212,175,55,0.4)] relative z-10">
-            <FiCheck className="text-black text-5xl" />
-          </div>
-          <h2 className="font-display text-4xl font-black text-white mb-4 relative z-10">Booking Confirmed!</h2>
-          <p className="text-gray-400 mb-10 leading-relaxed text-lg relative z-10 font-serif italic">
-            Your Luxury Baraat Cab from <span className="font-bold text-[#D4AF37] not-italic">{bookingForm.pickup}</span> to <span className="font-bold text-[#D4AF37] not-italic">{bookingForm.drop}</span> is successfully booked.
-          </p>
-          <div className="flex gap-4 justify-center relative z-10">
-            <button onClick={() => navigate('/dashboard/my-bookings')} className="px-10 py-5 bg-[#D4AF37] hover:bg-[#C5A017] text-black rounded-full font-black uppercase tracking-widest text-xs shadow-xl transition-all">
-              View My Bookings
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    )
+  const handleCheckout = () => {
+    if (fleetSelection.length === 0) {
+      toast.error('Please select at least one vehicle for your fleet.')
+      return
+    }
+    if (!filters.city || !filters.date) {
+      toast.error('Please specify your city and event date in the top search panel.')
+      return
+    }
+
+    // Double-check availability limits before redirecting
+    for (const item of fleetSelection) {
+      const liveCab = items.find(i => i._id === item.cabId)
+      if (liveCab) {
+        const currentLimit = liveCab.availableFleet ?? liveCab.totalFleet ?? 1
+        if (item.count > currentLimit) {
+          toast.error(`Availability changed. Only ${currentLimit} vehicles of ${liveCab.name} are available now.`)
+          return
+        }
+      }
+    }
+
+    const payload = fleetSelection.map(item => ({
+      cabId: item.cabId,
+      vendorId: item.data?.vendor?._id || item.data?.vendor || item.data?.vendorId,
+      count: item.count,
+      pricePerVehicle: item.data?.price || item.data?.pricing?.baseFare || 0,
+      totalFare: (item.data?.price || item.data?.pricing?.baseFare || 0) * item.count,
+      data: item.data
+    }))
+
+    navigate('/cab-booking', {
+      state: {
+        bookingType: 'baraat-fleet',
+        fleetSelection: payload,
+        city: filters.city,
+        eventDate: filters.date,
+        guestCount: filters.guests || fleetStats.totalCapacity,
+        totalAmount: fleetStats.totalFare
+      }
+    })
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-[#D4AF37]/30 selection:text-black">
+    <div className="min-h-screen bg-[#FDFCF8] font-sans selection:bg-[#D4AF37]/20 selection:text-[#D4AF37]">
+      {/* ── HERO SECTION ── */}
+      <div className="relative bg-black pt-32 pb-40 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="https://images.unsplash.com/photo-1546297374-fb211f4cc09a?w=2000" alt="Wedding Fleet" className="w-full h-full object-cover opacity-50 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#FDFCF8] via-black/60 to-black/80" />
+        </div>
 
-      {/* 🚖 1. ULTRA PREMIUM HERO SECTION */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black pt-20 pb-20">
-        <div className="absolute inset-0 floral-pattern opacity-10 mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/30 z-10" />
-        
-        {/* Animated Orbs */}
-        <div className="absolute top-1/4 -right-1/4 w-96 h-96 md:w-[800px] md:h-[800px] bg-[#D4AF37]/20 rounded-full blur-[150px] animate-pulse z-0" />
-        <div className="absolute bottom-1/4 -left-1/4 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/20 rounded-full blur-[150px] animate-[pulse_6s_ease-in-out_infinite] z-0" />
-        
-        {/* Background Video/Image */}
-        <img 
-          src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=1600" 
-          alt="Luxury Wedding Car" 
-          className="absolute inset-0 w-full h-full object-cover opacity-60 z-0 scale-105"
-        />
-        
-        <div className="max-w-7xl mx-auto px-4 relative z-20 text-center flex flex-col items-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 bg-black/40 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.4em] px-6 py-2.5 rounded-full mb-8 border border-white/10 shadow-2xl">
-            <span className="text-[#D4AF37]">✨</span> Imperial Fleet Experience
+        <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 shadow-xl">
+            <FaCrown className="text-[#D4AF37] text-lg" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Luxury Wedding Transportation</span>
           </motion.div>
-          
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-7xl lg:text-[7rem] font-black text-white mb-6 tracking-tighter leading-[1.1] drop-shadow-2xl">
-            Book Premium <br />
-            <span className="text-[#D4AF37] italic font-serif">Baraat Cabs</span>
+
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white mb-6 tracking-tighter drop-shadow-2xl">
+            Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic font-serif">Baraat Ride</span>
           </motion.h1>
-          
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-gray-300 text-lg md:text-2xl font-medium font-serif italic mb-12 leading-relaxed max-w-3xl drop-shadow-md">
-            Make your grand entrance unforgettable. Experience luxury, comfort, and reliability with our premium wedding fleet.
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-gray-300 font-medium text-lg md:text-2xl italic max-w-3xl mx-auto drop-shadow-md">
+            Arrive in style. Build your custom fleet from our handpicked selection of premium vehicles.
           </motion.p>
-          
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row gap-6">
-            <button
-              onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-[#D4AF37] hover:bg-[#C5A017] text-black px-12 py-5 rounded-full font-black uppercase tracking-[0.2em] text-[11px] shadow-[0_15px_40px_rgba(212,175,55,0.4)] transition-all flex items-center justify-center gap-3"
-            >
-              Book Now <FiArrowRight size={18} />
-            </button>
-            <button
-              onClick={() => document.getElementById('vehicle-showcase').scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white/5 backdrop-blur-xl text-white border border-white/20 px-12 py-5 rounded-full font-black uppercase tracking-[0.2em] text-[11px] hover:bg-white/10 transition-all flex items-center justify-center gap-3"
-            >
-              Explore Fleet
-            </button>
-          </motion.div>
         </div>
-      </section>
+      </div>
 
-      {/* 💎 FEATURES BANNER */}
-      <section className="bg-[#111] border-y border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-            {[
-              { icon: '🛡️', text: 'Secure Booking' },
-              { icon: '🎀', text: 'Floral Decor Included' },
-              { icon: '👔', text: 'Chauffeur Driven' },
-              { icon: '⭐', text: 'Top Rated Service' }
-            ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-2xl">{f.icon}</span>
-                <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{f.text}</span>
-              </div>
-            ))}
+      {/* ── FLOATING SEARCH PANEL ── */}
+      <div className="max-w-6xl mx-auto px-4 relative z-20 -mt-24 mb-16">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white/90 backdrop-blur-2xl p-6 rounded-[2.5rem] border border-white/40 shadow-[0_30px_60px_rgba(0,0,0,0.12)] flex flex-col md:flex-row gap-4 sticky top-24 z-50">
+          <div className="flex-1 bg-gray-50/80 rounded-2xl p-4 flex items-center gap-4 hover:bg-pink-50/50 transition-colors border border-transparent hover:border-pink-100">
+            <FiMapPin className="text-[#D4AF37] text-2xl shrink-0" />
+            <div className="w-full">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Step 1: Base City</p>
+              <input type="text" placeholder="Where is the event?" value={filters.city} onChange={e => setFilters({ ...filters, city: e.target.value })} className="bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 w-full font-bold text-lg" />
+            </div>
           </div>
-        </div>
-      </section>
+          <div className="flex-1 bg-gray-50/80 rounded-2xl p-4 flex items-center gap-4 hover:bg-pink-50/50 transition-colors border border-transparent hover:border-pink-100">
+            <FiUsers className="text-[#D4AF37] text-2xl shrink-0" />
+            <div className="w-full">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Guests</p>
+              <input type="number" placeholder="How many people?" value={filters.guests} onChange={e => setFilters({ ...filters, guests: e.target.value })} className="bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 w-full font-bold text-lg" />
+            </div>
+          </div>
+          <div className="flex-1 bg-gray-50/80 rounded-2xl p-4 flex items-center gap-4 hover:bg-pink-50/50 transition-colors border border-transparent hover:border-pink-100">
+            <FiCalendar className="text-[#D4AF37] text-2xl shrink-0" />
+            <div className="w-full">
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Event Date</p>
+              <input type="date" value={filters.date} onChange={e => setFilters({ ...filters, date: e.target.value })} className="bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 w-full font-bold text-lg" />
+            </div>
+          </div>
+          <div className="md:w-auto w-full flex items-center justify-center">
+             <button className="bg-gray-900 text-white w-full md:w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg hover:bg-black hover:scale-105 transition-all">
+                <FiSearch size={24} />
+             </button>
+          </div>
+        </motion.div>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 mt-16 md:mt-24 space-y-24 md:space-y-32">
-        
-        {/* 📍 MAIN BOOKING FLOW */}
-        <div ref={formRef} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16" id="vehicle-showcase">
-          
-          {/* LEFT PANEL: Vehicles & Trip Details */}
-          <div className="lg:col-span-8 space-y-16">
-            
-            {/* TRIP DETAILS */}
-            <section>
-              <div className="inline-flex items-center gap-2 text-[#C2185B] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-                <div className="w-8 h-px bg-[#C2185B]" /> Step 1
+      {/* ── MAIN CONTENT ── */}
+      <div className="max-w-7xl mx-auto px-4 pb-24">
+        <div className="flex flex-col lg:flex-row gap-10">
+
+          {/* VEHICLE LIST & FILTERS */}
+          <div className="flex-1 space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
+              <div>
+                <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2"><span className="w-6 h-[2px] bg-[#D4AF37]" /> Step 2: Choose Vehicles</p>
+                <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight">Premium Fleet</h2>
               </div>
-              <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-8">Trip Details</h2>
-              
-              <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-premium border border-gray-100 relative">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Locations */}
-                  <div className="space-y-6 relative">
-                    <div className="hidden md:block absolute left-[1.15rem] top-[3.5rem] bottom-[3.5rem] w-0.5 bg-dashed-line border-l-2 border-dashed border-gray-200" />
-                    
+              <div className="flex gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-6 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg transition-all border ${showFilters ? 'bg-[#D4AF37] text-white border-[#D4AF37]' : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'}`}
+                >
+                  <FiFilter size={16} /> Filters {showFilters ? 'Active' : ''}
+                </button>
+                <button onClick={handleSmartRecommend} className="px-6 py-4 bg-gradient-to-r from-gray-900 to-black text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:-translate-y-1 transition-all flex items-center gap-2 shadow-lg ml-auto">
+                  <FiStar className="text-[#D4AF37]" size={16} /> Auto-Build Fleet
+                </button>
+              </div>
+            </div>
+
+            {/* DYNAMIC COLLAPSIBLE FILTER PANEL */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                    {/* Vehicle Type */}
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pl-2">Pickup Location</label>
-                      <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-black shadow-lg z-10" />
-                        <input type="text" placeholder="Enter pickup address" value={bookingForm.pickup} onChange={e => setBookingForm({ ...bookingForm, pickup: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-5 text-sm font-bold text-gray-900 outline-none focus:border-black focus:bg-white transition-all" />
-                      </div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Vehicle Type</label>
+                      <select
+                        value={filters.type}
+                        onChange={e => setFilters({ ...filters, type: e.target.value })}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      >
+                        <option value="">All Types</option>
+                        <option value="sedan">Sedan</option>
+                        <option value="suv">SUV</option>
+                        <option value="luxury_car">Luxury Car</option>
+                        <option value="vintage_car">Vintage Car</option>
+                        <option value="bus">Bus / Coach</option>
+                        <option value="tempo_traveller">Tempo Traveller</option>
+                        <option value="horse_carriage">Horse Carriage</option>
+                      </select>
                     </div>
 
+                    {/* Availability Status */}
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pl-2">Drop Location</label>
-                      <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.6)] z-10" />
-                        <input type="text" placeholder="Enter destination" value={bookingForm.drop} onChange={e => setBookingForm({ ...bookingForm, drop: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-5 text-sm font-bold text-gray-900 outline-none focus:border-[#D4AF37] focus:bg-white transition-all" />
-                      </div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Availability Status</label>
+                      <select
+                        value={filters.availability}
+                        onChange={e => setFilters({ ...filters, availability: e.target.value })}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="available">🟢 Available ({'>'} 3 available)</option>
+                        <option value="limited">🟡 Limited Availability (≤ 3 available)</option>
+                        <option value="sold_out">🔴 Fully Booked (0 available)</option>
+                      </select>
+                    </div>
+
+                    {/* Capacity */}
+                    <div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Min Capacity (Guests)</label>
+                      <select
+                        value={filters.minSeats}
+                        onChange={e => setFilters({ ...filters, minSeats: e.target.value })}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      >
+                        <option value="">Any Capacity</option>
+                        <option value="4">4+ Seats</option>
+                        <option value="6">6+ Seats</option>
+                        <option value="8">8+ Seats</option>
+                        <option value="12">12+ Seats</option>
+                        <option value="20">20+ Seats</option>
+                      </select>
+                    </div>
+
+                    {/* Max Price */}
+                    <div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Max Price Per Vehicle</label>
+                      <select
+                        value={filters.maxPrice}
+                        onChange={e => setFilters({ ...filters, maxPrice: e.target.value })}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      >
+                        <option value="">Any Price</option>
+                        <option value="15000">Under ₹15,000</option>
+                        <option value="30000">Under ₹30,000</option>
+                        <option value="50000">Under ₹50,000</option>
+                        <option value="100000">Under ₹1,00,000</option>
+                      </select>
+                    </div>
+
+                    {/* Vendor */}
+                    <div>
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Vendor Partner</label>
+                      <select
+                        value={filters.vendor}
+                        onChange={e => setFilters({ ...filters, vendor: e.target.value })}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      >
+                        <option value="">All Vendors</option>
+                        {uniqueVendors.map(v => (
+                          <option key={v.id} value={v.id}>{v.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Clear Filters */}
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => setFilters({
+                          ...filters,
+                          type: '',
+                          availability: '',
+                          maxPrice: '',
+                          vendor: '',
+                          minSeats: ''
+                        })}
+                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-black uppercase tracking-widest text-[10px] py-4 rounded-xl transition-all shadow-inner border border-gray-200/50"
+                      >
+                        Clear Filters
+                      </button>
                     </div>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                  {/* Date/Time/Guests */}
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pl-2">Date</label>
-                        <div className="relative">
-                          <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input type="date" value={bookingForm.date} onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-gray-900 outline-none focus:border-black focus:bg-white transition-all appearance-none" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pl-2">Time</label>
-                        <div className="relative">
-                          <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input type="time" value={bookingForm.time} onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-gray-900 outline-none focus:border-black focus:bg-white transition-all" />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pl-2">Guest Count</label>
-                      <div className="relative">
-                        <FiUsers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="number" placeholder="Number of passengers" value={bookingForm.guests} onChange={e => setBookingForm({ ...bookingForm, guests: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 pl-12 pr-5 text-sm font-bold text-gray-900 outline-none focus:border-black focus:bg-white transition-all" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {loading ? (
+              <BaraatCabsSkeleton />
+            ) : items.length === 0 ? (
+              /* Scenario A: No approved vehicles exist for query (Zero Cabs in selected City/Date) */
+              <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-gray-200 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-pink-50 rounded-full blur-[100px] pointer-events-none" />
+                <img src="https://illustrations.popsy.co/amber/car.svg" alt="Empty" className="w-48 h-48 mx-auto mb-8 opacity-60 grayscale" />
+                <h3 className="font-display font-black text-3xl text-gray-900 mb-3">No Approved Vehicles in this City</h3>
+                <p className="text-gray-500 text-lg font-medium italic max-w-md mx-auto mb-8">
+                  {filters.city ? `We currently don't have any approved active fleet vehicles registered in "${filters.city}".` : 'Select a base city to view our available luxury fleets.'}
+                </p>
+                {filters.city && (
+                  <button onClick={() => setFilters({ ...filters, city: 'Patna' })} className="px-6 py-3 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#FFF8F0] rounded-xl font-bold transition-all">
+                     Explore Patna Fleet
+                  </button>
+                )}
               </div>
-            </section>
-
-            {/* VEHICLE SHOWCASE */}
-            <section>
-              <div className="inline-flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
-                <div className="w-8 h-px bg-[#D4AF37]" /> Step 2
+            ) : filteredItems.length === 0 ? (
+              /* Scenario B: Cabs exist in city, but filters returned zero matching */
+              <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-100 shadow-sm relative overflow-hidden">
+                <FiAlertTriangle className="mx-auto text-4xl text-amber-500 mb-6" />
+                <h3 className="font-display font-black text-2xl text-gray-900 mb-2">No Matching Cabs</h3>
+                <p className="text-gray-500 text-md max-w-md mx-auto mb-8">
+                  There are {items.length} approved vehicles in this city, but none match your active filters. Try clearing or expanding your selection criteria.
+                </p>
+                <button
+                  onClick={() => setFilters({
+                    ...filters,
+                    type: '',
+                    availability: '',
+                    maxPrice: '',
+                    vendor: '',
+                    minSeats: ''
+                  })}
+                  className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold transition-all hover:bg-black"
+                >
+                  Reset All Filters
+                </button>
               </div>
-              <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-8">Select Your Fleet</h2>
+            ) : (
+              <div className="grid grid-cols-1 gap-8">
+                {filteredItems.map(cab => {
+                  const selectedItem = fleetSelection.find(i => i.cabId === cab._id)
+                  const count = selectedItem ? selectedItem.count : 0
+                  const isSelected = count > 0
 
-              <div className="grid sm:grid-cols-2 gap-6">
-                {loading ? (
-                  [1, 2, 3, 4].map(n => <div key={n} className="bg-gray-100 h-80 rounded-[2.5rem] animate-pulse" />)
-                ) : (
-                  displayVehicles.map((cab) => (
-                    <div
+                  const total = cab.totalFleet || cab.quantityAvailable || 1
+                  const available = cab.availableFleet ?? total
+                  const isVerifiedVendor = cab.vendor?.verified || cab.vendor?.badges?.includes('verified') || cab.isAdminVehicle
+                  const rating = cab.rating?.average || cab.vendor?.rating?.average || 4.8
+                  const cityLabel = cab.location?.city ? cab.location.city.charAt(0).toUpperCase() + cab.location.city.slice(1) : 'Patna'
+
+                  return (
+                    <motion.div
                       key={cab._id}
-                      onClick={() => setSelectedCab(cab)}
-                      className={`relative bg-white rounded-[2.5rem] overflow-hidden cursor-pointer transition-all duration-300 group flex flex-col h-full border-2 ${selectedCab?._id === cab._id ? 'border-black shadow-2xl scale-[1.02]' : 'border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-300'}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className={`bg-white rounded-[2.5rem] overflow-hidden transition-all duration-500 flex flex-col md:flex-row group ${
+                        isSelected 
+                          ? 'border-2 border-[#D4AF37] shadow-[0_20px_50px_rgba(212,175,55,0.15)] scale-[1.01]' 
+                          : 'border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-gray-200'
+                      }`}
                     >
-                      {/* Image Area */}
-                      <div className="h-56 overflow-hidden bg-gray-100 relative">
-                        <img src={getImageUrl(cab)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={cab.name} />
-                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-900 shadow-sm flex items-center gap-2">
-                          <FiUsers className="text-[#D4AF37] text-sm" /> {cab.seatingCapacity} Seats
-                        </div>
-                        {selectedCab?._id === cab._id && (
-                          <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center">
-                            <div className="bg-black text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl">
-                              <FiCheck strokeWidth={3} size={20} />
-                            </div>
+                      {/* Image Section */}
+                      <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-auto bg-gray-100 relative overflow-hidden">
+                        <LazyLoadImage
+                          src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'}
+                          alt={cab.name}
+                          effect="blur"
+                          wrapperProps={{ style: { display: "block", width: "100%", height: "100%" } }}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        
+                        {/* Badges */}
+                        <div className="absolute top-4 left-4 flex flex-col gap-2">
+                          <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm text-white border border-white/20">
+                            {cab.type?.replace('_', ' ')}
                           </div>
-                        )}
+                          {cab.isAdminVehicle && (
+                            <div className="bg-[#D4AF37] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm text-white flex items-center gap-2">
+                              <FaCrown size={12} /> Premium
+                            </div>
+                          )}
+                          {isVerifiedVendor && (
+                            <div className="bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm text-white flex items-center gap-1.5 border border-emerald-500/20">
+                              <FiCheckCircle size={12} /> Verified Vendor
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Vendor Mini Profile */}
+                        <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shrink-0">
+                              <img src={`https://ui-avatars.com/api/?name=${cab.vendor?.businessName || cab.vendorName || 'Vendor'}&background=FFF8F0&color=D4AF37`} alt="Vendor" className="w-full h-full object-cover" />
+                           </div>
+                           <div className="text-white">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-0.5">Provided by</p>
+                              <p className="font-bold text-sm leading-none flex items-center gap-1.5">
+                                 {cab.vendor?.businessName || cab.vendorName || 'Verified Partner'} 
+                                 {isVerifiedVendor && <FiCheckCircle className="text-emerald-400" size={12} />}
+                              </p>
+                           </div>
+                           <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                              ⭐ {rating.toFixed(1)}
+                           </div>
+                        </div>
                       </div>
 
-                      {/* Content Area */}
-                      <div className="p-6 md:p-8 flex-1 flex flex-col justify-between bg-white relative">
-                        <div>
-                          <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.2em] mb-2">{cab.type?.replace('_', ' ')}</p>
-                          <h4 className="font-display font-black text-2xl text-gray-900 mb-4">{cab.name}</h4>
-                          <div className="flex flex-wrap gap-2 mb-6">
-                            {Array.isArray(cab.features) && cab.features.length > 0 ? cab.features.map(f => (
-                              <span key={f} className="bg-gray-50 text-gray-500 border border-gray-100 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">{f}</span>
-                            )) : typeof cab.features === 'string' ? cab.features.split(',').map(f => (
-                              <span key={f.trim()} className="bg-gray-50 text-gray-500 border border-gray-100 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">{f.trim()}</span>
-                            )) : <span className="bg-gray-50 text-gray-500 border border-gray-100 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">A/C Premium</span>}
-                          </div>
-                        </div>
+                      {/* Details Section */}
+                      <div className="p-8 md:p-10 flex-1 flex flex-col relative">
+                        {isSelected && <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-bl-[4rem] pointer-events-none" />}
                         
-                        <div className="border-t border-gray-100 pt-6 flex justify-between items-end">
-                          <div className="flex items-center gap-1">
-                            <FiStar className="text-[#D4AF37] fill-[#D4AF37]" size={14} />
-                            <span className="text-sm font-black text-gray-900">{typeof cab.rating === 'object' ? cab.rating?.average?.toFixed(1) || 'New' : typeof cab.rating === 'number' ? cab.rating.toFixed(1) : 'New'}</span>
+                        <div className="flex justify-between items-start mb-4 relative z-10">
+                           <div>
+                              <h3 className="font-display font-black text-3xl text-gray-900 leading-tight mb-2 group-hover:text-[#D4AF37] transition-colors">
+                                 {cab.name || cab.vehicleName || `${cab.brand} ${cab.model}`}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-4 text-gray-500 font-semibold text-sm mt-1">
+                                 <span className="flex items-center gap-1.5"><FiUsers className="text-[#D4AF37]" size={16} /> Up to {cab.seatingCapacity} Guests</span>
+                                 <span className="flex items-center gap-1.5"><FiMapPin className="text-[#D4AF37]" size={16} /> Base City: {cityLabel}</span>
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Availability Status Badges */}
+                        <div className="mb-6 flex flex-wrap gap-2">
+                          {available === 0 ? (
+                            <span className="bg-rose-50 text-rose-700 border border-rose-200/50 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                              🔴 Fully Booked
+                            </span>
+                          ) : available <= 3 ? (
+                            <span className="bg-amber-50 text-amber-700 border border-amber-200/50 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                              🟡 Limited Availability
+                            </span>
+                          ) : (
+                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/50 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2">
+                              🟢 Available
+                            </span>
+                          )}
+                          <span className="bg-gray-50 text-gray-600 border border-gray-200/50 px-3 py-1.5 rounded-xl text-xs font-bold">
+                            Total: {total} vehicles | Left: {available} available
+                          </span>
+                        </div>
+
+                        <div className="space-y-3 mb-8">
+                           <div className="flex items-center gap-3 text-sm text-gray-600"><FiShield className="text-emerald-500" /> Fully Insured & Sanitized</div>
+                           <div className="flex items-center gap-3 text-sm text-gray-600"><FiThumbsUp className="text-blue-500" /> Highly rated professional chauffeur</div>
+                        </div>
+
+                        <div className="mt-auto flex items-end justify-between border-t border-gray-100 pt-6 relative z-10">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Price Per Vehicle</p>
+                            <p className="font-display font-black text-4xl text-gray-900 tracking-tighter">
+                              {formatPrice(cab.price || cab.pricing?.baseFare || 0)}
+                            </p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-1">Starting At</p>
-                            <p className="text-3xl font-black text-gray-900 font-display">{formatPrice(cab.pricing?.baseFare)}</p>
+
+                          {/* Action & Quantity Controls */}
+                          <div className="flex flex-col items-end">
+                             {available > 0 && <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 text-right">Step 3: Quantity</p>}
+                             {available <= 0 ? (
+                               <div className="bg-rose-50 text-rose-700 border border-rose-200 px-6 py-4 rounded-xl text-xs font-black uppercase tracking-wider text-center select-none">
+                                 Booking Disabled
+                               </div>
+                             ) : count === 0 ? (
+                               <button 
+                                 onClick={() => handleUpdateCart(cab, 'add')} 
+                                 className="h-14 px-8 rounded-full flex items-center justify-center transition-all shadow-xl font-black uppercase tracking-widest text-xs gap-2 bg-gray-900 text-white hover:bg-black hover:-translate-y-1"
+                               >
+                                 Book Now <FiPlus size={16} />
+                               </button>
+                             ) : (
+                               <div className="flex items-center bg-gray-900 rounded-full p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+                                 <button onClick={() => handleUpdateCart(cab, 'remove')} className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-gray-700 transition-colors">
+                                   <FiMinus size={18} />
+                                 </button>
+                                 <span className="w-12 text-center font-display font-black text-white text-2xl">{count}</span>
+                                 <button onClick={() => handleUpdateCart(cab, 'add')} className="w-12 h-12 bg-[#D4AF37] rounded-full flex items-center justify-center text-gray-900 hover:bg-[#F4D03F] transition-colors shadow-inner">
+                                   <FiPlus size={18} />
+                                 </button>
+                               </div>
+                             )}
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ── LIVE BARAAT CART (SIDEBAR - STEP 4) ── */}
+          <div className="w-full lg:w-[450px]">
+            <div className="bg-white rounded-[3rem] p-8 md:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.08)] border border-gray-100 sticky top-32 overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-[#D4AF37]/5 rounded-bl-[5rem] pointer-events-none" />
+              
+              <div className="mb-8 relative z-10">
+                <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2"><span className="w-6 h-[2px] bg-[#D4AF37]" /> Step 4</p>
+                <h3 className="font-display text-3xl font-black text-gray-900 tracking-tight">Fleet Summary</h3>
+              </div>
+
+              {/* Capacity Progress */}
+              <div className="mb-8 bg-[#FFF8F0] p-6 rounded-[2rem] border border-[#D4AF37]/20 relative z-10">
+                <div className="flex justify-between items-end mb-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Capacity</p>
+                  <p className="font-black text-xl text-gray-900">{fleetStats.totalCapacity} <span className="text-gray-400 text-sm font-medium">/ {guestTarget || '?'}</span></p>
+                </div>
+                <div className="h-3 w-full bg-white rounded-full overflow-hidden shadow-inner border border-gray-100">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${capacityProgress}%` }}
+                    className={`h-full rounded-full transition-all duration-700 ${capacityProgress >= 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-[#D4AF37] to-[#F4D03F]'}`}
+                  />
+                </div>
+                {guestTarget > 0 && capacityProgress < 100 && (
+                  <p className="text-[11px] text-gray-500 font-bold mt-4 flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm"><FiInfo className="text-amber-500" /> Select more vehicles for {guestTarget - fleetStats.totalCapacity} guests</p>
+                )}
+                {guestTarget > 0 && capacityProgress >= 100 && (
+                  <p className="text-[11px] text-emerald-700 font-bold mt-4 flex items-center gap-2 bg-emerald-50 px-3 py-2 rounded-xl shadow-sm"><FiCheckCircle className="text-emerald-500" /> Perfect! All guests are covered.</p>
+                )}
+              </div>
+
+              {/* Selected Vehicles List */}
+              <div className="space-y-4 mb-8 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                {fleetSelection.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400 text-xs font-bold uppercase tracking-widest border-2 border-dashed border-gray-100 rounded-[2rem]">
+                    <FaTruck className="mx-auto text-3xl mb-3 text-gray-200" />
+                    Cart is Empty
+                  </div>
+                ) : (
+                  fleetSelection.map((item, idx) => (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} key={idx} className="flex gap-4 items-center p-4 rounded-[2rem] bg-gray-50 border border-gray-100 hover:border-[#D4AF37]/50 transition-colors">
+                      <div className="w-16 h-16 bg-white rounded-2xl overflow-hidden shrink-0 shadow-sm">
+                        <img src={item.data?.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=200'} alt="car" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-900 text-base leading-none mb-2">{item.data.name || item.data.type}</p>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white px-2 py-1 rounded-lg inline-block border border-gray-100 shadow-sm">{item.count} x {formatPrice(item.data.price || item.data.pricing?.baseFare)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display font-black text-gray-900 text-lg">{formatPrice((item.data.price || item.data.pricing?.baseFare || 0) * item.count)}</p>
+                      </div>
+                    </motion.div>
                   ))
                 )}
               </div>
-            </section>
-          </div>
 
-          {/* RIGHT PANEL: Sticky Booking Summary */}
-          <div className="lg:col-span-4 relative hidden lg:block">
-            <div className="sticky top-28 space-y-8">
+              {/* Totals */}
+              <div className="border-t border-gray-100 pt-8 mb-8 space-y-4 relative z-10">
+                <div className="flex justify-between text-sm font-bold text-gray-500">
+                  <span>Vehicles Selected</span>
+                  <span className="text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">{fleetStats.totalVehicles}</span>
+                </div>
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Estimation</span>
+                  <span className="font-display font-black text-4xl text-gray-900">{formatPrice(fleetStats.totalFare)}</span>
+                </div>
+              </div>
+
+              {/* Action */}
+              <button
+                onClick={handleCheckout}
+                disabled={fleetSelection.length === 0}
+                className="w-full py-6 bg-gradient-to-r from-gray-900 to-black text-white rounded-[2rem] font-black uppercase tracking-widest text-[11px] shadow-[0_20px_40px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-3 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[gold-shine_2s_infinite]" />
+                <span className="relative z-10">Proceed to Booking</span> <FiArrowRight className="relative z-10" size={18} />
+              </button>
               
-              {/* LIVE FARE SUMMARY */}
-              <div className="bg-black rounded-[3rem] p-8 md:p-10 shadow-premium relative overflow-hidden text-white">
-                <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-                
-                <h3 className="font-display text-2xl font-black text-white mb-8 flex items-center gap-3 relative z-10">
-                  <FiTrendingUp className="text-[#D4AF37]" /> Fare Estimate
-                </h3>
-
-                {selectedCab ? (
-                  <div className="space-y-5 relative z-10">
-                    <div className="flex justify-between items-center pb-5 border-b border-white/10">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Selected Fleet</span>
-                      <span className="text-sm font-black text-[#D4AF37]">{selectedCab.name}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center px-1">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Base Fare</span>
-                      <span className="text-sm font-black text-white">{formatPrice(baseFare)}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center px-1">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Driver & Fuel</span>
-                      <span className="text-sm font-black text-white">{formatPrice(driverCharge)}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center px-1">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Floral Decor</span>
-                      <span className="text-sm font-black text-white">{formatPrice(decorCharge)}</span>
-                    </div>
-
-                    <div className={`flex justify-between items-center px-1 transition-all ${estimatedKm > 0 ? 'opacity-100' : 'opacity-40'}`}>
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Est. Distance (~{estimatedKm} KM)</span>
-                      <span className="text-sm font-black text-white">{formatPrice(kmCharges)}</span>
-                    </div>
-
-                    <div className="pt-8 mt-6 border-t border-white/10 flex flex-col items-center text-center">
-                      <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Payable Amount</span>
-                      <span className="text-5xl font-black text-white tracking-tighter mb-4">{formatPrice(totalAmount)}</span>
-                      <span className="inline-flex items-center gap-2 bg-[#D4AF37]/10 text-[#D4AF37] px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider border border-[#D4AF37]/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" /> Includes 5% GST
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-16 border-2 border-dashed border-white/10 rounded-[2rem] bg-white/5 relative z-10">
-                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
-                      <FaTruck className="text-2xl text-gray-400" />
-                    </div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed px-4">Select a vehicle from the fleet to calculate live pricing</p>
-                  </div>
-                )}
+              <div className="mt-6 flex items-center justify-center gap-2 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+                <FiShield /> Secure Payment Protection
               </div>
-
-              {/* CONTACT DETAILS & CTA */}
-              <div className="bg-white rounded-[3rem] p-8 md:p-10 shadow-premium border border-gray-100">
-                <h3 className="font-display text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                  <FiUsers className="text-[#C2185B]" /> Primary Contact
-                </h3>
-
-                <div className="space-y-5 mb-8">
-                  <input type="text" placeholder="Full Name" value={bookingForm.contactName} onChange={e => setBookingForm({ ...bookingForm, contactName: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-xl py-4 px-5 text-sm font-bold text-gray-900 outline-none focus:border-black focus:bg-white transition-all" />
-                  <input type="tel" placeholder="Mobile Number" value={bookingForm.contactPhone} onChange={e => setBookingForm({ ...bookingForm, contactPhone: e.target.value })} className="w-full bg-gray-50 border border-transparent rounded-xl py-4 px-5 text-sm font-bold text-gray-900 outline-none focus:border-black focus:bg-white transition-all" />
-
-                  <label className="flex items-center gap-3 p-4 bg-[#25D366]/5 rounded-xl border border-[#25D366]/20 cursor-pointer hover:bg-[#25D366]/10 transition-colors">
-                    <input type="checkbox" checked={bookingForm.wantsWhatsapp} onChange={e => setBookingForm({ ...bookingForm, wantsWhatsapp: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-[#25D366] focus:ring-[#25D366]" />
-                    <span className="text-xs font-bold text-gray-800 flex items-center gap-2"><FaWhatsapp className="text-[#25D366] text-lg" /> Get WhatsApp Updates</span>
-                  </label>
-                </div>
-
-                <button
-                  onClick={handleBookNow}
-                  disabled={submitting}
-                  className="w-full bg-black hover:bg-gray-900 text-white rounded-full py-5 font-black text-[11px] uppercase tracking-[0.3em] shadow-xl hover:shadow-2xl transition-all flex justify-center items-center gap-3 disabled:opacity-50 group"
-                >
-                  {submitting ? 'Processing...' : (
-                    <>Confirm Reservation <FiArrowRight className="group-hover:translate-x-2 transition-transform" size={16} /></>
-                  )}
-                </button>
-              </div>
-
             </div>
           </div>
+
         </div>
-
-        {/* 📸 GALLERY SECTION */}
-        <section>
-          <div className="text-center mb-12">
-            <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-4">Imperial Gallery</h2>
-            <p className="text-gray-500 font-medium italic">Glimpses of our premium fleet in action.</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {galleryImages.map((img, i) => (
-              <div key={i} onClick={() => setGalleryModal({ open: true, index: i })} className="aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer group relative shadow-sm">
-                <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                  <FiEye className="text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-50 group-hover:scale-100" size={32} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ❤️ REVIEWS SECTION */}
-        <section className="bg-[#111] rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
-          <div className="absolute top-0 left-0 w-64 h-64 bg-[#C2185B]/20 rounded-full blur-[100px]" />
-          
-          <div className="relative z-10 text-center mb-16">
-            <h2 className="font-display text-4xl font-black mb-4">Couples Love Us</h2>
-            <div className="flex items-center justify-center gap-2 text-[#D4AF37] mb-2">
-              <FiStar className="fill-current" size={24} />
-              <FiStar className="fill-current" size={24} />
-              <FiStar className="fill-current" size={24} />
-              <FiStar className="fill-current" size={24} />
-              <FiStar className="fill-current" size={24} />
-            </div>
-            <p className="text-sm font-bold uppercase tracking-widest text-gray-400">4.9/5 Average Rating</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 relative z-10">
-            {reviews.map((rev, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur-md p-8 rounded-[2rem] border border-white/10 hover:bg-white/10 transition-colors">
-                <div className="flex items-center gap-2 mb-6">
-                  {[...Array(Math.floor(rev.rating))].map((_, idx) => <FiStar key={idx} className="text-[#D4AF37] fill-[#D4AF37]" size={14} />)}
-                </div>
-                <p className="text-gray-300 italic font-medium leading-relaxed mb-8">"{rev.text}"</p>
-                <div className="border-t border-white/10 pt-6">
-                  <p className="font-bold text-white mb-1">{rev.name}</p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{rev.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
       </div>
-
-      {/* 📱 MOBILE STICKY BOTTOM CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-xl border-t border-gray-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-50 lg:hidden flex gap-3">
-        <div className="flex-1">
-          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Fare</p>
-          <p className="text-xl font-black text-gray-900">{selectedCab ? formatPrice(totalAmount) : '₹0'}</p>
-        </div>
-        <button 
-          onClick={handleBookNow} 
-          disabled={!selectedCab || submitting}
-          className="flex-1 py-4 bg-black text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl disabled:opacity-50"
-        >
-          {submitting ? 'Wait...' : 'Book Now'}
-        </button>
-      </div>
-
-      {/* 📸 GALLERY LIGHTBOX MODAL */}
-      <AnimatePresence>
-        {galleryModal.open && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-center justify-center">
-            <button onClick={() => setGalleryModal({ open: false, index: 0 })} className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors bg-white/10 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md z-50">
-              <FiX size={24} />
-            </button>
-
-            {galleryImages.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setGalleryModal(p => ({ ...p, index: (p.index - 1 + galleryImages.length) % galleryImages.length })) }}
-                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 z-50"
-                ><FiChevronLeft size={30} /></button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setGalleryModal(p => ({ ...p, index: (p.index + 1) % galleryImages.length })) }}
-                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 z-50"
-                ><FiChevronRight size={30} /></button>
-              </>
-            )}
-
-            <motion.img
-              key={galleryModal.index}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              src={galleryImages[galleryModal.index]}
-              className="max-w-[95vw] max-h-[85vh] object-contain rounded-xl shadow-2xl"
-            />
-
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full text-white font-medium tracking-widest text-sm border border-white/20">
-              {galleryModal.index + 1} / {galleryImages.length}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
     </div>
   )
 }
