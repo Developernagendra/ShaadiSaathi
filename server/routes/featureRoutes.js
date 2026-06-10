@@ -23,8 +23,7 @@ router.get('/contact-info', featureController.getContactInfo);
 router.post('/contact', featureController.submitContact);
 router.post('/upload', protect, upload.single('file'), featureController.uploadFile);
 
-// AI & Budget (Public)
-router.post('/ai-recommendations', aiPlannerLimiter, featureController.getAIRecommendations);
+// Budget (Public)
 router.post('/calculate-budget', featureController.calculateBudget);
 
 // Protected routes

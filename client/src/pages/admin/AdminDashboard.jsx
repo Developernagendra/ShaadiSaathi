@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import api from '../../utils/api'
 import { formatPrice, formatDateShort } from '../../utils/helpers'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { FiUsers, FiBriefcase, FiCalendar, FiDollarSign, FiClock, FiArrowRight } from 'react-icons/fi'
+import { FiUsers, FiBriefcase, FiCalendar, FiDollarSign, FiClock, FiArrowRight, FiCheckSquare } from 'react-icons/fi'
 import { FaTruck } from 'react-icons/fa'
 import { getSocket } from '../../utils/socket'
 import { toast } from 'react-hot-toast'
@@ -15,8 +15,10 @@ export default function AdminDashboard() {
 
   const fetchData = useCallback(() => {
     api.get('/admin/stats')
-      .then(res => setData(res.data.data))
-      .catch(() => { })
+      .then(res => setData(res.data?.data || null))
+      .catch((err) => {
+        console.error("Admin dashboard fetch error:", err);
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -52,15 +54,15 @@ export default function AdminDashboard() {
   const stats = [
     { label: 'Total Users', value: data?.stats?.totalUsers || 0, icon: <FiUsers />, bg: 'bg-gradient-to-br from-blue-50 to-blue-100/50', color: 'text-blue-600', link: '/admin/users' },
     { label: 'Active Vendors', value: data?.stats?.totalVendors || 0, icon: <FiBriefcase />, bg: 'bg-gradient-to-br from-emerald-50 to-emerald-100/50', color: 'text-emerald-600', link: '/admin/vendors' },
-    { label: 'Pending Approvals', value: data?.stats?.pendingVendors || 0, icon: <FiClock />, bg: 'bg-gradient-to-br from-amber-50 to-amber-100/50', color: 'text-amber-600', link: '/admin/approvals' },
+    { label: 'Pending Vendors', value: data?.stats?.pendingVendors || 0, icon: <FiClock />, bg: 'bg-gradient-to-br from-amber-50 to-amber-100/50', color: 'text-amber-600', link: '/admin/vendor-approvals' },
+    { label: 'Pending Services', value: data?.stats?.pendingServices || 0, icon: <FiCheckSquare />, bg: 'bg-gradient-to-br from-pink-50 to-pink-100/50', color: 'text-pink-600', link: '/admin/service-moderation' },
     { label: 'Total Bookings', value: data?.stats?.totalBookings || 0, icon: <FiCalendar />, bg: 'bg-gradient-to-br from-purple-50 to-purple-100/50', color: 'text-purple-600', link: '/admin/bookings' },
-    { label: 'Completed', value: data?.stats?.completedBookings || 0, icon: <FiCalendar />, bg: 'bg-gradient-to-br from-indigo-50 to-indigo-100/50', color: 'text-indigo-600', link: '/admin/bookings' },
     { label: 'Imperial Fleet', value: data?.stats?.totalCabs || 0, icon: <FaTruck />, bg: 'bg-gradient-to-br from-gray-50 to-gray-200/50', color: 'text-gray-900', link: '/admin/imperial-fleet' },
   ]
 
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const chartData = (data?.monthlyBookings || [])
-    .filter(m => m._id && m._id.month)
+    .filter(m => m?._id?.month)
     .map(m => ({
       month: monthNames[(m._id.month - 1)] || 'Unknown',
       bookings: m.count || 0,
@@ -98,8 +100,8 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex flex-col gap-3 relative z-10 w-full md:w-auto">
-              <Link to="/admin/approvals" className="bg-[#C2185B] text-white font-black text-[10px] uppercase tracking-[0.3em] py-4 md:py-5 px-8 md:px-10 rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3">
-                Review Approvals <FiArrowRight size={16} />
+              <Link to="/admin/vendor-approvals" className="bg-[#C2185B] text-white font-black text-[10px] uppercase tracking-[0.3em] py-4 md:py-5 px-8 md:px-10 rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3">
+                Vendor Verifications <FiArrowRight size={16} />
               </Link>
               <Link to="/admin/categories" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[10px] uppercase tracking-[0.3em] py-4 md:py-5 px-8 md:px-10 rounded-2xl hover:bg-white/20 transition-all text-center">
                 Manage Categories
@@ -217,8 +219,8 @@ export default function AdminDashboard() {
             <div className="absolute bottom-0 right-0 w-64 h-64 bg-pink-50/10 rounded-tl-full opacity-40" />
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-10 relative z-10">
-              <h2 className="font-display text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none">Petitions</h2>
-              <Link to="/admin/approvals" className="w-12 h-12 rounded-2xl bg-[#FFF8F0] hover:bg-[#C2185B] text-[#C2185B] hover:text-white flex items-center justify-center transition-all shadow-sm flex-shrink-0">
+              <h2 className="font-display text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none">Vendor Petitions</h2>
+              <Link to="/admin/vendor-approvals" className="w-12 h-12 rounded-2xl bg-[#FFF8F0] hover:bg-[#C2185B] text-[#C2185B] hover:text-white flex items-center justify-center transition-all shadow-sm flex-shrink-0">
                 <FiArrowRight size={20} />
               </Link>
             </div>
@@ -238,10 +240,10 @@ export default function AdminDashboard() {
                         {v.businessName?.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-display text-xl font-black text-gray-900 truncate group-hover:text-[#C2185B] transition-colors leading-none mb-2 text-center sm:text-left">{v.businessName}</p>
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest italic text-center sm:text-left">{v.category?.name}</p>
+                        <p className="font-display text-xl font-black text-gray-900 truncate group-hover:text-[#C2185B] transition-colors leading-none mb-2 text-center sm:text-left">{v?.businessName || 'Business'}</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest italic text-center sm:text-left">{v?.category?.name || 'Category'}</p>
                       </div>
-                      <Link to={`/admin/approvals`} className="text-[9px] font-black px-6 py-3 rounded-xl bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white shadow-lg shadow-pink-200/50 hover:from-[#8E244D] hover:to-[#5C1130] transition-all uppercase tracking-[0.2em] italic hover:scale-105 active:scale-95 text-center w-full sm:w-auto">
+                      <Link to={`/admin/vendor-approvals`} className="text-[9px] font-black px-6 py-3 rounded-xl bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white shadow-lg shadow-pink-200/50 hover:from-[#8E244D] hover:to-[#5C1130] transition-all uppercase tracking-[0.2em] italic hover:scale-105 active:scale-95 text-center w-full sm:w-auto">
                         Review
                       </Link>
                     </div>
@@ -278,17 +280,17 @@ export default function AdminDashboard() {
                         <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center font-display font-black text-[#D4AF37] text-lg border border-pink-50 flex-shrink-0">
                           {u.name?.charAt(0)}
                         </div>
-                        <span className="font-display text-xl md:text-2xl font-black text-gray-900 group-hover:text-[#C2185B] transition-colors leading-none">{u.name}</span>
+                        <span className="font-display text-xl md:text-2xl font-black text-gray-900 group-hover:text-[#C2185B] transition-colors leading-none">{u?.name || 'User'}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-gray-400 uppercase tracking-widest">{u.email}</td>
+                    <td className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-gray-400 uppercase tracking-widest">{u?.email || 'N/A'}</td>
                     <td className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-[#D4AF37] uppercase tracking-widest italic">{formatDateShort(u.createdAt)}</td>
                     <td className="py-4 px-6 md:py-6 md:px-10">
-                      <span className={`text-[8px] font-black px-4 py-1.5 rounded-lg uppercase tracking-[0.2em] italic ${u.role === 'admin' ? 'bg-[#8E244D] text-white shadow-lg shadow-pink-900/20' :
-                          u.role === 'vendor' ? 'bg-[#FFF8F0] text-[#8E244D] border border-pink-100 shadow-sm' :
+                      <span className={`text-[8px] font-black px-4 py-1.5 rounded-lg uppercase tracking-[0.2em] italic ${u?.role === 'admin' ? 'bg-[#8E244D] text-white shadow-lg shadow-pink-900/20' :
+                          u?.role === 'vendor' ? 'bg-[#FFF8F0] text-[#8E244D] border border-pink-100 shadow-sm' :
                             'bg-gray-100 text-gray-700'
                         }`}>
-                        {u.role === 'admin' ? 'Admin' : u.role === 'vendor' ? 'Vendor' : 'User'}
+                        {u?.role === 'admin' ? 'Admin' : u?.role === 'vendor' ? 'Vendor' : 'User'}
                       </span>
                     </td>
                     <td className="py-4 px-6 md:py-6 md:px-10">

@@ -131,9 +131,6 @@ export default function LoginPage() {
                   <div className="flex justify-between items-center mb-2 pl-2 pr-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Password</label>
                     <div className="flex gap-4">
-                      <Link to="/resend-verification" className="text-[10px] font-bold text-gray-400 hover:text-[#C2185B] uppercase tracking-wider transition-colors">
-                        Resend Link?
-                      </Link>
                       <Link to="/forgot-password" className="text-[10px] font-bold text-[#C2185B] hover:text-[#8E244D] uppercase tracking-wider transition-colors">
                         Forgot?
                       </Link>

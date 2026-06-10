@@ -85,3 +85,21 @@ export const optimizeImage = (url, width = 800) => {
   }
   return url
 }
+
+export const getWhatsAppLink = (phone, defaultText = "Hi, I found your service on ShaadiSaathi and would like to book your service.") => {
+  if (!phone) return null;
+  
+  // Remove all non-numeric characters
+  let cleanPhone = String(phone).replace(/\D/g, '');
+  
+  // If it's a 10 digit Indian number, add 91
+  if (cleanPhone.length === 10) {
+    cleanPhone = '91' + cleanPhone;
+  }
+  
+  // Check validity length
+  if (cleanPhone.length < 10) return null;
+
+  const encodedText = encodeURIComponent(defaultText);
+  return `https://wa.me/${cleanPhone}?text=${encodedText}`;
+};

@@ -85,7 +85,7 @@ blogSchema.index({ author: 1 });
 blogSchema.index({ isPublished: 1 });
 blogSchema.index({ createdAt: -1 });
 
-blogSchema.pre('save', async function(next) {
+blogSchema.pre('save', async function (next) {
   // Synchronize image and coverImage fields to prevent database null checks from failing
   if (this.coverImage && !this.image) {
     this.image = this.coverImage;
@@ -98,15 +98,15 @@ blogSchema.pre('save', async function(next) {
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^\w-]/g, '');
-    
+
     // Check for duplicate slugs
     const Blog = mongoose.model('Blog');
     const slugExists = await Blog.findOne({ slug, _id: { $ne: this._id } });
-    
+
     if (slugExists) {
       slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
     }
-    
+
     this.slug = slug;
   }
   next();
@@ -132,10 +132,10 @@ const Testimonial = mongoose.model('Testimonial', testimonialSchema);
 
 // ==================== HOME STATS MODEL ====================
 const homeStatsSchema = new mongoose.Schema({
-  vendors: { type: String, default: '1200' },
-  bookings: { type: String, default: '5000' },
-  cities: { type: String, default: '50' },
-  rating: { type: String, default: '4.8' },
+  vendors: { type: String, default: '10' },
+  bookings: { type: String, default: '10' },
+  cities: { type: String, default: '1' },
+  rating: { type: String, default: '4' },
 }, { timestamps: true });
 
 const HomeStats = mongoose.model('HomeStats', homeStatsSchema);

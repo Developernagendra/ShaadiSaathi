@@ -63,6 +63,13 @@ const BlogPage = () => {
   const featuredPost = filteredBlogs.length > 0 ? filteredBlogs[0] : null
   const otherPosts = filteredBlogs.length > 1 ? filteredBlogs.slice(1) : []
 
+  const getAuthorName = (author) => {
+    if (!author) return 'Editorial'
+    if (author.name) return author.name
+    if (typeof author === 'string') return author
+    return 'Editorial'
+  }
+
   return (
     <div className="min-h-screen bg-[#FFF8F0]/30 font-sans pb-24">
       
@@ -152,10 +159,10 @@ const BlogPage = () => {
                     
                     <div className="flex flex-wrap items-center gap-6 md:gap-10 text-white text-[10px] font-black uppercase tracking-[0.2em]">
                       <div className="flex items-center gap-4">
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(featuredPost.author || 'ShaadiSaathi')}&background=C2185B&color=fff`} className="w-10 h-10 rounded-full border-2 border-white/30" alt="Author" />
+                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(getAuthorName(featuredPost.author))}&background=C2185B&color=fff`} className="w-10 h-10 rounded-full border-2 border-white/30" alt="Author" />
                         <div>
                           <p className="text-[#D4AF37] mb-1">Written By</p>
-                          <p className="tracking-widest">{featuredPost?.author || 'Editorial Team'}</p>
+                          <p className="tracking-widest">{getAuthorName(featuredPost?.author)}</p>
                         </div>
                       </div>
                       <div className="h-10 w-px bg-white/20 hidden md:block" />
@@ -251,9 +258,9 @@ const BlogPage = () => {
                         <div className="flex items-center justify-between border-t border-gray-100 pt-6 mt-auto">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#C2185B] text-xs font-black">
-                              {(post?.author || 'SS').slice(0, 2).toUpperCase()}
+                              {getAuthorName(post?.author).slice(0, 2).toUpperCase()}
                             </div>
-                            <span className="text-gray-900 text-[10px] font-black uppercase tracking-widest">{post?.author || 'Editorial'}</span>
+                            <span className="text-gray-900 text-[10px] font-black uppercase tracking-widest">{getAuthorName(post?.author)}</span>
                           </div>
                           <div className="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-[#C2185B] text-gray-400 group-hover:text-white flex items-center justify-center transition-colors">
                              <FiArrowRight />

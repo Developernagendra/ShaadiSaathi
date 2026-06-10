@@ -91,10 +91,10 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16 flex flex-col">
-      <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-5" style={{ height: 'calc(100vh - 4rem)' }}>
+      <div className="flex-1 max-w-6xl mx-auto w-full px-0 sm:px-4 py-0 sm:py-6 flex sm:gap-5" style={{ height: 'calc(100vh - 4rem)' }}>
 
         {/* Chat List Sidebar */}
-        <aside className="w-80 flex-shrink-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+        <aside className={`w-full sm:w-80 flex-shrink-0 bg-white sm:rounded-2xl shadow-sm border-r sm:border border-gray-100 overflow-hidden flex flex-col ${currentChat ? 'hidden sm:flex' : 'flex'}`}>
           <div className="p-4 border-b border-gray-100">
             <h2 className="font-display font-bold text-xl text-gray-800">Messages</h2>
             <p className="text-sm text-gray-400">{chats.length} conversation{chats.length !== 1 ? 's' : ''}</p>
@@ -140,7 +140,7 @@ export default function ChatPage() {
         </aside>
 
         {/* Chat Area */}
-        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-w-0">
+        <div className={`flex-1 bg-white sm:rounded-2xl shadow-sm sm:border border-gray-100 overflow-hidden flex flex-col min-w-0 ${!currentChat ? 'hidden sm:flex' : 'flex'}`}>
           {!currentChat ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
               <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mb-4">
@@ -153,6 +153,12 @@ export default function ChatPage() {
             <>
               {/* Chat Header */}
               <div className="p-4 border-b border-gray-100 flex items-center gap-3 flex-shrink-0">
+                <button 
+                  onClick={() => dispatch(setCurrentChat(null))} 
+                  className="sm:hidden w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-600 mr-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
                 <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700 overflow-hidden">
                   {currentChat.vendor?.images?.[0]?.url
                     ? <img src={currentChat.vendor?.images?.[0]?.url} className="w-full h-full object-cover" alt="" />

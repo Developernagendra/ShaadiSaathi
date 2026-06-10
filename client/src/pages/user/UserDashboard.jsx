@@ -60,7 +60,7 @@ export default function UserDashboard() {
   }
 
   const allRecentBookings = [...(bookings || []), ...(cabBookings || [])]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0))
     .slice(0, 4);
 
   return (
@@ -78,9 +78,9 @@ export default function UserDashboard() {
             <div className="w-32 h-32 rounded-3xl bg-white/10 backdrop-blur-xl border-2 border-white/20 p-1 flex items-center justify-center shadow-2xl flex-shrink-0 relative group">
               <div className="w-full h-full rounded-2xl overflow-hidden bg-gray-800">
                 {user?.avatar?.url ? (
-                  <img src={user.avatar.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                  <img src={user?.avatar?.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                 ) : (
-                  <span className="text-4xl font-display font-black text-[#D4AF37]">{getInitials(user?.name)}</span>
+                  <span className="text-4xl font-display font-black text-[#D4AF37]">{getInitials(user?.name || 'User')}</span>
                 )}
               </div>
               <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-[#D4AF37] rounded-xl flex items-center justify-center text-white shadow-lg border-4 border-[#8E244D]">
@@ -109,7 +109,7 @@ export default function UserDashboard() {
                   <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37]">Wedding Date</p>
                     <p className="text-white font-display font-black text-base md:text-lg tracking-tight">
-                      {formatDateShort(user.weddingDate)} <span className="text-white/40 font-normal">in</span> {user.weddingCity || 'your city'}
+                      {formatDateShort(user?.weddingDate)} <span className="text-white/40 font-normal">in</span> {user?.weddingCity || 'your city'}
                     </p>
                   </div>
                 </div>
@@ -164,10 +164,10 @@ export default function UserDashboard() {
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-2 italic">{b.vehicles ? 'Baraat Cab' : (b.vendor?.category?.name || 'Vendor')}</p>
-                          <p className="font-display text-xl sm:text-2xl font-black text-gray-900 truncate group-hover:text-[#C2185B] transition-colors leading-none mb-3">{b.vendor?.businessName || (b.vehicles ? `${b.vehicles.length} Vehicle(s)` : 'Wedding Service')}</p>
+                          <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-2 italic">{b?.vehicles ? 'Baraat Cab' : (b?.vendor?.category?.name || 'Vendor')}</p>
+                          <p className="font-display text-xl sm:text-2xl font-black text-gray-900 truncate group-hover:text-[#C2185B] transition-colors leading-none mb-3">{b?.vendor?.businessName || (b?.vehicles ? `${b?.vehicles?.length || 0} Vehicle(s)` : 'Wedding Service')}</p>
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-3 italic">
-                            <FiCalendar className="text-[#C2185B]" /> {formatDateShort(b.eventDate)}
+                            <FiCalendar className="text-[#C2185B]" /> {formatDateShort(b?.eventDate)}
                           </p>
                         </div>
                       </div>
@@ -186,25 +186,7 @@ export default function UserDashboard() {
 
           {/* Quick Actions */}
           <div className="space-y-10">
-            {/* Email Verification */}
-            {!user?.isVerified && user?.role !== 'admin' && (
-              <div className="bg-[#8E244D] rounded-2xl md:rounded-[2.5rem] p-6 md:p-10 text-white relative overflow-hidden shadow-premium">
-                <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-4 mb-6">
-                    <span className="text-3xl">🔏</span>
-                    <p className="font-display text-2xl font-black tracking-tight leading-none">Email Verification</p>
-                  </div>
-                  <p className="text-white/60 text-sm font-medium italic mb-6 md:mb-8">Please verify your email address to unlock all features and start booking your wedding services.</p>
-                  <button
-                    onClick={() => dispatch(resendVerification({ email: user.email }))}
-                    className="w-full bg-white text-[#8E244D] font-black text-[10px] uppercase tracking-[0.3em] py-4 md:py-5 rounded-2xl shadow-xl hover:scale-105 transition-all"
-                  >
-                    Resend Verification Email
-                  </button>
-                </div>
-              </div>
-            )}
+
 
             {/* Quick Actions List */}
             <div className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-premium border border-pink-50 p-6 md:p-10 relative overflow-hidden">

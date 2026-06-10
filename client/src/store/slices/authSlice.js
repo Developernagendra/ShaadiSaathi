@@ -167,12 +167,11 @@ const authSlice = createSlice({
       .addCase(registerUser.pending, pending)
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false
-        // User must verify email before authentication is granted
-        state.user = null
-        state.token = null
-        state.isAuthenticated = false
+        state.user = action.payload.user
+        state.token = action.payload.token
+        state.isAuthenticated = true
         state.isInitialized = true
-        toast.success(action.payload.message || 'Registration successful! Check your email.', { id: 'auth-success' })
+        toast.success(action.payload.message || 'Registration successful! Welcome to ShaadiSaathi!', { id: 'auth-success' })
       })
       .addCase(registerUser.rejected, (state, action) => {
         rejected(state, action)

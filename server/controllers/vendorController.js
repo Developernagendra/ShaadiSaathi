@@ -1101,6 +1101,10 @@ const getVendorLeadsPipeline = catchAsync(async (req, res, next) => {
     $or: [{ vendorId: vendor.user._id }, { vendorId: vendor.user }]
   }).populate('userId', 'name avatar email phone').lean();
 
+  // 4. Get Direct WhatsApp Leads
+  const VendorLead = require('../models/VendorLead');
+  const directLeads = await VendorLead.find({ vendor: vendor._id }).populate('user', 'name avatar email phone').lean();
+
   const formattedLeads = [];
 
   // Format New Leads
@@ -1169,6 +1173,23 @@ const getVendorLeadsPipeline = catchAsync(async (req, res, next) => {
     });
   });
 
+  // Format Direct WhatsApp Leads
+  directLeads.forEach(l => {
+    formattedLeads.push({
+      id: l._id.toString(),
+      customer: l.customerName || l.user?.name || 'Unknown',
+      type: l.serviceRequired || 'Direct Enquiry',
+      date: l.weddingDate ? new Date(l.weddingDate).toISOString().split('T')[0] : 'TBD',
+      location: l.city || 'TBD',
+      budget: l.budget > 0 ? `₹${l.budget.toLocaleString()}` : 'TBD',
+      status: l.status || 'new', // new, contacted, negotiation, won, lost
+      requestedAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'Recently',
+      notes: 'Direct WhatsApp Enquiry',
+      customerDetails: l.user,
+      leadType: 'whatsapp_lead'
+    });
+  });
+
   res.status(200).json({
     status: 'success',
     data: { leads: formattedLeads }
@@ -1188,15 +1209,23 @@ const updateLeadPipelineStatus = catchAsync(async (req, res, next) => {
   // Try to find if it's a Booking
   let booking = await Booking.findById(req.params.id);
   if (booking) {
+    // Only allow updating certain statuses for bookings through CRM
     if (status === 'won') booking.status = 'confirmed';
-    else if (status === 'lost') booking.status = 'rejected';
-    else if (status === 'negotiation') booking.status = 'pending';
-    else if (status === 'contacted') booking.status = 'pending';
+    else if (status === 'lost') booking.status = 'cancelled';
     await booking.save();
     return res.status(200).json({ status: 'success', message: 'Booking status updated' });
   }
 
-  // Else it's a Lead
+  // Try to find if it's a Direct Vendor Lead
+  const VendorLead = require('../models/VendorLead');
+  let vendorLead = await VendorLead.findById(req.params.id);
+  if (vendorLead) {
+    vendorLead.status = status;
+    await vendorLead.save();
+    return res.status(200).json({ status: 'success', message: 'Direct Lead status updated' });
+  }
+
+  // Fallback to Marketplace Lead
   let lead = await Lead.findById(req.params.id);
   if (lead) {
     let quote = lead.quotations.find(q => q.vendor.toString() === vendor._id.toString());
@@ -1218,10 +1247,81 @@ const updateLeadPipelineStatus = catchAsync(async (req, res, next) => {
 
   return next(new AppError('Lead not found', 404));
 });
+// @desc    Get secure vendor contact (WhatsApp)
+// @route   GET /api/vendors/:id/contact
+// @access  Private
+const getVendorContact = catchAsync(async (req, res, next) => {
+  const vendor = await Vendor.findById(req.params.id);
+  if (!vendor) {
+    return next(new AppError('Vendor not found', 404));
+  }
+
+  // Record the analytic event
+  const ContactAnalytic = require('../models/ContactAnalytic');
+  await ContactAnalytic.create({
+    user: req.user._id,
+    vendor: vendor._id,
+    contactType: 'whatsapp'
+  });
+
+  // Create the Lead
+  const VendorLead = require('../models/VendorLead');
+  const User = require('../models/User');
+  const user = await User.findById(req.user._id);
+
+  const lead = await VendorLead.create({
+    user: user._id,
+    vendor: vendor._id,
+    customerName: user.name,
+    customerPhone: user.phone || 'N/A',
+    customerEmail: user.email,
+    weddingDate: user.weddingDate || null,
+    city: user.city || 'TBD',
+    guestCount: 0,
+    budget: 0,
+    serviceRequired: vendor.category?.name || 'Wedding Service',
+    enquirySource: 'WhatsApp',
+    status: 'new'
+  });
+
+  // Generate dynamic message
+  const msg = `🎉 New Wedding Enquiry from ShaadiSaathi
+
+Customer Details:
+Name: ${lead.customerName}
+Phone: ${lead.customerPhone}
+Email: ${lead.customerEmail}
+
+Wedding Details:
+Wedding Date: ${lead.weddingDate ? new Date(lead.weddingDate).toLocaleDateString() : 'TBD'}
+Location: ${lead.city}
+Guest Count: TBD
+Budget: TBD
+
+Interested Service:
+${lead.serviceRequired}
+
+Vendor:
+${vendor.businessName || 'ShaadiSaathi Partner'}
+
+Lead ID:
+${lead._id}
+
+Please contact the customer regarding their wedding requirements.
+
+Source:
+ShaadiSaathi`;
+
+  res.status(200).json({
+    success: true,
+    whatsappNumber: vendor.whatsappNumber || vendor.phone,
+    encodedMessage: encodeURIComponent(msg)
+  });
+});
 
 module.exports = {
   createVendorProfile, getMyVendorProfile, updateVendorProfile,
   uploadVendorImages, deleteVendorImage, uploadVendorCoverImage, getAllVendors, getVendorById,
   updateVendorApproval, getVendorDashboard, updateAvailability, getFeaturedVendors,
-  activateSubscription, getVendorLeadsPipeline, updateLeadPipelineStatus
+  activateSubscription, getVendorLeadsPipeline, updateLeadPipelineStatus, getVendorContact
 };

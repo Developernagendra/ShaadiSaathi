@@ -9,8 +9,11 @@ import ServiceCard from '../components/vendor/ServiceCard'
 import VendorCard from '../components/vendor/VendorCard'
 import { SkeletonCard } from '../components/common/Skeleton'
 import StarRating from '../components/common/StarRating'
+import WeddingGallery from '../components/home/WeddingGallery'
+import RealWeddingStories from '../components/home/RealWeddingStories'
+import HappyCouples from '../components/home/HappyCouples'
 import { INDIAN_CITIES, optimizeImage } from '../utils/helpers'
-import { FiSearch, FiMapPin, FiArrowRight, FiCheck, FiUsers, FiStar, FiAward, FiMessageCircle, FiCheckCircle, FiCalendar, FiClock } from 'react-icons/fi'
+import { FiSearch, FiMapPin, FiArrowRight, FiCheck, FiUsers, FiStar, FiAward, FiMessageCircle, FiCheckCircle, FiCalendar, FiClock, FiEye } from 'react-icons/fi'
 import api from '../utils/api'
 import { getSocket } from '../utils/socket'
 import { useTranslation } from 'react-i18next'
@@ -25,10 +28,10 @@ const HERO_IMAGES = [
 
 
 const STATS = [
-  { value: '10', label: 'Happy Couples', icon: '💑' },
-  { value: '10', label: 'Verified Vendors', icon: '✅' },
-  { value: '5', label: 'Cities Covered', icon: '🗺️' },
-  { value: '3/5', label: 'Average Rating', icon: '⭐' },
+  { value: '10+', label: 'Happy Couples', icon: '💑' },
+  { value: '10+', label: 'Top Vendors', icon: '✅' },
+  { value: '1+', label: 'Cities Covered', icon: '🗺️' },
+  { value: '4/5', label: 'Customer Rating', icon: '⭐' },
 ]
 
 const WHY_US = [
@@ -86,33 +89,11 @@ const DEMO_TESTIMONIALS = [
 ]
 
 function StatCard({ stat, delay }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, amount: 0.5 })
-  const count = useMotionValue(0)
-  const [displayValue, setDisplayValue] = useState(0)
-
-  useEffect(() => {
-    if (inView) {
-      const controls = animate(count, stat.value, {
-        duration: 2.5,
-        ease: "easeOut",
-        onUpdate: (val) => {
-          if (stat.decimals) {
-            setDisplayValue(val.toFixed(stat.decimals))
-          } else {
-            setDisplayValue(Math.floor(val))
-          }
-        }
-      })
-      return controls.stop
-    }
-  }, [inView, count, stat.value, stat.decimals])
-
   return (
     <motion.div
-      ref={ref}
       initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
       className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 border border-gray-100 flex flex-col items-center text-center group hover:-translate-y-2 relative overflow-hidden"
     >
@@ -122,7 +103,7 @@ function StatCard({ stat, delay }) {
       </div>
       <div className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-2 flex items-baseline justify-center">
         {stat.prefix}
-        {displayValue}
+        {stat.value}
         <span className="text-[#C2185B]">{stat.suffix}</span>
       </div>
       <div className="h-1 w-12 bg-gray-100 group-hover:bg-[#D4AF37] mx-auto my-3 rounded-full transition-colors duration-300" />
@@ -350,37 +331,37 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {[
               {
-                value: stats?.bookings || 0,
+                value: stats?.bookings || '10',
                 suffix: '+',
                 label: 'Happy Couples',
                 icon: '💎',
                 color: 'from-pink-500 to-[#C2185B]'
               },
               {
-                value: stats?.vendors || 0,
+                value: stats?.vendors || '10',
                 suffix: '+',
                 label: 'Top Vendors',
                 icon: '📍',
                 color: 'from-[#D4AF37] to-yellow-600'
               },
               {
-                value: stats?.cities || 0,
-                suffix: '',
-                prefix: '0',
+                value: stats?.cities || '1',
+                suffix: '+',
+                prefix: '',
                 label: 'Cities Covered',
                 icon: '🌍',
                 color: 'from-blue-500 to-indigo-600'
               },
               {
-                value: parseFloat(stats?.rating) || 0,
+                value: stats?.rating || '4',
                 suffix: '/5',
-                label: 'User Rating',
+                label: 'Customer Rating',
                 icon: '⭐',
                 color: 'from-purple-500 to-pink-600',
                 decimals: 1
               },
             ].map((stat, idx) => (
-              <StatCard key={stat.label} stat={stat} delay={idx * 0.1} />
+              <StatCard key={stat.label} stat={stat} />
             ))}
           </div>
         </div>
@@ -449,7 +430,7 @@ export default function HomePage() {
                     <span className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 block mb-1 group-hover:text-[#C2185B] transition-colors break-words max-w-full">
                       {cat.name || '...'}
                     </span>
-                    {cat.vendorCount >= 0 && (
+                    {cat.vendorCount >= 10 && (
                       <span className="text-[9px] font-bold text-gold bg-gold/5 px-2 py-0.5 rounded-full whitespace-nowrap block mt-1">
                         {cat.vendorCount} TOP VENDORS
                       </span>
@@ -473,21 +454,24 @@ export default function HomePage() {
       </section>
 
       {/* ── 🌟 Top Picks - Featured Vendors ── */}
-      <section className="relative py-24 px-4 bg-[#FFF8F0]/30 overflow-hidden">
-        <div className="absolute top-0 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/5 rounded-full blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/5 rounded-full blur-[150px] pointer-events-none" />
+      <section className="relative py-32 px-4 bg-gradient-to-br from-[#FFF8F0] via-[#FDF2F8] to-[#FFF5F3] overflow-hidden">
+        {/* Luxury Animated Orbs & Mesh */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#FF4D6D]/15 to-transparent rounded-full blur-[150px] pointer-events-none animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-gradient-to-tr from-[#6A11CB]/10 to-transparent rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#D4AF37]/5 rounded-full blur-[200px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
             <div>
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 bg-white px-5 py-2 rounded-full border border-[#D4AF37]/20 shadow-sm mb-6">
-                <span className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest">🌟 Top Picks</span>
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/40 shadow-sm mb-6">
+                <span className="text-[#C2185B] font-black text-[11px] uppercase tracking-[0.25em]">🌟 Top Picks</span>
               </motion.div>
               <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight leading-tight">
-                Featured <span className="text-[#C2185B] italic">Vendors</span>
+                Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">Vendors</span>
               </motion.h2>
-              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-gray-500 font-medium text-lg mt-4 italic max-w-xl">
-                Discover India's most trusted, premium wedding professionals handpicked just for you.
+              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-gray-500 font-medium text-lg md:text-xl mt-4 max-w-xl leading-relaxed">
+                Discover our most loved and highly rated wedding professionals handpicked for exceptional service and unforgettable experiences.
               </motion.p>
             </div>
             <Link to="/services" className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#1a1a1a] bg-white border-2 border-gray-100 px-8 py-4 rounded-[2rem] hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all shadow-md hover:shadow-xl active:scale-95">
@@ -595,16 +579,21 @@ export default function HomePage() {
                 </button>
               </div>
             ) : featuredServices.length === 0 ? (
-              <div className="col-span-full py-20 px-6 bg-white/50 backdrop-blur-sm rounded-[3rem] border border-dashed border-gray-200 text-center max-w-2xl mx-auto w-full">
-                <div className="text-5xl mb-6">✨</div>
-                <h3 className="font-display font-black text-3xl text-gray-900 mb-4">Curating Top Vendors</h3>
-                <p className="text-lg text-gray-500 font-medium italic">We are currently handpicking the best vendors for this section.</p>
+              <div className="col-span-full py-24 px-6 bg-white/70 backdrop-blur-xl rounded-[3rem] border border-white shadow-xl text-center max-w-2xl mx-auto w-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/5 to-[#6A11CB]/5 pointer-events-none" />
+                <div className="text-5xl mb-6 relative z-10 animate-bounce">✨</div>
+                <h3 className="font-display font-black text-3xl text-gray-900 mb-4 relative z-10">New verified vendors are being added daily.</h3>
+                <p className="text-lg text-gray-500 font-medium mb-8 relative z-10">We are handpicking the best professionals for your dream wedding.</p>
+                <Link to="/vendor-register" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] text-white font-black py-4 px-10 rounded-full text-[11px] uppercase tracking-widest transition-all shadow-[0_10px_20px_rgba(255,77,109,0.3)] hover:shadow-[0_15px_30px_rgba(255,77,109,0.4)] hover:-translate-y-1 relative z-10">
+                  Become a Vendor
+                </Link>
               </div>
             ) : filteredFeatured.length === 0 ? (
-              <div className="col-span-full py-20 px-6 bg-white/50 backdrop-blur-sm rounded-[3rem] border border-dashed border-gray-200 text-center max-w-2xl mx-auto w-full">
-                <div className="text-5xl mb-6">🔍</div>
-                <h3 className="font-display font-black text-3xl text-gray-900 mb-4">No Vendors Found</h3>
-                <p className="text-lg text-gray-500 font-medium italic mb-8">We couldn't find any premium vendors matching your exact filters.</p>
+              <div className="col-span-full py-24 px-6 bg-white/70 backdrop-blur-xl rounded-[3rem] border border-white shadow-xl text-center max-w-2xl mx-auto w-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/5 to-[#6A11CB]/5 pointer-events-none" />
+                <div className="text-5xl mb-6 relative z-10 animate-bounce">✨</div>
+                <h3 className="font-display font-black text-3xl text-gray-900 mb-4 relative z-10">New verified vendors are being added daily.</h3>
+                <p className="text-lg text-gray-500 font-medium mb-8 relative z-10">We couldn't find vendors matching your exact filters, but we are expanding rapidly.</p>
                 <button
                   onClick={() => {
                     setSelectedCategory('')
@@ -612,10 +601,13 @@ export default function HomePage() {
                     setSelectedPriceRange('')
                     setSelectedRating('')
                   }}
-                  className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white font-black py-4 px-10 rounded-[2rem] text-[10px] uppercase tracking-widest transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
+                  className="bg-white text-gray-900 border border-gray-200 font-black py-4 px-10 rounded-full text-[11px] uppercase tracking-widest transition-all shadow-sm hover:shadow-md hover:-translate-y-1 relative z-10 mb-4 mx-2"
                 >
-                  Clear All Filters
+                  Clear Filters
                 </button>
+                <Link to="/vendor-register" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] text-white font-black py-4 px-10 rounded-full text-[11px] uppercase tracking-widest transition-all shadow-[0_10px_20px_rgba(255,77,109,0.3)] hover:shadow-[0_15px_30px_rgba(255,77,109,0.4)] hover:-translate-y-1 relative z-10 mx-2">
+                  Become a Vendor
+                </Link>
               </div>
             ) : (
               filteredFeatured.slice(0, 8).map((v, idx) => (
@@ -790,135 +782,203 @@ export default function HomePage() {
       </section>
 
       {/* ── Why ShaadiSaathi Premium ── */}
-      <section className="relative py-24 px-4 bg-gradient-to-b from-white via-[#FFF8F0]/30 to-white overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/5 rounded-full blur-[150px] -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/5 rounded-full blur-[150px] translate-y-1/2" />
+      <section className="relative py-32 px-4 overflow-hidden bg-[#FFF8F0]">
+        {/* Luxury Background Mesh & Blur Circles */}
+        <div className="absolute inset-0 floral-pattern opacity-[0.03]" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br from-[#FF4D6D]/10 to-[#6A11CB]/10 rounded-full blur-[150px] -translate-y-1/3 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-[#D4AF37]/10 to-[#FF4D6D]/10 rounded-full blur-[150px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
+          {/* Header */}
           <div className="text-center mb-16">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center justify-center gap-2 bg-white px-5 py-2 rounded-full border border-pink-100 shadow-sm mb-6">
-              <span className="text-[#C2185B] font-black text-[10px] uppercase tracking-widest">💍 Why ShaadiSaathi?</span>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/40 shadow-sm mb-6">
+              <span className="text-[#C2185B] font-black text-[11px] uppercase tracking-[0.25em]">💍 Why Choose ShaadiSaathi?</span>
             </motion.div>
-            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight">
-              Sab Kuch Jo Chahiye, <br className="hidden md:block" />
-              <span className="text-[#C2185B] italic">Ek Hi Jagah</span>
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
+              Bihar Smart <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">Wedding Marketplace</span>
             </motion.h2>
-            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-gray-500 font-medium text-lg max-w-2xl mx-auto leading-relaxed">
-              Experience the future of wedding planning. From luxury baraat cabs to smart AI budgeting, we manage every single detail in one beautiful platform.
+            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-gray-500 font-medium text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+              Helping couples discover and book trusted wedding services with absolute confidence.
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.slice(0, 8).map((cat, idx) => (
-                <motion.div
-                  key={cat._id || idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="group bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(194,24,91,0.08)] hover:-translate-y-2 transition-all duration-300 relative overflow-hidden flex flex-col"
-                >
-                  <div className="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-pink-50 to-gold-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
-                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl mb-6 relative z-10 group-hover:rotate-6 transition-transform">
-                    {cat.icon || '✨'}
-                  </div>
-                  <h3 className="font-display font-black text-xl text-gray-900 mb-3 relative z-10">{cat.name}</h3>
-                  <p className="text-gray-500 text-sm font-medium leading-relaxed mb-8 flex-grow relative z-10">{cat.description || `Explore top ${cat.name} professionals.`}</p>
-
-                  <Link to={cat.slug === 'cab-service' ? '/baraat-cabs' : `/services/${cat.slug}`} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#C2185B] hover:text-[#8E244D] transition-colors relative z-10">
-                    Explore <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-gray-400">Loading Premium Services...</div>
-            )}
-          </div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-16 bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-[2rem] p-8 md:p-12 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border border-gray-800">
-            <div>
-              <h3 className="font-display font-black text-2xl text-white mb-2">Trusted by {stats?.bookings || 0}+ Couples in Bihar</h3>
-              <p className="text-gray-400 font-medium text-sm flex items-center gap-2">
-                <FiCheckCircle className="text-[#D4AF37]" /> Verified Vendors • Secure Payments • 24/7 Support
-              </p>
-            </div>
-            <Link to="/services" className="shrink-0 bg-white text-[#1a1a1a] px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-              Explore All Services
-            </Link>
+          {/* Stats Row Above Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-wrap justify-center gap-4 md:gap-8 mb-20"
+          >
+            {[
+              { icon: '🏆', text: '50+ Verified Vendors' },
+              { icon: '👰', text: '10+ Happy Couples' },
+              { icon: '⭐', text: '4 Average Rating' },
+              { icon: '📍', text: 'Available Across Bihar' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/60 backdrop-blur-xl border border-white/50 px-6 py-3 rounded-full flex items-center gap-3 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(255,77,109,0.1)] transition-all duration-300 hover:-translate-y-1">
+                <span className="text-xl">{stat.icon}</span>
+                <span className="text-gray-800 font-bold text-sm md:text-base">{stat.text}</span>
+              </div>
+            ))}
           </motion.div>
+
+          {/* Feature Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { icon: '🛡️', title: 'Verified Vendors', desc: 'Every vendor is manually reviewed and verified by our expert team to ensure premium quality.' },
+              { icon: '🔒', title: 'Secure Booking', desc: 'Safe and transparent booking process. Your payments are 100% protected on our platform.' },
+              { icon: '💰', title: 'Best Price Guarantee', desc: 'Competitive pricing with no hidden charges. Get the best value for your dream wedding.' },
+              { icon: '💬', title: 'Instant WhatsApp Support', desc: 'Quick assistance whenever you need help. Connect directly with our wedding experts.' },
+              { icon: '⭐', title: 'Trusted Reviews', desc: 'Real customer ratings and genuine experiences from verified couples who booked through us.' },
+              { icon: '🎉', title: 'All Services in One Place', desc: 'Photography, Catering, Decoration, Mehndi, Venue, Pandit, DJ, Makeup Artist, Tent House and Baraat Cabs.' },
+            ].map((feature, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                className="group relative h-full"
+              >
+                {/* Gradient Border Illusion using Before */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D] to-[#6A11CB] rounded-[32px] opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-md" />
+
+                <div className="bg-white/70 backdrop-blur-xl rounded-[32px] p-10 border border-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(255,77,109,0.15)] hover:-translate-y-2 transition-all duration-500 h-full flex flex-col relative overflow-hidden z-10">
+                  {/* Subtle Hover Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/5 to-[#6A11CB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Animated Icon Circle */}
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#FF4D6D] to-[#FF758F] rounded-full flex items-center justify-center text-4xl text-white shadow-[0_10px_20px_rgba(255,77,109,0.3)] mb-8 relative z-10 group-hover:scale-110 group-hover:-translate-y-2 transition-transform duration-500">
+                    {feature.icon}
+                  </div>
+
+                  <h3 className="font-display font-black text-2xl text-gray-900 mb-4 relative z-10 group-hover:text-[#FF4D6D] transition-colors">{feature.title}</h3>
+                  <p className="text-gray-500 text-base font-medium leading-relaxed relative z-10">{feature.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── Wedding Inspiration (Blogs) ── */}
-      <section className="py-32 px-4 bg-[#FAFAFA] relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-pink-100/40 to-transparent rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-gold-100/30 to-transparent rounded-full blur-[100px] pointer-events-none" />
-        
+      {/* ── Wedding Showcase Sections ── */}
+      <WeddingGallery />
+      <RealWeddingStories />
+
+      {/* ── Premium Blog Content Hub ── */}
+      <section className="py-32 px-4 relative overflow-hidden bg-[#FAFAFA]">
+        {/* Soft Pink Gradient Mesh Background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 right-[-10%] w-[800px] h-[800px] bg-gradient-to-br from-[#ffb6c1]/20 to-transparent rounded-full blur-[150px] pointer-events-none mix-blend-multiply" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-[#9b5de5]/15 to-transparent rounded-full blur-[120px] pointer-events-none mix-blend-multiply" />
+          <div className="absolute top-[40%] left-[20%] w-[500px] h-[500px] bg-gradient-to-r from-[#D4AF37]/20 to-transparent rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute inset-0 floral-pattern opacity-[0.03]" />
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[100px]" />
+        </div>
+
         <div className="max-w-7xl mx-auto relative z-10">
+          {/* Social Proof Above Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-wrap justify-center gap-4 md:gap-8 mb-16"
+          >
+            {[
+              { icon: '📚', text: '100+ Wedding Guides' },
+              { icon: '👰', text: 'Trusted by Couples' },
+              { icon: '⭐', text: 'Expert Advice' },
+              { icon: '🎯', text: 'Planning Resources' }
+            ].map((proof, i) => (
+              <div key={i} className="flex items-center gap-2.5 bg-white/60 backdrop-blur-md px-5 py-2.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/80">
+                <span className="text-xl">{proof.icon}</span>
+                <span className="text-gray-800 font-bold text-xs uppercase tracking-widest">{proof.text}</span>
+              </div>
+            ))}
+          </motion.div>
+
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-20">
-            <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-3xl shadow-xl border border-pink-50 mb-6">
-              🕊️
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 bg-gradient-to-r from-[#C2185B]/10 to-[#D4AF37]/10 border border-[#C2185B]/20 px-4 py-2 rounded-full mb-6">
+              <span className="text-xl">📰</span>
+              <span className="text-[#C2185B] text-[10px] font-black uppercase tracking-[0.2em]">Latest From Our Blog</span>
             </motion.div>
-            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-6xl font-black text-gray-900 tracking-tight mb-6">
-              Latest From <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C2185B] to-[#D4AF37] italic">Our Blog</span>
+
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 tracking-tight leading-tight mb-8">
+              Wedding Tips, Inspiration & <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C2185B] via-[#8E244D] to-[#D4AF37] italic">Expert Advice</span>
             </motion.h2>
-            <motion.div initial={{ opacity: 0, width: 0 }} whileInView={{ opacity: 1, width: "100px" }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.8 }} className="h-1 bg-gradient-to-r from-[#C2185B] to-[#D4AF37] mx-auto rounded-full mb-6" />
-            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-gray-500 text-lg font-medium leading-relaxed">
-              Wedding inspiration, planning tips, trends, and expert advice for your perfect celebration.
+
+            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-gray-500 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+              Discover the latest wedding trends, planning tips, vendor guides, budgeting advice, and inspiration for your dream wedding.
             </motion.p>
           </div>
 
           {blogs.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
               {/* Featured Large Blog */}
-              <motion.div 
-                initial={{ opacity: 0, y: 30 }} 
-                whileInView={{ opacity: 1, y: 0 }} 
-                viewport={{ once: true }} 
-                className="lg:col-span-7"
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="lg:col-span-7 h-full"
               >
                 {blogs[0] && (
-                  <Link to={`/blog/${blogs[0].slug || blogs[0]._id}`} className="group block bg-white rounded-[2.5rem] overflow-hidden shadow-[0_10px_40px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(194,24,91,0.15)] border border-gray-100 h-full hover:-translate-y-2 transition-all duration-500 relative">
-                    <div className="h-[400px] overflow-hidden relative">
-                      <img src={optimizeImage(blogs[0].coverImage, 800)} alt={blogs[0].title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent" />
-                      
-                      <div className="absolute top-6 left-6">
-                        <span className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg backdrop-blur-md">
-                          {blogs[0].category || 'Featured'}
-                        </span>
-                      </div>
-                      
-                      <div className="absolute bottom-6 left-6 right-6">
-                        <div className="flex items-center gap-4 text-white/80 text-xs font-bold uppercase tracking-widest mb-3">
+                  <Link to={`/blog/${blogs[0].slug || blogs[0]._id}`} className="group block h-full bg-white/70 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.04)] hover:shadow-[0_30px_80px_rgba(194,24,91,0.15)] border border-white hover:border-[#C2185B]/20 transition-all duration-700 relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white pointer-events-none opacity-50 z-0" />
+
+                    {/* Featured Ribbon */}
+                    <div className="absolute top-6 left-6 z-20 flex items-center gap-2 bg-gradient-to-r from-[#FF4D6D] to-[#C2185B] text-white px-5 py-2.5 rounded-full shadow-lg shadow-pink-500/30">
+                      <span className="text-sm">🔥</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em]">Featured Article</span>
+                    </div>
+
+                    <div className="h-[450px] overflow-hidden relative z-10 rounded-[2.5rem] m-2">
+                      <img src={optimizeImage(blogs[0].coverImage, 1000)} alt={blogs[0].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]" loading="lazy" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent" />
+
+                      <div className="absolute bottom-8 left-8 right-8 text-white">
+                        <div className="flex flex-wrap items-center gap-4 text-[10px] font-black uppercase tracking-widest text-white/80 mb-4">
+                          <span className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-white">
+                            {blogs[0].category || 'Trending'}
+                          </span>
                           <span className="flex items-center gap-1.5"><FiCalendar /> {new Date(blogs[0].createdAt || blogs[0].date).toLocaleDateString()}</span>
                           <span className="w-1 h-1 bg-white/50 rounded-full" />
                           <span className="flex items-center gap-1.5"><FiClock /> {blogs[0].readTime || '5 min read'}</span>
                         </div>
-                        <h3 className="font-display font-black text-3xl md:text-4xl text-white group-hover:text-pink-200 transition-colors leading-tight drop-shadow-md">
+                        <h3 className="font-display font-black text-4xl lg:text-5xl text-white group-hover:text-pink-100 transition-colors leading-tight drop-shadow-xl mb-4">
                           {blogs[0].title}
                         </h3>
+                        <p className="text-white/80 text-lg line-clamp-2 max-w-2xl font-medium leading-relaxed">
+                          {blogs[0].excerpt || blogs[0].description || 'Discover everything you need to know about planning your dream wedding with our expert insights and tips.'}
+                        </p>
                       </div>
                     </div>
-                    <div className="p-8 lg:p-10 bg-white flex flex-col justify-between h-[calc(100%-400px)]">
-                      <p className="text-gray-600 text-lg line-clamp-2 leading-relaxed mb-8">
-                        {blogs[0].excerpt || blogs[0].description || 'Discover everything you need to know about planning your dream wedding with our expert insights and tips.'}
-                      </p>
-                      <div className="flex items-center justify-between border-t border-gray-100 pt-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 font-black text-sm">
-                            {blogs[0].author?.name?.charAt(0) || 'W'}
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Written By</p>
-                            <p className="text-sm font-bold text-gray-900">{blogs[0].author?.name || 'Wedding Expert'}</p>
-                          </div>
+
+                    <div className="p-8 relative z-10 flex flex-wrap items-center justify-between gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md bg-gray-100 flex items-center justify-center">
+                          {blogs[0].author?.avatar ? (
+                            <img src={blogs[0].author.avatar} alt="Author" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-black text-[#C2185B] text-lg">{blogs[0].author?.name?.charAt(0) || 'W'}</span>
+                          )}
                         </div>
-                        <div className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#C2185B] group-hover:text-[#8E244D] transition-colors">
-                          Read Article <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center group-hover:bg-[#C2185B] group-hover:text-white transition-all"><FiArrowRight /></div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Written By</p>
+                          <p className="text-base font-bold text-gray-900">{blogs[0].author?.name || 'Wedding Expert'}</p>
                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 ml-auto">
+                        <div className="hidden sm:flex items-center gap-2 text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                          <FiEye size={16} /> {blogs[0].views || Math.floor(Math.random() * 5000) + 1000} Views
+                        </div>
+                        <button className="bg-gray-900 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] group-hover:bg-[#C2185B] transition-colors shadow-xl group-hover:shadow-pink-500/30 flex items-center gap-2">
+                          Read Article <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                        </button>
                       </div>
                     </div>
                   </Link>
@@ -926,143 +986,99 @@ export default function HomePage() {
               </motion.div>
 
               {/* Secondary Blogs List */}
-              <div className="lg:col-span-5 flex flex-col gap-8">
-                {blogs.slice(1, 3).map((blog, i) => (
-                  <motion.div 
+              <div className="lg:col-span-5 flex flex-col gap-6">
+                {blogs.slice(1, 4).map((blog, i) => (
+                  <motion.div
                     key={blog._id || i}
-                    initial={{ opacity: 0, x: 30 }} 
-                    whileInView={{ opacity: 1, x: 0 }} 
+                    initial={{ opacity: 0, x: 40 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.2 + (i * 0.1) }}
+                    transition={{ delay: 0.2 + (i * 0.15), duration: 0.6, ease: "easeOut" }}
                     className="flex-1"
                   >
-                    <Link to={`/blog/${blog.slug || blog._id}`} className="group flex flex-col sm:flex-row bg-white rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgba(194,24,91,0.12)] border border-gray-100 h-full hover:-translate-y-1 transition-all duration-500">
-                      <div className="sm:w-2/5 h-48 sm:h-auto overflow-hidden relative">
-                        <img src={optimizeImage(blog.coverImage, 300)} alt={blog.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
+                    <Link to={`/blog/${blog.slug || blog._id}`} className="group flex flex-col sm:flex-row bg-white/70 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(194,24,91,0.12)] border border-white hover:border-pink-100 transition-all duration-500 h-full">
+                      <div className="sm:w-[40%] h-56 sm:h-auto overflow-hidden relative m-2 rounded-[1.5rem]">
+                        <img src={optimizeImage(blog.coverImage, 400)} alt={blog.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]" loading="lazy" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <div className="absolute top-3 left-3">
-                          <span className="bg-white/90 backdrop-blur-md text-[#C2185B] px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm">
-                            {blog.category || 'Tips'}
+                          <span className="bg-white/90 backdrop-blur-md text-[#C2185B] px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-sm">
+                            {blog.category || 'Inspiration'}
                           </span>
                         </div>
                       </div>
-                      <div className="sm:w-3/5 p-6 flex flex-col justify-center">
-                        <p className="text-gray-400 text-[9px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                          <FiCalendar size={10} /> {new Date(blog.createdAt || blog.date).toLocaleDateString()}
-                        </p>
-                        <h3 className="font-display font-black text-xl text-gray-900 group-hover:text-[#C2185B] transition-colors leading-tight mb-3 line-clamp-3">
+                      <div className="sm:w-[60%] p-6 flex flex-col justify-center relative">
+                        <div className="flex items-center gap-3 text-gray-400 text-[8px] font-black uppercase tracking-widest mb-3">
+                          <span className="flex items-center gap-1.5 text-[#C2185B]"><FiClock size={10} /> {blog.readTime || '3 min'}</span>
+                          <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                          <span>{new Date(blog.createdAt || blog.date).toLocaleDateString()}</span>
+                        </div>
+
+                        <h3 className="font-display font-black text-xl text-gray-900 group-hover:text-[#C2185B] transition-colors leading-tight mb-3 line-clamp-2">
                           {blog.title}
                         </h3>
-                        <div className="mt-auto inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-[#C2185B] transition-colors">
-                          Read More <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+
+                        <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed mb-4">
+                          {blog.excerpt || blog.description}
+                        </p>
+
+                        <div className="mt-auto flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden">
+                              {blog.author?.avatar ? <img src={blog.author.avatar} alt="Author" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-gray-500 bg-gray-100">{blog.author?.name?.charAt(0) || 'W'}</div>}
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-600">{blog.author?.name || 'Expert'}</span>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-[#C2185B] group-hover:bg-[#C2185B] group-hover:text-white transition-all shadow-sm">
+                            <FiArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                          </div>
                         </div>
                       </div>
                     </Link>
                   </motion.div>
                 ))}
-                
-                {/* View All Button Card */}
-                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="mt-auto">
-                  <Link to="/blog" className="group flex items-center justify-between bg-gradient-to-r from-[#1a1a1a] to-[#2d2d2d] rounded-[2rem] p-8 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all hover:-translate-y-1 border border-gray-800">
-                    <div>
-                      <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest mb-1">More Inspiration</p>
-                      <p className="font-display font-black text-2xl text-white">View All Articles</p>
-                    </div>
-                    <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#C2185B] transition-colors">
-                      <FiArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </Link>
-                </motion.div>
               </div>
             </div>
           ) : (
             /* Empty State */
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="max-w-2xl mx-auto py-20 px-8 text-center bg-white rounded-[3rem] shadow-[0_20px_60px_rgb(0,0,0,0.05)] border border-pink-50">
-              <div className="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner">
-                ✍️
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="max-w-2xl mx-auto py-20 px-8 text-center bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_60px_rgb(0,0,0,0.05)] border border-white">
+              <div className="w-24 h-24 bg-gradient-to-br from-pink-50 to-purple-50 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6 shadow-inner border border-white">
+                ✨
               </div>
-              <h3 className="font-display font-black text-3xl text-gray-900 mb-4">Words of Wisdom</h3>
-              <p className="text-gray-500 font-medium text-lg mb-8">New premium wedding inspiration articles and planning guides are being curated and will be published shortly.</p>
-              <div className="inline-flex items-center gap-2 bg-[#FAFAFA] text-gray-400 text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-full border border-gray-100">
+              <h3 className="font-display font-black text-3xl text-gray-900 mb-4">Premium Content Hub</h3>
+              <p className="text-gray-500 font-medium text-lg mb-8 leading-relaxed">Our editorial team is crafting world-class wedding guides, inspiration, and expert tips. Stay tuned for breathtaking content.</p>
+              <div className="inline-flex items-center gap-2 bg-[#C2185B] text-white text-[10px] font-black uppercase tracking-widest px-8 py-4 rounded-xl shadow-xl shadow-pink-500/20">
                 Coming Soon
               </div>
             </motion.div>
           )}
+
+          {/* Bottom CTA Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="mt-16 text-center border-t border-gray-200/50 pt-12 flex flex-col md:flex-row items-center justify-center gap-6"
+          >
+            <div className="text-left md:mr-8 hidden md:block">
+              <p className="text-gray-900 font-display font-black text-2xl mb-1">✨ Explore More Insights</p>
+              <p className="text-gray-500 text-sm font-medium">Join 10+ couples reading our guides.</p>
+            </div>
+
+            <Link to="/blog" className="w-full md:w-auto bg-gray-900 text-white px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.25)] hover:-translate-y-1">
+              View All Articles
+            </Link>
+
+            <Link to="/services" className="w-full md:w-auto bg-white text-gray-900 border-2 border-gray-100 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:border-[#C2185B] hover:text-[#C2185B] transition-all hover:shadow-[0_10px_30px_rgba(194,24,91,0.1)] hover:-translate-y-1">
+              Start Planning Your Wedding
+            </Link>
+          </motion.div>
+
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section className="py-24 px-4 bg-gradient-to-b from-[#FFF8F0] to-white relative overflow-hidden">
-        <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <span className="text-[#C2185B] text-xl mb-4 block animate-bounce">✨</span>
-            <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-[0.3em] mb-4">Real experiences from families who trusted ShaadiSaathi.</p>
-            <h2 className="text-4xl md:text-5xl font-display font-black text-gray-900 tracking-tighter mb-4">
-              Happy <span className="text-[#C2185B]">Couples</span> ❤️
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#D4AF37] to-[#C2185B] mx-auto rounded-full" />
-          </div>
-
-          <div className="px-4 md:px-12 relative">
-            {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {Array(3).fill(0).map((_, i) => (
-                  <div key={i} className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 animate-pulse">
-                    <div className="w-24 h-4 bg-gray-200 rounded mb-6" />
-                    <div className="h-20 bg-gray-100 rounded-xl mb-8" />
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gray-200" />
-                      <div className="space-y-3">
-                        <div className="w-24 h-3 bg-gray-200 rounded" />
-                        <div className="w-16 h-2 bg-gray-100 rounded" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : displayTestimonials.length === 0 ? (
-              <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border border-dashed border-gray-200 shadow-sm">
-                <FiMessageCircle className="mx-auto text-5xl text-gray-300 mb-4" />
-                <h3 className="text-xl font-bold text-gray-800 mb-2">No Testimonials Yet</h3>
-                <p className="text-gray-500 font-medium">Hear what couples have to say about us soon!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {displayTestimonials.map((t, idx) => (
-                  <div key={idx} className="bg-white h-full rounded-[2.5rem] p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 border border-gray-100 flex flex-col group hover:-translate-y-2">
-                    <div className="flex justify-between items-start mb-6">
-                      <StarRating rating={t.rating} size="sm" showCount={false} />
-                      <span className="text-6xl text-[#FFF8F0] font-display leading-none rotate-180 inline-block h-8 font-black">"</span>
-                    </div>
-
-                    <p className="text-gray-600 text-base leading-relaxed mb-8 italic flex-grow line-clamp-4 group-hover:line-clamp-none transition-all duration-500">
-                      "{t.text}"
-                    </p>
-
-                    <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50">
-                      <div className="relative">
-                        <img
-                          src={optimizeImage(t.image, 100) || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=FFF8F0&color=C2185B`}
-                          alt={t.name}
-                          className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white"
-                          loading="lazy"
-                        />
-                        <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
-                          {t.city} • {t.date}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* ── Happy Couples Showcase ── */}
+      <HappyCouples />
 
       {/* ── Vendor CTA ── */}
       <section className="py-14 px-4 bg-gray-950 text-center">

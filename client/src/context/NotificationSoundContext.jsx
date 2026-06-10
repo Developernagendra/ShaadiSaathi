@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import ToastSoundListener from '../components/common/ToastSoundListener';
 
 const NotificationSoundContext = createContext();
 
 export const NotificationSoundProvider = ({ children }) => {
   const [isMuted, setIsMuted] = useState(false);
-  const audioCtxRef = useRef(null);
+  const audioRefs = useRef({});
 
   // Load mute preference
   useEffect(() => {
@@ -12,25 +13,19 @@ export const NotificationSoundProvider = ({ children }) => {
     if (saved === 'true') setIsMuted(true);
   }, []);
 
-  // Initialize Web Audio API on first user interaction (bypasses Autoplay block)
+  // Preload audio files
   useEffect(() => {
-    const initAudioContext = () => {
-      if (!audioCtxRef.current) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-          audioCtxRef.current = new AudioContext();
-        }
-      } else if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
-      }
+    const loadAudio = (type, filename) => {
+      const audio = new Audio(`/sounds/${filename}`);
+      audio.volume = 0.5; // Default volume 
+      audioRefs.current[type] = audio;
     };
 
-    const events = ['click', 'touchstart', 'keydown'];
-    events.forEach(event => document.addEventListener(event, initAudioContext, { once: true }));
-    
-    return () => {
-      events.forEach(event => document.removeEventListener(event, initAudioContext));
-    };
+    loadAudio('success', 'success.mp3');
+    loadAudio('error', 'error.mp3');
+    loadAudio('approval', 'approval.mp3');
+    loadAudio('lead', 'lead.mp3');
+    loadAudio('notification', 'notification.mp3');
   }, []);
 
   const toggleMute = useCallback(() => {
@@ -41,66 +36,31 @@ export const NotificationSoundProvider = ({ children }) => {
     });
   }, []);
 
-  const playSynthesizedSound = useCallback((type) => {
-    if (isMuted || !audioCtxRef.current) return;
+  const playSound = useCallback((type = 'notification') => {
+    if (isMuted) return;
+
+    // Fallback to 'notification' if type not found
+    const audio = audioRefs.current[type] || audioRefs.current['notification'];
     
-    const ctx = audioCtxRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
-    
-    const now = ctx.currentTime;
-    
-    const createOsc = (type, freq, time, duration, gainStart, attack=0.01) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, time);
+    if (audio) {
+      // Clone node to allow overlapping sounds
+      const clone = audio.cloneNode();
+      clone.volume = audio.volume;
+      const playPromise = clone.play();
       
-      gain.gain.setValueAtTime(0.001, time);
-      gain.gain.exponentialRampToValueAtTime(gainStart, time + attack);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(time);
-      osc.stop(time + duration);
-    };
-
-    try {
-      switch (type) {
-        case 'success': // Bright uplifting double-chime (Login/Register)
-          createOsc('sine', 523.25, now, 0.4, 0.2); // C5
-          createOsc('sine', 783.99, now + 0.15, 0.6, 0.2); // G5
-          break;
-          
-        case 'booking': // Warm solid bell (New Booking)
-          createOsc('triangle', 440.00, now, 0.8, 0.2); // A4
-          createOsc('sine', 880.00, now, 1.0, 0.1); // A5 harmonic
-          break;
-          
-        case 'alert': // Sharp double-chime (Leads)
-          createOsc('square', 880.00, now, 0.2, 0.05);
-          createOsc('square', 880.00, now + 0.1, 0.3, 0.05);
-          break;
-
-        case 'payment': // Cash register / Coin plink
-          createOsc('sine', 987.77, now, 0.3, 0.1); // B5
-          createOsc('sine', 1318.51, now + 0.1, 0.5, 0.15); // E6
-          break;
-
-        case 'review': // Soft pleasant marimba
-          createOsc('sine', 659.25, now, 0.4, 0.2, 0.05); // E5
-          break;
-
-        default: // Default generic chime
-          createOsc('sine', 830.61, now, 0.4, 0.15);
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          // Autoplay was prevented. 
+          // Do not crash the app, just log a warning.
+          console.warn(`Autoplay prevented for sound type: ${type}. User must interact with document first.`, error);
+        });
       }
-    } catch (err) {
-      console.warn("Web Audio API error", err);
     }
   }, [isMuted]);
 
   return (
-    <NotificationSoundContext.Provider value={{ isMuted, toggleMute, playSound: playSynthesizedSound }}>
+    <NotificationSoundContext.Provider value={{ isMuted, toggleMute, playSound }}>
+      <ToastSoundListener />
       {children}
     </NotificationSoundContext.Provider>
   );

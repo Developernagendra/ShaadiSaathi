@@ -38,8 +38,12 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION 💥 (Process exiting for stability...)', err);
-  process.exit(1);
+  // In production, log but do NOT crash — allows the server to recover from transient failures
+  console.error('UNHANDLED REJECTION ⚠️:', err);
+  if (process.env.NODE_ENV === 'development') {
+    // In dev, crash to surface bugs early
+    process.exit(1);
+  }
 });
 
 /* ---------------- CORS & DIAGNOSTIC REQUEST LOGGING (PLACED AT TOP OF MIDDLEWARE STACK) ---------------- */
@@ -131,10 +135,10 @@ app.use((req, res, next) => {
 });
 
 /* ---------------- RATE LIMIT ---------------- */
-// General API rate limit — generous but protects against floods
+// General API rate limit — generous in dev, protective in production
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 5000 : 300, // Higher limit in development
+  max: process.env.NODE_ENV === 'development' ? 10000 : 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes.' }
@@ -192,6 +196,7 @@ app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/features", require("./routes/featureRoutes"));
+app.use("/api/ai", require("./routes/aiRoutes"));
 app.use("/api/availability", require("./routes/availabilityRoutes"));
 app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/newsletter", require("./routes/newsletterRoutes"));
@@ -351,7 +356,10 @@ const startServer = async () => {
       let admin = await User.findOne({ email: adminEmail }).select('+password');
 
       if (!admin) {
-        const adminPass = process.env.ADMIN_PASS || 'Admin@123';
+        const adminPass = process.env.ADMIN_PASS || (process.env.NODE_ENV === 'development' ? 'Admin@123' : null);
+        if (!adminPass) {
+          console.error('❌ ADMIN_PASS env var is required in production. Skipping admin seed.');
+        } else {
         console.log('⏳ Default admin not found. Seeding admin user...');
         await User.create({
           name: 'System Admin',
@@ -363,6 +371,7 @@ const startServer = async () => {
           isActive: true
         });
         console.log(`✅ Default admin seeded successfully. Use ADMIN_PASS env var to set password.`);
+        }
       } else {
         let needsUpdate = false;
         if (admin.role !== 'admin') {
@@ -373,7 +382,7 @@ const startServer = async () => {
           admin.isActive = true;
           needsUpdate = true;
         }
-        const adminPass = process.env.ADMIN_PASS || 'Admin@123';
+        const adminPass = process.env.ADMIN_PASS || (process.env.NODE_ENV === 'development' ? 'Admin@123' : null);
         const isPasswordCorrect = await admin.comparePassword(adminPass);
         if (!isPasswordCorrect && process.env.ADMIN_PASS) {
           // Only auto-update password if ADMIN_PASS env var is explicitly set
@@ -421,6 +430,72 @@ const startServer = async () => {
       }
     } catch (normErr) {
       console.error('⚠️ Error during startup fleet normalization:', normErr.message);
+    }
+
+    // Auto-seed premium blogs if none exist
+    try {
+      const { Blog } = require('./models/FeatureModels');
+      const blogCount = await Blog.countDocuments();
+      if (blogCount === 0) {
+        console.log('⏳ Seeding premium dummy blogs...');
+        const User = require('./models/User');
+        const adminUser = await User.findOne({ role: 'admin' }) || await User.findOne();
+        const authorId = adminUser ? adminUser._id : new mongoose.Types.ObjectId();
+        
+        await Blog.insertMany([
+          {
+            title: 'The Ultimate Guide to Planning a Royal Palace Wedding in Rajasthan',
+            slug: 'royal-palace-wedding-rajasthan',
+            content: '<p>Planning a royal wedding is a dream for many. Here is our comprehensive guide to making it happen seamlessly in the majestic palaces of Rajasthan.</p><p>From booking the right venues like Umaid Bhawan Palace or Taj Lake Palace to managing logistics, every detail matters.</p>',
+            excerpt: 'Discover everything you need to know about planning your dream royal wedding in Rajasthan with our expert insights and tips.',
+            author: authorId,
+            coverImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80',
+            category: 'Trending',
+            tags: ['Royal Wedding', 'Rajasthan', 'Planning'],
+            views: 4500,
+            isPublished: true,
+          },
+          {
+            title: 'Top 10 Sabyasachi Bridal Lehengas of the Season',
+            slug: 'sabyasachi-bridal-lehengas',
+            content: '<p>Every bride dreams of wearing a Sabyasachi lehenga on her wedding day. Here are the top 10 designs that are trending this season.</p>',
+            excerpt: 'Explore the most beautiful and trending Sabyasachi bridal lehengas for your big day.',
+            author: authorId,
+            coverImage: 'https://images.unsplash.com/photo-1583939000155-703666d3a8e9?w=800&q=80',
+            category: 'Fashion',
+            tags: ['Bridal', 'Lehenga', 'Sabyasachi'],
+            views: 3200,
+            isPublished: true,
+          },
+          {
+            title: 'How to Build a Realistic Wedding Budget (And Actually Stick to It)',
+            slug: 'realistic-wedding-budget',
+            content: '<p>Budgeting is the most crucial part of wedding planning. Let us break down the costs and show you how to manage your finances effectively.</p>',
+            excerpt: 'Master your wedding finances with our complete guide to building and maintaining a realistic budget.',
+            author: authorId,
+            coverImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80',
+            category: 'Planning',
+            tags: ['Budget', 'Finance', 'Planning'],
+            views: 2800,
+            isPublished: true,
+          },
+          {
+            title: 'Minimalist Mandap Decor Ideas for the Modern Couple',
+            slug: 'minimalist-mandap-decor',
+            content: '<p>Move over heavy decorations. Minimalist mandaps are the new trend. Discover how less can be more for your wedding ceremony.</p>',
+            excerpt: 'Get inspired by these stunning and elegant minimalist mandap designs for modern Indian weddings.',
+            author: authorId,
+            coverImage: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80',
+            category: 'Decor',
+            tags: ['Decor', 'Mandap', 'Minimalist'],
+            views: 1950,
+            isPublished: true,
+          }
+        ]);
+        console.log('✅ Premium dummy blogs seeded successfully.');
+      }
+    } catch (blogErr) {
+      console.error('⚠️ Error seeding blogs:', blogErr.message);
     }
 
     const PORT = process.env.PORT || 5000;

@@ -5,7 +5,7 @@ const { uploadService } = require('../config/cloudinary');
 const {
   createVendorProfile, getMyVendorProfile, updateVendorProfile,
   uploadVendorImages, deleteVendorImage, uploadVendorCoverImage, getAllVendors, getVendorById,
-  updateVendorApproval, getVendorDashboard, updateAvailability, getFeaturedVendors, activateSubscription,
+  updateVendorApproval, getVendorDashboard, updateAvailability, getFeaturedVendors, activateSubscription, getVendorContact
 } = require('../controllers/vendorController');
 const { getVendorBlogs, saveVendorBlog, deleteVendorBlog } = require('../controllers/vendorBlogController');
 
@@ -55,6 +55,7 @@ router.get('/services', protect, authorize('vendor', 'admin'), async (req, res, 
 
 router.get('/dashboard', protect, authorize('vendor', 'admin'), verified, getVendorDashboard);
 router.get('/:id', optionalAuth, getVendorById);
+router.get('/:id/contact', protect, getVendorContact);
 router.post('/', protect, createVendorProfile);
 router.put('/profile', protect, authorize('vendor', 'admin'), verified, updateVendorProfile);
 router.put('/cab-pricing', protect, authorize('vendor', 'admin'), verified, async (req, res, next) => {

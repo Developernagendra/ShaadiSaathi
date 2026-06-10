@@ -238,7 +238,16 @@ bookingSchema.index({ service: 1 });
 bookingSchema.index({ cab: 1 });
 bookingSchema.index({ bookingType: 1 });
 bookingSchema.index({ eventCity: 1 });
+bookingSchema.index({ bookingId: 1 });
 
+// Pre-save: sync redundant userId/user and vendorId/vendor fields
+bookingSchema.pre('save', function (next) {
+  if (this.userId && !this.user) this.user = this.userId;
+  else if (this.user && !this.userId) this.userId = this.user;
+  if (this.vendorId && !this.vendor) this.vendor = this.vendorId;
+  else if (this.vendor && !this.vendorId) this.vendorId = this.vendor;
+  next();
+});
 const Booking = mongoose.model('Booking', bookingSchema);
 
 // ==================== REVIEW MODEL ====================

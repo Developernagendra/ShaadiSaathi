@@ -103,7 +103,7 @@ export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Book ${vendor?.businessName}`} size="xl">
       <div className="max-h-[85vh] overflow-y-auto scrollbar-hide">
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-8">
           <div className="flex items-center gap-4 bg-primary-50 rounded-3xl p-6 border border-primary-100">
             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm">
               {vendor?.category?.icon || '💒'}

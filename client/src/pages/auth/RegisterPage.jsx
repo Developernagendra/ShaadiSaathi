@@ -74,44 +74,11 @@ export default function RegisterPage() {
 
     if (!result.error) {
       playSound('success');
-      setSubmitted(true);
+      navigate('/');
     } else {
       toast.error(result.payload || 'Registration failed');
     }
   };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF8F0] via-white to-pink-50 flex items-center justify-center px-4 py-16">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-white rounded-[3rem] shadow-premium border border-pink-50 p-10 text-center relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-pink-50 rounded-bl-full opacity-50" />
-          <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-[0_0_30px_rgba(52,211,153,0.3)]">
-            <span className="text-5xl text-white">✉️</span>
-          </div>
-          <h2 className="font-display text-3xl font-black text-gray-900 mb-3 tracking-tight">Check Your Email!</h2>
-          <p className="text-gray-500 font-medium mb-4">
-            We've sent a secure verification link to <br />
-            <strong className="text-gray-900">{form.email}</strong>
-          </p>
-          <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-10 italic">
-            Please verify your email address to log in to your account
-          </p>
-          <div className="space-y-4 relative z-10">
-            <Link
-              to="/login"
-              className="block w-full py-4 rounded-2xl bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-lg hover:scale-105 transition-all"
-            >
-              Go to Login
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#FFF8F0] flex">

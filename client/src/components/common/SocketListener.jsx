@@ -11,7 +11,6 @@ export default function SocketListener() {
   const dispatch = useDispatch()
   const { user } = useSelector(s => s.auth)
   const socket = getSocket()
-  const { playSound } = useNotificationSound()
 
   // Request browser notification permissions on mount
   useEffect(() => {
@@ -42,21 +41,14 @@ export default function SocketListener() {
       // 1. Save in Redux
       dispatch(addNotification(notification))
 
-      // 2. Play Sound based on type
-      if (notification.type === 'booking_status') {
-        playSound('booking')
-      } else if (notification.type === 'lead') {
-        playSound('alert')
-      } else if (notification.type === 'payment') {
-        playSound('payment')
-      } else if (notification.type === 'review') {
-        playSound('review')
-      } else {
-        playSound('default')
-      }
+      // 2. Determine ID based on type for the toast listener
+      let toastId = 'notification';
+      if (notification.type === 'lead') toastId = 'lead';
+      else if (notification.type === 'booking_status') toastId = 'success';
 
       // 3. Show Toast
       toast(notification.title, {
+        id: toastId,
         icon: '🔔',
         position: 'bottom-right',
         style: {
@@ -83,7 +75,6 @@ export default function SocketListener() {
       
       // Only show toast if not on the chat page
       if (window.location.pathname !== '/chat') {
-        playSound('default')
         toast(`New message from ${data.message.sender?.name || 'User'}`, {
           icon: '💬',
           position: 'bottom-right'
@@ -93,8 +84,7 @@ export default function SocketListener() {
 
     // Listen for booking updates
     socket.on('booking_updated', ({ booking }) => {
-      playSound('booking')
-      toast(`Booking #${booking.bookingId} ${booking.status}`, {
+      toast.success(`Booking #${booking.bookingId} ${booking.status}`, {
         icon: '📅',
         position: 'bottom-right'
       })
@@ -102,8 +92,7 @@ export default function SocketListener() {
     })
 
     socket.on('bookingUpdated', (booking) => {
-      playSound('booking')
-      toast(`Booking #${booking.bookingId} ${booking.status}`, {
+      toast.success(`Booking #${booking.bookingId} ${booking.status}`, {
         icon: '📅',
         position: 'bottom-right'
       })
@@ -112,7 +101,6 @@ export default function SocketListener() {
 
     // Listen for new bookings (Vendor/Admin)
     socket.on('new_booking', ({ booking }) => {
-      playSound('booking')
       toast.success(`New Booking Received! #${booking.bookingId}`, {
         icon: '✨',
         position: 'bottom-right'

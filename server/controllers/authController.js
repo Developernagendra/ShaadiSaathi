@@ -127,11 +127,15 @@ const register = catchAsync(async (req, res, next) => {
   const token = user.generateEmailVerificationToken();
   console.log('[REGISTRATION] 🔑 Verification Token Generated');
 
-  // Auto-verify in development/local environment so they don't need to click any links
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+  // Auto-verify all normal users
+  if (userRole === 'user') {
     user.isVerified = true;
     user.isEmailVerified = true;
-    console.log(`[DEVELOPMENT] ✅ Auto-verified user ${user.email} on registration`);
+    console.log(`[REGISTRATION] ✅ Auto-verified normal user ${user.email}`);
+  } else if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+    user.isVerified = true;
+    user.isEmailVerified = true;
+    console.log(`[DEVELOPMENT] ✅ Auto-verified vendor/admin ${user.email} on registration`);
   }
 
   await user.save({ validateBeforeSave: false });
@@ -142,26 +146,23 @@ const register = catchAsync(async (req, res, next) => {
 
   console.log('[REGISTRATION] 📨 Email Attempt Started (Background)');
 
-  const template = emailTemplates.verification(
-    user.name,
-    verificationUrl
-  );
-
-  // Background execution: Fire and forget
-  sendEmail({
-    to: user.email,
-    subject: template.subject,
-    html: template.html,
-    text: template.text,
-  })
-    .then((emailResult) => {
-      console.log('[VERIFY_EMAIL] ✅ Verification Email Success');
-      console.log(`[SMTP]    → To        : ${user.email}`);
-      console.log(`[SMTP]    → MessageID : ${emailResult?.messageId || 'N/A'}`);
+  // Only send verification emails if they are not already verified (e.g. vendors)
+  if (!user.isVerified) {
+    const template = emailTemplates.verification(user.name, verificationUrl);
+    sendEmail({
+      to: user.email,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
     })
-    .catch((error) => {
-      console.error('[VERIFY_EMAIL] ❌ Verification Email Failed:', error.message);
-    });
+      .then((emailResult) => {
+        console.log('[VERIFY_EMAIL] ✅ Verification Email Success');
+        console.log(`[SMTP]    → To        : ${user.email}`);
+      })
+      .catch((error) => {
+        console.error('[VERIFY_EMAIL] ❌ Verification Email Failed:', error.message);
+      });
+  }
 
   console.log('[REGISTER] ✅ Response Sent - Account created');
 
@@ -176,12 +177,21 @@ const register = catchAsync(async (req, res, next) => {
     }
   }
 
-  // Do not generate token or set cookie upon registration.
-  // The user MUST verify their email first before logging in.
+  // Generate token and log the user in immediately
+  const jwtToken = generateToken(user._id, user.role);
+
+  const cookieOptions = {
+    expires: new Date(Date.now() + (parseInt(process.env.JWT_COOKIE_EXPIRE || '7') * 24 * 60 * 60 * 1000)),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' || req.secure || req.headers['x-forwarded-proto'] === 'https',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  };
+  res.cookie('token', jwtToken, cookieOptions);
 
   res.status(201).json({
     success: true,
-    message: 'Registration successful. Please check your email.',
+    message: 'Registration successful. Welcome to ShaadiSaathi!',
+    token: jwtToken,
     user: {
       _id: user._id,
       name: user.name,
@@ -189,6 +199,7 @@ const register = catchAsync(async (req, res, next) => {
       role: user.role,
       isVerified: user.isVerified,
       avatar: user.avatar,
+      phone: user.phone,
     },
   });
 });
@@ -234,12 +245,13 @@ const login = catchAsync(async (req, res, next) => {
     );
   }
 
-  // No email issue should block login in development, but production requires verification
-  if (!user.isVerified && user.role !== 'admin') {
+  // Normal users and vendors can login regardless of verification.
+  // Only admins strictly require it in production to prevent unauthorized panel access.
+  if (!user.isVerified && user.role === 'admin') {
     if (process.env.NODE_ENV === 'production') {
-      return next(new AppError('Please verify your email.', 403));
+      return next(new AppError('Admin account must be verified before login.', 403));
     } else {
-      console.log(`[LOGIN] Development mode: User ${user.email} logged in without prior verification. Auto-verifying account.`);
+      console.log(`[LOGIN] Development mode: Admin ${user.email} logged in without prior verification. Auto-verifying account.`);
       user.isVerified = true;
       user.isEmailVerified = true;
       await user.save({ validateBeforeSave: false });

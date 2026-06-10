@@ -8,6 +8,15 @@ import { store } from './store/store.js'
 import './i18n.js'
 import './index.css'
 
+// Global error handlers — prevent silent white-screen crashes
+window.addEventListener('error', (event) => {
+  console.error('[Global Error]', event.error || event.message);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('[Unhandled Promise Rejection]', event.reason);
+});
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>

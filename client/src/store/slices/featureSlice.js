@@ -1,14 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../utils/api';
 
-export const getAIRecommendations = createAsyncThunk(
-  'feature/getAIRecommendations',
+export const generateOpenAIWeddingPlan = createAsyncThunk(
+  'feature/generateOpenAIWeddingPlan',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.post('/features/ai-recommendations', data);
-      return response.data.data;
+      const response = await api.post('/ai/wedding-planner', data);
+      // Backend now ALWAYS returns 200 OK. We just pass the entire data object
+      // which includes { aiPlan, localVendors, meta, fallback }
+      return response.data.data; 
     } catch (error) {
-      const msg = error?.message || error?.response?.data?.message || (typeof error === 'string' ? error : 'Failed to get recommendations');
+      const msg = error?.message || error?.response?.data?.message || 'AI Planner is temporarily unavailable. Please try again later.';
       return rejectWithValue(msg);
     }
   }
@@ -50,7 +52,7 @@ export const exportGuests = createAsyncThunk(
       const response = await api.get('/features/guests/export', {
         responseType: 'blob'
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -58,7 +60,7 @@ export const exportGuests = createAsyncThunk(
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+
       return true;
     } catch (error) {
       const msg = error?.message || error?.response?.data?.message || (typeof error === 'string' ? error : 'Failed to export guests');
@@ -202,12 +204,16 @@ const featureSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getAIRecommendations.pending, (state) => { state.loading = true; })
-      .addCase(getAIRecommendations.fulfilled, (state, action) => {
+      .addCase(generateOpenAIWeddingPlan.pending, (state) => { 
+        state.loading = true; 
+        state.error = null;
+      })
+      .addCase(generateOpenAIWeddingPlan.fulfilled, (state, action) => {
         state.loading = false;
         state.aiRecommendations = action.payload;
+        state.error = null;
       })
-      .addCase(getAIRecommendations.rejected, (state, action) => {
+      .addCase(generateOpenAIWeddingPlan.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

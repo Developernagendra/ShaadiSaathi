@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchServices, fetchCategories, setFilters, clearFilters } from '../store/slices/vendorSlice'
-import ServiceCard from '../components/vendor/ServiceCard'
+import { fetchVendors, fetchCategories, setFilters, clearFilters } from '../store/slices/vendorSlice'
+import VendorCard from '../components/vendor/VendorCard'
 import { SkeletonCard } from '../components/common/Skeleton'
 import EmptyState from '../components/common/EmptyState'
 import { INDIAN_CITIES, formatPrice } from '../utils/helpers'
@@ -38,12 +38,11 @@ export default function ServicesPage() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { services, categories, fetchLoading: loading, pagination } = useSelector(s => s.vendor)
+  const { vendors, categories, fetchLoading: loading, pagination } = useSelector(s => s.vendor)
 
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [page, setPage] = useState(1)
-  const [previewVendor, setPreviewVendor] = useState(null)
 
   const { categorySlug: paramCategorySlug } = useParams()
   const categorySlug = paramCategorySlug || searchParams.get('category') || ''
@@ -62,13 +61,13 @@ export default function ServicesPage() {
     return categories.find(c => c.slug === categorySlug);
   }, [categorySlug, categories]);
 
-  const loadServices = useCallback(() => {
-    dispatch(fetchServices({
+  const loadVendors = useCallback(() => {
+    dispatch(fetchVendors({
       page,
       limit: 12,
       search: searchInput || undefined,
       city: localFilters.city || undefined,
-      categorySlug: categorySlug || undefined,
+      category: categorySlug || undefined,
       minPrice: localFilters.minPrice || undefined,
       maxPrice: localFilters.maxPrice || undefined,
       rating: localFilters.rating || undefined,
@@ -83,24 +82,22 @@ export default function ServicesPage() {
   }, [dispatch, categories?.length])
 
   useEffect(() => {
-    loadServices()
+    loadVendors()
     const socket = getSocket()
     if (socket) {
-      socket.on('service_updated', loadServices)
-      socket.on('vendor_updated', loadServices)
+      socket.on('vendor_updated', loadVendors)
     }
     return () => {
       if (socket) {
-        socket.off('service_updated', loadServices)
-        socket.off('vendor_updated', loadServices)
+        socket.off('vendor_updated', loadVendors)
       }
     }
-  }, [loadServices])
+  }, [loadVendors])
 
   const handleSearch = (e) => {
     e.preventDefault()
     setPage(1)
-    loadServices()
+    loadVendors()
   }
 
   const handlePriceRange = (range) => {
@@ -251,7 +248,7 @@ export default function ServicesPage() {
             <div className="bg-white rounded-[2rem] p-6 mb-10 shadow-premium border border-pink-50 flex items-center justify-between gap-6 flex-wrap">
               <div className="flex items-center gap-5">
                 <div className="w-14 h-14 bg-gradient-to-br from-[#D4AF37] to-[#B38D22] text-white rounded-2xl flex items-center justify-center font-display font-black text-2xl shadow-lg">
-                  {pagination?.total || services?.length || 0}
+                  {pagination?.total || vendors?.length || 0}
                 </div>
                 <div>
                   <p className="text-gray-900 font-display font-black text-xl tracking-tight leading-none mb-1">Premium Vendors</p>
@@ -295,19 +292,19 @@ export default function ServicesPage() {
                       </select>
                     </div>
                     <div className="mt-8">
-                      <button onClick={() => { loadServices(); setFiltersOpen(false) }} className="w-full bg-[#C2185B] text-white font-black uppercase tracking-widest text-xs py-5 rounded-2xl shadow-xl">Apply Filters</button>
+                      <button onClick={() => { loadVendors(); setFiltersOpen(false) }} className="w-full bg-[#C2185B] text-white font-black uppercase tracking-widest text-xs py-5 rounded-2xl shadow-xl">Apply Filters</button>
                     </div>
                   </motion.div>
                 </>
               )}
             </AnimatePresence>
 
-            {/* ── Services Grid ── */}
+            {/* ── Vendors Grid ── */}
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
               </div>
-            ) : (!services || services.length === 0) ? (
+            ) : (!vendors || vendors.length === 0) ? (
               <div className="bg-white rounded-[3rem] p-16 text-center shadow-premium">
                 <div className="w-24 h-24 bg-pink-50 text-[#C2185B] rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6">🔍</div>
                 <h3 className="font-display font-black text-2xl text-gray-900 mb-2">No Vendors Found</h3>
@@ -318,8 +315,8 @@ export default function ServicesPage() {
               </div>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {(services || []).map(s => <ServiceCard key={s._id} service={s} onPreview={setPreviewVendor} />)}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {(vendors || []).map(v => <VendorCard key={v._id} vendor={v} />)}
                 </div>
 
                 {/* Pagination */}
@@ -341,106 +338,6 @@ export default function ServicesPage() {
           </div>
         </div>
       </div>
-
-      {/* ✨ VENDOR PROFILE PREVIEW UI (Quick Preview Modal) */}
-      <AnimatePresence>
-        {previewVendor && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setPreviewVendor(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-10 flex flex-col md:flex-row overflow-hidden"
-            >
-              {/* Left Side: Images/Portfolio Preview */}
-              <div className="md:w-5/12 h-64 md:h-auto relative bg-gray-100">
-                <img
-                  src={previewVendor.coverImage || (previewVendor.images?.[0]?.url || previewVendor.images?.[0]) || 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800'}
-                  alt={previewVendor.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-[#C2185B]">
-                    {previewVendor.category?.name || 'Vendor'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Side: Details & CTAs */}
-              <div className="md:w-7/12 p-8 flex flex-col">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="font-display text-2xl font-black text-gray-900 leading-tight mb-1">{previewVendor.title}</h2>
-                    {previewVendor.vendor?.businessName && (
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                        <span>By {previewVendor.vendor.businessName}</span>
-                        {(previewVendor.vendor?.isVerified || previewVendor.rating?.average >= 4.0) && <FiCheckCircle className="text-green-500" size={14} />}
-                      </div>
-                    )}
-                  </div>
-                  <button onClick={() => setPreviewVendor(null)} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
-                    <FiX />
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-4 mb-6">
-                  {previewVendor.rating?.average > 0 && (
-                    <span className="flex items-center gap-1 text-sm font-bold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-lg">
-                      <FiStar className="fill-yellow-500" /> {previewVendor.rating.average} Rating
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1 text-sm font-bold text-gray-600 bg-gray-50 px-3 py-1 rounded-lg">
-                    <FiMapPin className="text-[#C2185B]" /> {previewVendor.city}
-                  </span>
-                </div>
-
-                <p className="text-gray-600 text-sm italic mb-6 line-clamp-3">
-                  {previewVendor.description}
-                </p>
-
-                <div className="mb-8">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Starting Price</p>
-                  <p className="text-3xl font-display font-black text-[#D4AF37]">{formatPrice(previewVendor.startingPrice || previewVendor.price)}</p>
-                </div>
-
-                <div className="mt-auto space-y-3">
-                  <button
-                    onClick={() => navigate(`/book-service/${previewVendor._id}`)}
-                    className="w-full bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white py-4 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg hover:shadow-xl transition-all text-center flex justify-center items-center gap-2"
-                  >
-                    Check Availability & Book
-                  </button>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => navigate(`/service/${previewVendor._id}`)}
-                      className="flex-1 bg-gray-50 text-gray-600 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all text-center"
-                    >
-                      Full Profile
-                    </button>
-                    <button
-                      onClick={() => window.open(`https://wa.me/91${previewVendor.vendor?.phone || '9999999999'}?text=Hi, I am interested in your services for my wedding.`, '_blank')}
-                      className="flex-none bg-[#25D366] text-white w-12 rounded-xl flex items-center justify-center hover:bg-[#1EBE5D] transition-all shadow-sm"
-                      title="WhatsApp Contact"
-                    >
-                      <FaWhatsapp size={20} />
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
     </div>
   )
 }

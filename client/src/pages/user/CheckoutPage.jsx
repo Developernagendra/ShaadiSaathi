@@ -22,8 +22,6 @@ export default function CheckoutPage() {
   const { loading } = useSelector(s => s.booking)
   const [selectedPkg, setSelectedPkg] = useState(0)
   const [orderConfirmed, setOrderConfirmed] = useState(false)
-  const [showVerifyModal, setShowVerifyModal] = useState(false)
-  const [resending, setResending] = useState(false)
   const [service, setService] = useState(null)
 
   useEffect(() => {
@@ -53,47 +51,14 @@ export default function CheckoutPage() {
     }
   }, [dispatch, targetId])
 
-  // Polling to automatically detect verification
-  useEffect(() => {
-    let interval;
-    if (user && !user.isVerified) {
-      interval = setInterval(() => {
-        dispatch(getMe())
-      }, 3000)
-    }
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [dispatch, user?.isVerified])
 
-  useEffect(() => {
-    if (user?.isVerified) {
-      setShowVerifyModal(false)
-    }
-  }, [user?.isVerified])
-
-  const handleResendEmail = async () => {
-    setResending(true)
-    try {
-      await dispatch(resendVerification({ email: user.email })).unwrap()
-      toast.success('Verification email sent.', { id: 'verify-success' })
-    } catch (err) {
-      toast.error(err || 'Failed to send verification email.')
-    } finally {
-      setResending(false)
-    }
-  }
 
   const pkg = vendor?.packages?.[selectedPkg]
   const amount = pkg?.price || vendor?.basePrice || 0
   const advanceAmount = Math.ceil(amount * 0.5)
 
   const handleSubmit = async (values) => {
-    if (user && !user.isVerified) {
-      toast.error('Please verify your email to book services', { id: 'verify-booking-toast' })
-      setShowVerifyModal(true)
-      return
-    }
+
 
     const payload = {
       vendorId: vendor?._id || service?.vendor?._id || service?.vendor || targetId,
@@ -208,15 +173,9 @@ export default function CheckoutPage() {
                   </div>
 
                   <button
-                    type={user?.isVerified ? "submit" : "button"}
-                    onClick={() => {
-                      if (user && !user.isVerified) {
-                        toast.error('Please verify your email to book services', { id: 'verify-booking-toast' })
-                        setShowVerifyModal(true)
-                      }
-                    }}
-                    disabled={loading || (user && !user.isVerified)}
-                    className={`btn-primary w-full py-6 text-xl shadow-2xl group transition-all duration-300 ${user && !user.isVerified ? 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed shadow-none' : 'shadow-pink-200'}`}
+                    type="submit"
+                    disabled={loading}
+                    className="btn-primary w-full py-6 text-xl shadow-2xl group transition-all duration-300 shadow-pink-200"
                   >
                     {loading ? (
                       <span className="flex items-center justify-center gap-3">
@@ -225,7 +184,7 @@ export default function CheckoutPage() {
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-3">
-                        {user && !user.isVerified ? 'Verify Email to Book' : 'Confirm Booking'} <FiArrowRight className="group-hover:translate-x-2 transition-transform" />
+                        Confirm Booking <FiArrowRight className="group-hover:translate-x-2 transition-transform" />
                       </span>
                     )}
                   </button>
@@ -278,67 +237,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* ── Premium Email Verification Modal ── */}
-      <AnimatePresence>
-        {showVerifyModal && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowVerifyModal(false)}
-              className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-white rounded-[2.5rem] w-full max-w-md relative z-10 shadow-2xl overflow-hidden border border-pink-50 p-10 text-center"
-            >
-              {/* Premium Icon */}
-              <div className="w-20 h-20 bg-[#FFF8F0] text-[#C2185B] rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner border border-pink-50/50 animate-pulse">
-                📧
-              </div>
 
-              <h3 className="font-display font-black text-3xl text-gray-900 mb-4 tracking-tight leading-none">
-                Verify Your Email
-              </h3>
-
-              <p className="text-gray-500 font-medium leading-relaxed text-sm mb-8">
-                Please verify your email before confirming booking. We've sent a verification link to <span className="font-bold text-gray-800">{user?.email}</span>.
-              </p>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => navigate('/resend-verification')}
-                  className="w-full bg-[#C2185B] hover:bg-[#8E244D] text-white py-4.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-pink-100 transition-all flex items-center justify-center gap-2 italic"
-                >
-                  Verify Now
-                </button>
-
-                <button
-                  type="button"
-                  disabled={resending}
-                  onClick={handleResendEmail}
-                  className="w-full bg-[#FFF8F0] border-2 border-pink-50 hover:border-pink-100 text-[#C2185B] py-4.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 italic disabled:opacity-50"
-                >
-                  {resending ? 'Sending...' : 'Resend Verification Email'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowVerifyModal(false)}
-                  className="w-full bg-white border border-gray-200 text-gray-400 hover:text-gray-700 py-4 rounded-2xl font-black text-[9px] uppercase tracking-widest transition-all italic"
-                >
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

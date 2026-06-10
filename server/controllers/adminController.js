@@ -11,7 +11,8 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
     totalUsers, totalVendors, pendingVendors, totalBookings,
     completedBookings, recentUsers,
     recentVendors, totalCabs,
-    pendingBookingsCount, approvedBookingsCount, cancelledBookingsCount
+    pendingBookingsCount, approvedBookingsCount, cancelledBookingsCount,
+    pendingServices
   ] = await Promise.all([
     User.countDocuments({ role: 'user' }),
     Vendor.countDocuments({ approvalStatus: 'approved' }),
@@ -23,7 +24,8 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
     require('../models/index').Cab.countDocuments(),
     Booking.countDocuments({ status: 'pending' }),
     Booking.countDocuments({ status: 'confirmed' }),
-    Booking.countDocuments({ status: { $in: ['cancelled', 'rejected'] } })
+    Booking.countDocuments({ status: { $in: ['cancelled', 'rejected'] } }),
+    require('../models/index').Service.countDocuments({ status: 'pending' })
   ]);
 
   // Compute Revenue Analytics based on exact paymentStatus and prices
@@ -206,6 +208,7 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
         totalUsers,
         totalVendors,
         pendingVendors,
+        pendingServices,
         totalBookings,
         completedBookings,
         totalRevenue: totalRevenueVal,
@@ -441,10 +444,38 @@ exports.getAllVendorsAdmin = catchAsync(async (req, res, next) => {
 // @access  Private (Admin)
 exports.getAllLeadsAdmin = catchAsync(async (req, res, next) => {
   const { Lead } = require('../models/FeatureModels');
-  const leads = await Lead.find()
-    .populate('user', 'name email phone')
-    .populate('serviceType', 'name')
-    .sort({ createdAt: -1 });
+  const VendorLead = require('../models/VendorLead');
+  
+  const [marketplaceLeads, vendorLeads] = await Promise.all([
+    Lead.find()
+      .populate('user', 'name email phone')
+      .populate('serviceType', 'name')
+      .sort({ createdAt: -1 })
+      .lean(),
+    VendorLead.find()
+      .populate('user', 'name email phone')
+      .populate('vendor', 'businessName')
+      .sort({ createdAt: -1 })
+      .lean()
+  ]);
+
+  // Format vendorLeads to match the structure expected by the frontend if needed, 
+  // or just pass them and let frontend handle it.
+  const formattedVendorLeads = vendorLeads.map(l => ({
+    _id: l._id,
+    user: l.user,
+    city: l.city,
+    serviceType: { name: l.serviceRequired || 'Direct Enquiry' },
+    eventDate: l.weddingDate,
+    budget: l.budget,
+    description: `Direct WhatsApp enquiry to ${l.vendor?.businessName || 'Vendor'}`,
+    status: l.status === 'won' ? 'closed' : 'open',
+    createdAt: l.createdAt,
+    quotations: [{ vendor: l.vendor }], // Mock a quote so it displays the vendor image
+    leadType: 'whatsapp'
+  }));
+
+  const leads = [...marketplaceLeads, ...formattedVendorLeads].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   res.status(200).json({ status: 'success', leads });
 });

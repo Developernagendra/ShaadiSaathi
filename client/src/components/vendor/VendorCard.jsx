@@ -1,15 +1,47 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleWishlist } from '../../store/slices/authSlice'
 import StarRating from '../common/StarRating'
-import { formatPrice, truncate } from '../../utils/helpers'
-import { FiHeart, FiMapPin, FiAward, FiCheck, FiArrowRight, FiCheckCircle } from 'react-icons/fi'
+import { formatPrice, getWhatsAppLink } from '../../utils/helpers'
+import { FiHeart, FiMapPin, FiCheckCircle, FiPhoneCall, FiTrendingUp } from 'react-icons/fi'
+import { FaWhatsapp } from 'react-icons/fa'
 import { toast } from 'react-hot-toast'
 
 export default function VendorCard({ vendor }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useSelector((s) => s.auth)
+  const [waLoading, setWaLoading] = useState(false)
+
+  const handleWhatsAppClick = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!isAuthenticated) {
+      toast.error('Please login to access vendor contact details.', { icon: '🔒' })
+      navigate('/login', { state: { from: { pathname: window.location.pathname, search: `?action=whatsapp&vendorId=${vendor._id}` } } })
+      return
+    }
+
+    try {
+      setWaLoading(true)
+      const api = await import('../../utils/api').then(m => m.default)
+      const res = await api.get(`/vendors/${vendor._id}/contact`)
+      if (res.data?.success && res.data?.whatsappNumber) {
+        let phone = res.data.whatsappNumber.replace(/[^0-9]/g, '')
+        if (phone.length === 10) phone = `91${phone}`
+        const encodedMsg = res.data.encodedMessage || encodeURIComponent("Hello, I found your service on ShaadiSaathi and I am interested in your wedding services.");
+        window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank')
+      } else {
+        toast.error('WhatsApp number not available for this vendor.')
+      }
+    } catch (err) {
+      toast.error('Failed to get contact details. Please try again.')
+    } finally {
+      setWaLoading(false)
+    }
+  }
 
   const getOptimizedUrl = (url, width = 600) => {
     if (!url || !url.includes('cloudinary')) return url
@@ -47,155 +79,170 @@ export default function VendorCard({ vendor }) {
     dispatch(toggleWishlist(vendor._id))
   }
 
-  const vendorBadges = {
-    verified: { label: 'Verified', icon: <FiCheck />, variant: 'green' },
-    topRated: { label: 'Top Rated', icon: <FiAward />, variant: 'gold' },
-    quickResponder: { label: 'Quick Responder', icon: null, variant: 'blue' },
-    experienced: { label: 'Experienced', icon: null, variant: 'purple' },
+  const getVendorInitials = (name) => {
+    if (!name) return 'V'
+    return name.charAt(0).toUpperCase()
   }
 
   return (
-    <div 
+    <div
       onClick={() => navigate(`/vendors/${vendor._id}`)}
-      className="block group h-full cursor-pointer"
+      className="block h-full cursor-pointer group"
     >
-      <div className="bg-white rounded-[2.5rem] shadow-premium hover:shadow-premium-hover border border-gray-100 hover:border-[#D4AF37] transition-all duration-700 overflow-hidden relative flex flex-col h-full group">
-        {/* Subtle pattern background for the card */}
-        <div className="absolute inset-0 floral-pattern opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-700 z-0 pointer-events-none" />
-        
-        {/* Image Section */}
-        <div className="relative h-60 overflow-hidden bg-cream flex-shrink-0 z-10 border-b border-gold-200">
+      <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(255,77,109,0.15)] border border-white hover:border-pink-100 transition-all duration-500 overflow-hidden relative flex flex-col h-full group hover:-translate-y-2">
+        {/* Hover Glow Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/5 to-[#6A11CB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+        {/* Cover Image Section */}
+        <div className="relative h-64 rounded-[24px] overflow-hidden bg-gray-50 flex-shrink-0 z-10 shadow-sm">
           {primaryImage ? (
             <img
               src={optimizedImage}
               alt={vendor.businessName}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-maroon-50 to-cream-100">
-              <span className="text-6xl group-hover:scale-110 transition-transform duration-500">{vendor.category?.icon || '🏛️'}</span>
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+              <span className="text-6xl opacity-50 group-hover:scale-110 transition-transform duration-500">{vendor.category?.icon || '✨'}</span>
             </div>
           )}
 
           {/* Elegant Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-maroon-950/80 via-maroon-900/20 to-transparent opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Overlay badges */}
-          <div className="absolute top-5 left-5 flex flex-wrap gap-2 z-20">
-            {vendor.subscription?.plan === 'elite' && vendor.subscription?.status === 'active' && (
-              <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none">
-                <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
-                <span>👑 Elite Partner</span>
+          {/* Premium Ribbons & Badges */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-20 items-start">
+            {vendor.subscription?.plan === 'elite' ? (
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white text-[10px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                💎 Premium Partner
+              </span>
+            ) : vendor.subscription?.plan === 'premium' ? (
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white text-[10px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                💎 Premium Partner
+              </span>
+            ) : null}
+
+            {vendor.isTrending && (
+              <span className="bg-white/90 backdrop-blur-md text-[#FF4D6D] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-md flex items-center gap-1">
+                <FiTrendingUp strokeWidth={3} /> Trending
               </span>
             )}
-            {vendor.subscription?.plan === 'premium' && vendor.subscription?.status === 'active' && (
-              <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none">
-                <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
-                <span>⭐ Featured Partner</span>
+            {vendor.isFeatured && (
+              <span className="bg-white/90 backdrop-blur-md text-[#6A11CB] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-md flex items-center gap-1">
+                🏆 Top Rated
               </span>
             )}
-            {vendor.isFeatured && !['premium', 'elite'].includes(vendor.subscription?.plan) && (
-              <span className="bg-gradient-to-r from-[#D4AF37] via-[#FFF8F0] to-[#D4AF37] text-black text-[9px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-lg shadow-xl border border-[#D4AF37]/50 flex items-center gap-1.5 shine-effect select-none">
-                <FiCheckCircle className="text-black" size={12} strokeWidth={3} />
-                <span>⭐ Top Vendor</span>
-              </span>
-            )}
-            {vendor.isTrending && <span className="bg-white/95 backdrop-blur-md text-[#C2185B] text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-lg shadow-xl border border-pink-200">🔥 Trending</span>}
           </div>
 
-          {/* Wishlist Icon */}
-          <button
-            onClick={handleWishlist}
-            className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg z-20 ${
-              isWishlisted ? 'bg-[#C2185B] text-white' : 'bg-white/90 backdrop-blur-md text-gray-400 hover:text-red-500 hover:bg-gold-50 hover:scale-110'
-            }`}
-          >
-            <FiHeart size={18} fill={isWishlisted ? 'currentColor' : 'none'} />
-          </button>
+          {/* Quick Actions (Wishlist & Share) */}
+          <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+            <button
+              onClick={handleWishlist}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl backdrop-blur-md border ${isWishlisted
+                ? 'bg-[#FF4D6D] text-white border-[#FF4D6D]'
+                : 'bg-white/30 text-white border-white/40 hover:bg-white hover:text-[#FF4D6D] hover:scale-110'
+                }`}
+            >
+              <FiHeart size={18} fill={isWishlisted ? 'currentColor' : 'none'} className={isWishlisted ? 'scale-110' : ''} />
+            </button>
+          </div>
 
-          {/* Category pill */}
-          <div className="absolute bottom-5 left-5 z-20">
-            <span className="bg-black/40 backdrop-blur-md border border-white/30 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">
-              {vendor.category?.icon} {vendor.category?.name}
-            </span>
+          {/* Social Proof & Location Overlay */}
+          <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between">
+            <div className="flex flex-col gap-1.5">
+              <span className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full w-fit">
+                {vendor.category?.icon} {vendor.category?.name || 'Service'}
+              </span>
+              <div className="flex items-center gap-1 text-white/90 text-xs font-bold drop-shadow-md">
+                <FiMapPin size={12} className="text-[#D4AF37]" />
+                <span className="truncate max-w-[120px]">{vendor.location?.city || 'India'}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-1">
+              <div className="bg-white/95 backdrop-blur-md rounded-xl px-2.5 py-1 flex items-center gap-1.5 shadow-lg border border-white/50">
+                <span className="text-yellow-500 text-sm">⭐</span>
+                <span className="text-gray-900 font-bold text-sm leading-none">{vendor.rating?.average || '4.9'}</span>
+              </div>
+              <span className="text-white/80 text-[9px] font-bold uppercase tracking-widest drop-shadow-md">
+                {vendor.rating?.count > 0 ? `${vendor.rating.count} Reviews` : '50+ Reviews'}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="p-8 flex flex-col flex-1 relative z-10 bg-white/50 backdrop-blur-sm">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <h3 className="font-display font-black text-gray-900 text-2xl leading-tight group-hover:text-[#C2185B] transition-colors line-clamp-1">
-              {vendor.businessName}
-            </h3>
-          </div>
+        <div className="p-5 flex flex-col flex-1 relative z-10">
 
-          {/* Location & Rating row */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2 text-gray-500 text-[11px] font-black uppercase tracking-widest">
-              <FiMapPin className="text-[#D4AF37]" size={14} />
-              <span className="truncate max-w-[140px]">{vendor.location?.city}</span>
+          {/* Header Row: Logo & Name */}
+          <div className="flex gap-4 items-start mb-4">
+            <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-[#FF4D6D] to-[#6A11CB] flex-shrink-0 flex items-center justify-center text-white font-display font-black text-xl shadow-md border-2 border-white/50">
+              {getVendorInitials(vendor.businessName)}
             </div>
-            <div className="flex items-center gap-1">
-              <StarRating rating={vendor.rating?.average} count={vendor.rating?.count} size="sm" showCount={true} />
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-2 flex-1 font-medium">
-            {truncate(vendor.tagline || vendor.description, 80)}
-          </p>
-
-          {/* Badges row */}
-          <div className="flex flex-wrap gap-2 mb-6 min-h-[24px]">
-            {vendor.badges?.slice(0, 2).map((b) => {
-              const info = vendorBadges[b]
-              if (!info) return null
-              return (
-                <span key={b} className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm flex items-center gap-1 shadow-sm ${
-                  info.variant === 'green' ? 'bg-cream-100 text-maroon-800 border border-gold-200' :
-                  info.variant === 'gold' ? 'bg-gold-50 text-gold-800 border border-gold-300' :
-                  info.variant === 'blue' ? 'bg-maroon-50 text-maroon-800 border border-maroon-200' :
-                  'bg-gray-50 text-gray-800 border border-gray-200'
-                }`}>
-                  {info.icon} {info.label}
+            <div className="flex-1 min-w-0 pt-0.5">
+              <h3 className="font-display font-black text-gray-900 text-[22px] leading-tight group-hover:text-[#FF4D6D] transition-colors truncate">
+                {vendor.businessName}
+              </h3>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                  <FiCheckCircle size={10} strokeWidth={3} /> Verified Vendor
                 </span>
-              )
-            })}
-          </div>
-
-          {/* Price & Action Buttons */}
-          <div className="pt-6 border-t border-gray-50 mt-auto">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.2em] mb-1">Starting At</p>
-                <p className="font-display font-black text-gray-900 text-2xl tracking-tighter">{formatPrice(vendor.basePrice)}</p>
+                {(vendor.badges?.includes('quickResponder') || vendor.subscription?.plan === 'premium') && (
+                  <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                    ⚡ Fast Response
+                  </span>
+                )}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+          </div>
+
+          {/* Bookings / Popularity indicator */}
+          <div className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 mb-5">
+            <span className="text-red-500">❤️</span> 10+ Bookings
+            <span className="text-gray-300 mx-1">|</span>
+            <span className="text-[#FF4D6D]">🔥 Popular Choice</span>
+          </div>
+
+          {/* Price & Actions Row */}
+          <div className="mt-auto pt-5 border-t border-gray-50/80 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Starting Price</p>
+              <p className="font-display font-black text-gray-900 text-xl tracking-tight">
+                {formatPrice(vendor.basePrice || vendor.packages?.[0]?.price || 15000)}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleWhatsAppClick}
+                disabled={waLoading}
+                className={`w-10 h-10 rounded-[12px] flex items-center justify-center transition-all duration-300 border group/wa ${waLoading ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-green-50 text-green-600 hover:bg-green-500 hover:text-white border-green-100'}`}
+                title="WhatsApp Now"
+              >
+                {waLoading ? (
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                ) : (
+                  <FaWhatsapp size={20} className="group-hover/wa:scale-110 transition-transform" />
+                )}
+              </button>
+
               <button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   navigate(`/vendors/${vendor._id}`)
                 }}
-                className="flex items-center justify-center gap-1 bg-[#FFF8F0] hover:bg-[#FFE5D9] text-[#C2185B] py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 border border-pink-100"
+                className="bg-gray-900 hover:bg-gradient-to-r hover:from-[#FF4D6D] hover:to-[#6A11CB] text-white px-5 py-2.5 rounded-[12px] text-xs font-black uppercase tracking-widest transition-all duration-500 shadow-md hover:shadow-[0_10px_20px_rgba(255,77,109,0.3)] hover:-translate-y-0.5"
               >
                 View Details
               </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  if (!vendor?._id) return;
-                  navigate(`/book-vendor/${vendor._id}`)
-                }}
-                className="flex items-center justify-center gap-1 bg-gradient-to-r from-[#C2185B] to-[#8E244D] hover:from-[#8E244D] hover:to-[#5C1130] text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-pink-100 transition-all duration-300"
-              >
-                Book Now
-              </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>

@@ -119,7 +119,7 @@ export default function VendorDashboard() {
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] bg-white/10 backdrop-blur-xl border-2 border-white/20 p-1 flex items-center justify-center shadow-2xl flex-shrink-0 relative group">
               <div className="w-full h-full rounded-[2rem] overflow-hidden bg-gray-800">
-                {vendor.images?.[0]?.url ? (
+                {vendor?.images?.[0]?.url ? (
                   <img src={vendor?.images?.[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                 ) : (
                   <span className="text-5xl font-display font-black text-[#D4AF37]">🏪</span>
@@ -140,9 +140,9 @@ export default function VendorDashboard() {
 
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-6">
                 <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-xl border border-white/10 shadow-lg">
-                  <StarRating rating={vendor.rating?.average} count={vendor.rating?.count} size="sm" />
+                  <StarRating rating={vendor?.rating?.average || 0} count={vendor?.rating?.count || 0} size="sm" />
                 </div>
-                {vendor.approvalStatus === 'approved' && (
+                {vendor?.approvalStatus === 'approved' && (
                   <div className={`px-4 py-1.5 rounded-xl border font-black text-[10px] uppercase tracking-widest shadow-lg bg-green-500/20 border-green-500/30 text-green-400 flex items-center gap-1.5`}>
                     <FiCheckCircle size={14} /> Verified Partner
                   </div>
@@ -245,7 +245,7 @@ export default function VendorDashboard() {
         </div>
 
         {/* Pending Approval Notice */}
-        {vendor.approvalStatus === 'pending' && (
+        {vendor?.approvalStatus === 'pending' && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-start md:items-center gap-5">
             <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">⏳</div>
             <div>
@@ -425,10 +425,10 @@ export default function VendorDashboard() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-3">
-                            <p className="font-display text-xl font-black text-gray-900 tracking-tight leading-none">{r.user?.name}</p>
-                            <StarRating rating={r.rating} showCount={false} size="sm" />
+                            <p className="font-display text-xl font-black text-gray-900 tracking-tight leading-none">{r?.user?.name || 'User'}</p>
+                            <StarRating rating={r?.rating || 0} showCount={false} size="sm" />
                           </div>
-                          <p className="text-gray-500 text-sm leading-relaxed italic line-clamp-3 mb-4">"{r.comment}"</p>
+                          <p className="text-gray-500 text-sm leading-relaxed italic line-clamp-3 mb-4">"{r?.comment || 'No comment provided.'}"</p>
                           <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest italic">{formatDateShort(r.createdAt)}</p>
                         </div>
                       </div>

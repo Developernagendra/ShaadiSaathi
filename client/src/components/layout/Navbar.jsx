@@ -104,18 +104,18 @@ export default function Navbar() {
 
   const handlePreloadBaraatCabs = () => {
     // 1. Preload the React Component Chunk
-    preloadBaraatCabsChunk().catch(() => {});
-    
+    preloadBaraatCabsChunk().catch(() => { });
+
     // 2. Preload the initial API data (if not already cached)
     // Must match the exact key BaraatCabsPage uses on mount (empty city = empty params)
     const cacheKey = `/fleet/browse?`;
-    
+
     if (!apiCache.has(cacheKey)) {
       api.get(cacheKey).then(res => {
         if (res.data?.status === 'success') {
           apiCache.set(cacheKey, res.data);
         }
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }
 
@@ -149,11 +149,10 @@ export default function Navbar() {
                     key={link.to}
                     to={link.to}
                     onMouseEnter={isCabs ? handlePreloadBaraatCabs : undefined}
-                    className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 relative group flex items-center gap-2 ${
-                      isCabs 
-                        ? (navTransparent ? 'bg-white/10 text-white border border-white/30' : 'bg-[#FFF8F0] text-primary-600 border border-gold-200 shadow-sm hover:shadow-md')
-                        : (navTransparent ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-primary-600')
-                    } ${location.pathname === link.to ? (navTransparent ? 'text-white bg-white/20' : 'text-primary-600 bg-pink-50') : ''}`}
+                    className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 relative group flex items-center gap-2 ${isCabs
+                      ? (navTransparent ? 'bg-white/10 text-white border border-white/30' : 'bg-[#FFF8F0] text-primary-600 border border-gold-200 shadow-sm hover:shadow-md')
+                      : (navTransparent ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-primary-600')
+                      } ${location.pathname === link.to ? (navTransparent ? 'text-white bg-white/20' : 'text-primary-600 bg-pink-50') : ''}`}
                   >
                     {isCabs && <span className="text-sm animate-pulse">🚗</span>}
                     {link.label}
@@ -163,15 +162,14 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-              
+
               {!isAuthenticated && (
-                <Link 
-                  to="/register/vendor" 
-                  className={`ml-4 px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 ${
-                    navTransparent 
-                    ? 'bg-white text-primary-600 hover:bg-gold-50' 
+                <Link
+                  to="/register/vendor"
+                  className={`ml-4 px-6 py-2.5 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 ${navTransparent
+                    ? 'bg-white text-primary-600 hover:bg-gold-50'
                     : 'bg-primary-600 text-white hover:bg-primary-700'
-                  }`}
+                    }`}
                 >
                   <FiBriefcase size={14} />
                   Apna Business Jodein
@@ -184,11 +182,10 @@ export default function Navbar() {
               {/* Language Switcher */}
               <button
                 onClick={handleLanguageToggle}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-black tracking-widest transition-all ${
-                  navTransparent 
-                    ? 'text-white border border-white/20 hover:bg-white/10' 
-                    : 'text-primary-600 border border-primary-100 hover:bg-primary-50'
-                }`}
+                className={`hidden sm:flex px-3 py-1.5 rounded-xl text-[11px] font-black tracking-widest transition-all ${navTransparent
+                  ? 'text-white border border-white/20 hover:bg-white/10'
+                  : 'text-primary-600 border border-primary-100 hover:bg-primary-50'
+                  }`}
               >
                 {i18n.language === 'hi' ? 'EN' : 'हिन्दी'}
               </button>
@@ -210,7 +207,7 @@ export default function Navbar() {
 
                     <AnimatePresence>
                       {notifOpen && (
-                        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-0 top-16 w-80 md:w-96 bg-white rounded-[2rem] shadow-premium border border-pink-50 overflow-hidden z-50">
+                        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.15 }} className="absolute right-[-60px] md:right-0 top-16 w-[90vw] md:w-96 max-w-sm bg-white rounded-[2rem] shadow-premium border border-pink-50 overflow-hidden z-50">
                           <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
                           <div className="flex items-center justify-between px-6 py-5 border-b border-pink-50 bg-[#FFF8F0]/50 relative z-10">
                             <h3 className="font-display font-black text-lg text-gray-900">Notifications</h3>
@@ -224,8 +221,8 @@ export default function Navbar() {
                               </div>
                             ) : (
                               notifications.slice(0, 8).map((n) => (
-                                <div 
-                                  key={n._id} 
+                                <div
+                                  key={n._id}
                                   onClick={() => {
                                     if (!n.isRead) {
                                       dispatch(markSingleRead(n._id))
@@ -243,7 +240,7 @@ export default function Navbar() {
                                     <div className="flex items-center justify-between gap-2">
                                       <p className="text-xs font-black text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">{n.title}</p>
                                       {!n.isRead && (
-                                        <button 
+                                        <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             dispatch(markSingleRead(n._id));
@@ -266,7 +263,7 @@ export default function Navbar() {
                   </div>
 
                   {/* User Menu */}
-                  <div className="relative" ref={userMenuRef}>
+                  <div className="relative hidden sm:block" ref={userMenuRef}>
                     <button onClick={() => { setUserMenuOpen(!userMenuOpen); setNotifOpen(false) }} className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl transition-all border shadow-sm ${navTransparent ? 'border-white/20 bg-white/10 text-white hover:bg-white/20' : 'border-gray-100 bg-white hover:bg-pink-50'}`}>
                       {user?.avatar?.url ? (
                         <img src={user.avatar.url} alt={user.name} className="w-8 h-8 rounded-lg object-cover border border-gray-100" />
@@ -330,7 +327,7 @@ export default function Navbar() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-md z-[60]" />
             <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl rounded-l-[2.5rem] z-[70] shadow-[0_0_60px_rgba(194,24,91,0.15)] overflow-hidden flex flex-col border-l border-white/50">
               <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
-              
+
               <div className="p-6 flex items-center justify-between border-b border-pink-50 relative z-10">
                 <div className="flex flex-col">
                   <span className="font-display font-black text-xl text-gray-900 leading-none">ShaadiSaathi</span>
@@ -348,9 +345,9 @@ export default function Navbar() {
                     {link.label}
                   </Link>
                 ))}
-                
+
                 {!isAuthenticated && (
-                   <Link to="/register/vendor" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold bg-gold-50 text-gold-700 border border-gold-200">
+                  <Link to="/register/vendor" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold bg-gold-50 text-gold-700 border border-gold-200">
                     <span className="text-xl">🏪</span>
                     Apna Business Jodein
                   </Link>

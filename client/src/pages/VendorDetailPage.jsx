@@ -7,7 +7,7 @@ import { startChat } from '../store/slices/chatSlice'
 import StarRating from '../components/common/StarRating'
 import Badge from '../components/common/Badge'
 import BookingModal from '../components/vendor/BookingModal'
-import { formatPrice, formatDate, getInitials } from '../utils/helpers'
+import { formatPrice, formatDate, getInitials, getWhatsAppLink } from '../utils/helpers'
 import api from '../utils/api'
 import toast from 'react-hot-toast'
 import {
@@ -502,8 +502,13 @@ export default function VendorDetailPage() {
                           </div>
                         </a>
                       )}
-                      {vendor.phone && (
-                        <a href={`https://wa.me/91${vendor.phone}?text=Hi%20${vendor.businessName},%20I%20found%20you%20on%20ShaadiSaathi!`} target="_blank" rel="noreferrer" className="flex items-center gap-5 group w-full bg-white/5 hover:bg-white/10 p-4 rounded-2xl transition-all border border-transparent hover:border-white/20">
+                      {vendor.phone && getWhatsAppLink(vendor.phone) ? (
+                        <button onClick={(e) => {
+                          e.preventDefault()
+                          const waLink = getWhatsAppLink(vendor.phone, `Hi ${vendor.businessName}, I found you on ShaadiSaathi and would like to book your service.`)
+                          console.log('🔗 Opening WhatsApp for vendor:', vendor.businessName, waLink)
+                          window.open(waLink, '_blank')
+                        }} className="flex items-center gap-5 group w-full bg-white/5 hover:bg-white/10 p-4 rounded-2xl transition-all border border-transparent hover:border-white/20 text-left">
                           <div className="w-12 h-12 rounded-xl bg-green-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                             <FiMessageCircle size={20} />
                           </div>
@@ -511,7 +516,17 @@ export default function VendorDetailPage() {
                             <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">WhatsApp</p>
                             <p className="font-bold text-white text-base">Chat with us</p>
                           </div>
-                        </a>
+                        </button>
+                      ) : (
+                        <div title="WhatsApp number not available" className="flex items-center gap-5 group w-full bg-white/5 p-4 rounded-2xl transition-all border border-transparent opacity-50 cursor-not-allowed">
+                          <div className="w-12 h-12 rounded-xl bg-gray-600 text-white flex items-center justify-center shadow-lg">
+                            <FiMessageCircle size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-black mb-1">WhatsApp</p>
+                            <p className="font-bold text-white text-base">Not Available</p>
+                          </div>
+                        </div>
                       )}
                       {vendor.email && (
                         <a href={`mailto:${vendor.email}`} className="flex items-center gap-5 group w-full bg-white/5 hover:bg-white/10 p-4 rounded-2xl transition-all border border-transparent hover:border-white/20">

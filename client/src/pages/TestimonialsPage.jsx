@@ -122,7 +122,7 @@ export default function TestimonialsPage() {
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-5 py-2 rounded-full border border-white/20 mb-8 shadow-xl">
              <FiHeart className="text-[#D4AF37] fill-[#D4AF37]" size={16} />
-             <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-widest">Trusted by 10,000+ Couples</span>
+             <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-widest">Trusted by 10+ Couples</span>
           </motion.div>
           
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tighter drop-shadow-2xl">
@@ -296,7 +296,7 @@ export default function TestimonialsPage() {
           <div className="flex items-center gap-4 text-white">
             <FiHeart size={40} className="text-[#C2185B] fill-[#C2185B]" />
             <div className="text-left">
-              <h4 className="font-display font-black text-2xl">10,000+ Happy Couples</h4>
+              <h4 className="font-display font-black text-2xl">10+ Happy Couples</h4>
               <p className="text-white/60 text-sm font-medium italic">Trusted by families across India</p>
             </div>
           </div>

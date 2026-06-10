@@ -65,7 +65,7 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {[
             { icon: <FiPhone />, title: 'Phone Support', value: '+91 7903 075 243', desc: 'Mon-Sat: 9 AM to 7 PM', href: 'tel:+917903075243' },
-            { icon: <FiMail />, title: 'Email Support', value: 'support@shaadisaathi.com', desc: 'Usually replies within minutes', href: 'mailto:support@shaadisaathi.com' },
+            { icon: <FiMail />, title: 'Email Support', value: 'n4narendrakr@gmail.com', desc: 'Usually replies within minutes', href: 'mailto:n4narendrakr@gmail.com' },
             { icon: <FiMapPin />, title: 'Office Location', value: 'Darbhanga, Bihar', desc: 'Lalbagh, Bihar - 846004', href: 'https://maps.google.com/?q=Lalbagh+Palace+Rd,+Lalbagh,+Darbhanga,+Bihar+846004' },
             { icon: <FiMessageCircle />, title: 'WhatsApp Support', value: 'Chat with Us', desc: 'Instant support via WhatsApp', href: 'https://wa.me/917903075243', color: 'text-green-500' }
           ].map(({ icon, title, value, desc, href, color }, i) => (

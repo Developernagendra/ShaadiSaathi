@@ -54,6 +54,18 @@ const errorHandler = (err, req, res, next) => {
     message = 'File size too large. Maximum allowed is 10MB.';
   }
 
+  // Malformed JSON body
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    statusCode = 400;
+    message = 'Invalid JSON in request body. Please check your request format.';
+  }
+
+  // Payload too large
+  if (err.type === 'entity.too.large') {
+    statusCode = 413;
+    message = 'Request payload is too large. Maximum allowed is 50MB.';
+  }
+
   // Cloudinary Errors
   if (err.message && err.message.includes('cloud_name is disabled')) {
     statusCode = 403;

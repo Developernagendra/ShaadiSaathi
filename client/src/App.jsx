@@ -17,6 +17,7 @@ import FloatingWhatsApp from './components/common/FloatingWhatsApp'
 import SocketListener from './components/common/SocketListener'
 import AuthSoundListener from './components/common/AuthSoundListener'
 import ErrorBoundary from './components/common/ErrorBoundary'
+import WhatsAppRedirectHandler from './components/common/WhatsAppRedirectHandler'
 import { NotificationSoundProvider } from './context/NotificationSoundContext'
 
 const BaraatCabsPage = lazy(() => import('./pages/BaraatCabsPage'))
@@ -137,6 +138,15 @@ export default function App() {
     document.documentElement.dir = i18n.dir(i18n.language) || 'ltr'
   }, [i18n, i18n.language])
 
+  // Listen for unauthorized events from api.js to dispatch logout cleanly
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      dispatch({ type: 'auth/logout' });
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [dispatch]);
+
   // Cross-Tab State Sync (Point 15)
   useEffect(() => {
     const handleStorageChange = (e) => {
@@ -185,6 +195,7 @@ export default function App() {
           <ScrollToTop />
           <SocketListener />
           <AuthSoundListener />
+          <WhatsAppRedirectHandler />
           <div className="min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-1">
@@ -311,9 +322,9 @@ export default function App() {
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/users" element={<AdminUsersPage />} />
                   <Route path="/admin/vendors" element={<AdminVendorsPage />} />
-                  <Route path="/admin/approvals" element={<AdminVendorsPage defaultTab="pending" title="Review Approvals" />} />
+                  <Route path="/admin/vendor-approvals" element={<AdminVendorsPage defaultTab="pending" title="Review Approvals" />} />
                   <Route path="/admin/subscriptions" element={<AdminSubscriptionsPage />} />
-                  <Route path="/admin/services-approval" element={<AdminServicesApprovalPage />} />
+                  <Route path="/admin/service-moderation" element={<AdminServicesApprovalPage />} />
                   <Route path="/admin/services/pending/:id" element={<ServiceApprovalDetails />} />
                   <Route path="/admin/categories" element={<AdminCategoriesPage />} />
                   <Route path="/admin/bookings" element={<AdminBookingsPage />} />

@@ -79,6 +79,7 @@ const vendorSchema = new mongoose.Schema({
   serviceAreas: [String], // Cities they serve
   phone: { type: String, required: function () { return this.profileCompletion > 0; } },
   alternatePhone: String,
+  whatsappNumber: String,
   email: { type: String, required: function () { return this.profileCompletion > 0; } },
   socialLinks: socialLinksSchema,
   yearsOfExperience: { type: Number, min: 0 },

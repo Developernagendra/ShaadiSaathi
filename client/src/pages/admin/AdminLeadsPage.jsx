@@ -50,14 +50,21 @@ export default function AdminLeadsPage() {
             Array(6).fill(0).map((_, i) => <div key={i} className="h-48 shimmer rounded-3xl" />)
           ) : filtered.map(lead => (
             <div key={lead._id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow relative overflow-hidden group">
-              <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest ${
-                lead.status === 'open' ? 'bg-green-100 text-green-700' : 
-                lead.status === 'closed' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700'
-              }`}>
-                {lead.status}
+              <div className="absolute top-0 right-0 flex">
+                {lead.leadType === 'whatsapp' && (
+                  <div className="px-4 py-1.5 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest border-l border-b border-green-100">
+                    WhatsApp
+                  </div>
+                )}
+                <div className={`px-4 py-1.5 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest ${
+                  lead.status === 'open' ? 'bg-amber-100 text-amber-700' : 
+                  lead.status === 'closed' ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {lead.status}
+                </div>
               </div>
               
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-4 mb-6 mt-2">
                 <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 text-xl font-bold">
                   {lead.user?.name?.charAt(0)}
                 </div>

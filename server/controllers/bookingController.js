@@ -18,6 +18,16 @@ exports.createBooking = catchAsync(async (req, res, next) => {
     selectedSlot, selectedSlotId
   } = req.body;
 
+  // Validation: Event Date must be in the future
+  if (eventDate) {
+    const eventDateObj = new Date(eventDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (eventDateObj < today) {
+      return next(new AppError('Event date cannot be in the past.', 400));
+    }
+  }
+
   let derivedVendorId = vendorId;
   if (serviceId) {
     const { Service } = require('../models/index');
@@ -39,6 +49,21 @@ exports.createBooking = catchAsync(async (req, res, next) => {
   const vendor = await Vendor.findById(derivedVendorId);
   if (!vendor || vendor.approvalStatus !== 'approved') {
     return next(new AppError('Vendor not found or not available.', 404));
+  }
+
+  // Duplicate Booking Prevention: same user, same vendor, same date, pending/confirmed status
+  const existingBooking = await Booking.findOne({
+    userId: req.user._id,
+    vendorId: vendor.user,
+    eventDate: {
+      $gte: new Date(new Date(eventDate).setHours(0, 0, 0, 0)),
+      $lte: new Date(new Date(eventDate).setHours(23, 59, 59, 999))
+    },
+    status: { $in: ['pending', 'confirmed'] }
+  });
+
+  if (existingBooking) {
+    return next(new AppError('You already have an active booking request with this vendor for the selected date.', 400));
   }
 
   // DEBUG LOG AS REQUESTED
@@ -353,6 +378,16 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
   const guests = Number(guestCount || req.body.guestCount) || 1;
   const dropLoc = dropLocation || req.body.dropLocation || 'Same as Pickup / Local Event';
   const pkgType = packageType || req.body.packageType || 'custom_fleet';
+
+  // Validation: Event Date must be in the future
+  if (eventDate) {
+    const eventDateObj = new Date(eventDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (eventDateObj < today) {
+      return next(new AppError('Event date cannot be in the past.', 400));
+    }
+  }
 
   if (!city) return next(new AppError('Please provide all required fields in bundle booking cab (Missing city/region)', 400));
   if (!pickupLocation) return next(new AppError('Please provide all required fields in bundle booking cab (Missing pickup location address)', 400));

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 export default function FloatingWhatsApp() {
   // Replace with actual business WhatsApp number
-  const phoneNumber = '7903075243'
+  const phoneNumber = '917903075243'
   const message = 'Hi ShaadiSaathi! I need help planning my wedding.'
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
 

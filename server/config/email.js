@@ -49,7 +49,7 @@ const createTransporter = () => {
     port,
     secure,
     auth: { user, pass },
-    tls: { rejectUnauthorized: false },
+    tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
     pool: true,          // Reuse connections
     maxConnections: 5,
     maxMessages: 100,
@@ -173,7 +173,7 @@ const emailTemplates = {
           <p style="color:#999;font-size:13px;text-align:center;margin:0">This link expires in 24 hours. If you didn't create an account, please ignore this email.</p>
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-          <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi. Made with ❤️ for Indian weddings.</p>
+          <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi. Made with ❤️ for Indian weddings.</p>
         </div>
       </div>`,
   }),
@@ -195,7 +195,7 @@ const emailTemplates = {
           <p style="color:#999;font-size:13px;text-align:center">This link expires in 10 minutes. If you didn't request this, please ignore this email.</p>
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-          <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi</p>
+          <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi</p>
         </div>
       </div>`,
   }),
@@ -225,7 +225,7 @@ const emailTemplates = {
           </div>
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-          <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi. All rights reserved.</p>
+          <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi. All rights reserved.</p>
         </div>
       </div>`,
   }),
@@ -254,7 +254,7 @@ const emailTemplates = {
           </div>
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-          <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi • Vendor Partner Network</p>
+          <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi • Vendor Partner Network</p>
         </div>
       </div>`,
   }),
@@ -286,7 +286,7 @@ const emailTemplates = {
           </div>
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-          <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi • Auto-generated admin alert</p>
+          <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi • Auto-generated admin alert</p>
         </div>
       </div>`,
   }),
@@ -326,7 +326,7 @@ const emailTemplates = {
             </div>
           </div>
           <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-            <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi. All rights reserved.</p>
+            <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi. All rights reserved.</p>
           </div>
         </div>`,
     };
@@ -355,12 +355,12 @@ const emailTemplates = {
         : `<p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 16px">We regret to inform you that your vendor application requires additional review. Please contact our support team for more information.</p>
                <p style="color:#555;font-size:16px;line-height:1.7;margin:0 0 32px">You may reapply after resolving any outstanding issues.</p>
                <div style="text-align:center">
-                 <a href="mailto:support@shaadisaathi.com" style="display:inline-block;background:#555;color:white;padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:14px">Contact Support</a>
+                 <a href="mailto:n4narendrakr@gmail.com" style="display:inline-block;background:#555;color:white;padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:14px">Contact Support</a>
                </div>`
       }
         </div>
         <div style="background:#fafafa;padding:24px 40px;text-align:center;border-top:1px solid #f0f0f0">
-          <p style="color:#bbb;font-size:12px;margin:0">© 2024 ShaadiSaathi</p>
+          <p style="color:#bbb;font-size:12px;margin:0">© ${new Date().getFullYear()} ShaadiSaathi</p>
         </div>
       </div>`,
   }),

@@ -28,8 +28,6 @@ export default function CabBookingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [createdBookingId, setCreatedBookingId] = useState(null)
-  const [showVerifyModal, setShowVerifyModal] = useState(false)
-  const [resending, setResending] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
 
   // Fleet Builder State
@@ -37,36 +35,6 @@ export default function CabBookingPage() {
   const isFleetBuilder = stateData.bookingType === 'baraat-fleet'
   const fleetSelection = stateData.fleetSelection || []
 
-  // Polling to automatically detect verification
-  useEffect(() => {
-    let interval;
-    if (user && !user.isVerified) {
-      interval = setInterval(() => {
-        dispatch(getMe())
-      }, 3000)
-    }
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [dispatch, user?.isVerified])
-
-  useEffect(() => {
-    if (user?.isVerified) {
-      setShowVerifyModal(false)
-    }
-  }, [user?.isVerified])
-
-  const handleResendEmail = async () => {
-    setResending(true)
-    try {
-      await dispatch(resendVerification({ email: user.email })).unwrap()
-      toast.success('Verification email sent.', { id: 'verify-success' })
-    } catch (err) {
-      toast.error(err || 'Failed to send verification email.')
-    } finally {
-      setResending(false)
-    }
-  }
 
   const [form, setForm] = useState({
     city: stateData.city || searchParams.get('city') || '',
@@ -134,11 +102,6 @@ export default function CabBookingPage() {
       return
     }
 
-    if (!user.isVerified) {
-      toast.error('Please verify your email to book services', { id: 'verify-booking-toast' })
-      setShowVerifyModal(true)
-      return
-    }
 
     // Validation
     if (!form.city?.trim()) { toast.error('Please enter the city'); return; }
@@ -592,43 +555,7 @@ export default function CabBookingPage() {
         </form>
       </div>
 
-      {/* Verify Email Modal */}
-      <AnimatePresence>
-        {showVerifyModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl relative border border-gray-100"
-            >
-              <div className="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-                ✉️
-              </div>
-              <h3 className="font-display text-2xl font-black text-center text-gray-900 mb-3 tracking-tight">Email Verification</h3>
-              <p className="text-gray-500 font-medium text-center text-sm mb-8 leading-relaxed">
-                You need to verify your email address before booking any premium services. Please check your inbox.
-              </p>
-              
-              <div className="space-y-4">
-                <button
-                  onClick={handleResendEmail}
-                  disabled={resending}
-                  className="w-full py-4 bg-gray-900 text-white rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-black disabled:opacity-50 transition-colors shadow-lg"
-                >
-                  {resending ? 'Sending...' : 'Resend Verification'}
-                </button>
-                <button
-                  onClick={() => setShowVerifyModal(false)}
-                  className="w-full py-4 bg-gray-50 border border-gray-200 text-gray-600 rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
 
     </div>
   )

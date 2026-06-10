@@ -41,7 +41,6 @@ export default function CustomBundleBuilderPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [showVerifyModal, setShowVerifyModal] = useState(false)
 
   // Fetch unique cities from fleet on mount
   const [availableCities, setAvailableCities] = useState([])
@@ -75,23 +74,7 @@ export default function CustomBundleBuilderPage() {
     window.scrollTo(0, 0)
   }, [])
 
-  // Auto-verify polling
-  useEffect(() => {
-    let interval;
-    if (user && !user.isVerified && showVerifyModal) {
-      interval = setInterval(() => {
-        dispatch(getMe())
-      }, 3000)
-    }
-    return () => { if (interval) clearInterval(interval) }
-  }, [dispatch, user, showVerifyModal])
 
-  useEffect(() => {
-    if (user?.isVerified && showVerifyModal) {
-      setShowVerifyModal(false)
-      handleCheckout()
-    }
-  }, [user?.isVerified])
 
   const filteredVendors = useMemo(() => {
     if (!selectedCity) return vendors
@@ -176,10 +159,7 @@ export default function CustomBundleBuilderPage() {
       return
     }
 
-    if (!user.isVerified) {
-      setShowVerifyModal(true)
-      return
-    }
+
 
     // Validation
     if (!form.pickupLocation) return toast.error('Pickup location is required')
@@ -552,21 +532,7 @@ export default function CustomBundleBuilderPage() {
         </div>
       </div>
       
-      {/* Verify Modal */}
-      <AnimatePresence>
-        {showVerifyModal && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md" onClick={() => setShowVerifyModal(false)} />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-[3rem] p-10 max-w-md w-full relative z-10 text-center">
-              <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 mx-auto mb-6 text-3xl">📧</div>
-              <h3 className="font-display text-2xl font-black mb-3">Verify Identity</h3>
-              <p className="text-gray-500 font-medium mb-8 text-sm">Please verify your email address to submit this high-value fleet reservation.</p>
-              <button onClick={() => dispatch(resendVerification({ email: user?.email }))} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest mb-3">Send Verification Link</button>
-              <button onClick={() => setShowVerifyModal(false)} className="w-full text-gray-500 font-bold text-xs">Cancel</button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
     </div>
   )
 }

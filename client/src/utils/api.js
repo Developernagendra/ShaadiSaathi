@@ -99,10 +99,8 @@ API.interceptors.response.use(
       if (error.response.status === 401) {
          localStorage.removeItem("token");
          localStorage.removeItem("user");
-         // Dispatch logout to clear Redux state
-         import('../store/store').then(({ default: store }) => {
-            store.dispatch({ type: 'auth/logout' });
-         });
+         // Dispatch a synchronous window event to clear Redux state in App.jsx
+         window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
 
       // --------------------------------
