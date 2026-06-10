@@ -238,7 +238,6 @@ bookingSchema.index({ service: 1 });
 bookingSchema.index({ cab: 1 });
 bookingSchema.index({ bookingType: 1 });
 bookingSchema.index({ eventCity: 1 });
-bookingSchema.index({ bookingId: 1 });
 
 // Pre-save: sync redundant userId/user and vendorId/vendor fields
 bookingSchema.pre('save', function (next) {
