@@ -319,20 +319,19 @@ export default function BaraatCabsPage() {
 
           {/* VEHICLE LIST & FILTERS */}
           <div className="flex-1 space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
               <div>
-                <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2"><span className="w-6 h-[2px] bg-[#D4AF37]" /> Step 2: Choose Vehicles</p>
-                <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight">Premium Fleet</h2>
+                <h2 className="font-serif text-4xl md:text-[42px] font-bold text-gray-900 tracking-tight">Premium Fleet</h2>
               </div>
-              <div className="flex gap-3 w-full sm:w-auto">
+              <div className="flex gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`px-6 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg transition-all border ${showFilters ? 'bg-[#D4AF37] text-white border-[#D4AF37]' : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'}`}
+                  className={`px-6 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all border ${showFilters ? 'bg-gray-100 text-gray-900 border-gray-200' : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'} shadow-sm`}
                 >
-                  <FiFilter size={16} /> Filters {showFilters ? 'Active' : ''}
+                  <FiFilter size={14} /> Filters
                 </button>
-                <button onClick={handleSmartRecommend} className="px-6 py-4 bg-gradient-to-r from-gray-900 to-black text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest hover:shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:-translate-y-1 transition-all flex items-center gap-2 shadow-lg ml-auto">
-                  <FiStar className="text-[#D4AF37]" size={16} /> Auto-Build Fleet
+                <button onClick={handleSmartRecommend} className="px-6 py-3.5 bg-[#1A1C23] text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/10">
+                  <FiStar className="text-[#D4AF37]" size={14} /> Auto-Build Fleet
                 </button>
               </div>
             </div>
@@ -490,7 +489,7 @@ export default function BaraatCabsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-8">
+              <div className="flex flex-col gap-6">
                 {filteredItems.map(cab => {
                   const selectedItem = fleetSelection.find(i => i.cabId === cab._id)
                   const count = selectedItem ? selectedItem.count : 0
@@ -508,128 +507,115 @@ export default function BaraatCabsPage() {
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      className={`bg-white rounded-[2.5rem] overflow-hidden transition-all duration-500 flex flex-col md:flex-row group ${isSelected
-                          ? 'border-2 border-[#D4AF37] shadow-[0_20px_50px_rgba(212,175,55,0.15)] scale-[1.01]'
-                          : 'border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-xl hover:border-gray-200'
-                        }`}
+                      className={`bg-white rounded-[2rem] overflow-hidden flex flex-col md:flex-row shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-gray-100 transition-all ${isSelected ? 'ring-2 ring-[#D4AF37] scale-[1.01]' : 'hover:shadow-xl'}`}
                     >
-                      {/* Image Section */}
-                      <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-auto bg-gray-100 relative overflow-hidden">
+                      {/* Left: Image Section */}
+                      <div className="w-full md:w-[35%] lg:w-[40%] xl:w-[320px] h-64 md:h-auto relative overflow-hidden shrink-0">
                         <LazyLoadImage
                           src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'}
                           alt={cab.name}
                           effect="blur"
                           wrapperProps={{ style: { display: "block", width: "100%", height: "100%" } }}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
 
-                        {/* Badges */}
-                        <div className="absolute top-4 left-4 flex flex-col gap-2">
-                          <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm text-white border border-white/20">
+                        {/* Top Left Badge */}
+                        <div className="absolute top-4 left-4">
+                          <div className="bg-gray-900/80 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white">
                             {cab.type?.replace('_', ' ')}
                           </div>
-                          {cab.isAdminVehicle && (
-                            <div className="bg-[#D4AF37] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm text-white flex items-center gap-2">
-                              <FaCrown size={12} /> Premium
-                            </div>
-                          )}
-                          {isVerifiedVendor && (
-                            <div className="bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm text-white flex items-center gap-1.5 border border-emerald-500/20">
-                              <FiCheckCircle size={12} /> Verified Vendor
-                            </div>
-                          )}
                         </div>
 
-                        {/* Vendor Mini Profile */}
-                        <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shrink-0">
-                            <img src={`https://ui-avatars.com/api/?name=${cab.vendor?.businessName || cab.vendorName || 'Vendor'}&background=FFF8F0&color=D4AF37`} alt="Vendor" className="w-full h-full object-cover" />
+                        {/* Bottom Overlay: Vendor & Rating */}
+                        <div className="absolute bottom-4 left-4 right-4 bg-[#4A4A3A]/80 backdrop-blur-md p-3 rounded-2xl flex items-center justify-between border border-white/10 shadow-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-[#4A4A3A] text-sm overflow-hidden shrink-0">
+                              {cab.vendor?.businessName?.substring(0, 2).toUpperCase() || 'CB'}
+                            </div>
+                            <div>
+                              <p className="text-[8px] font-black uppercase tracking-widest text-white/70 leading-none mb-1">Provided by</p>
+                              <p className="font-bold text-xs text-white leading-none truncate max-w-[100px]">
+                                {cab.vendor?.businessName || cab.vendorName || 'cab booking'}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-white">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-0.5">Provided by</p>
-                            <p className="font-bold text-sm leading-none flex items-center gap-1.5">
-                              {cab.vendor?.businessName || cab.vendorName || 'Verified Partner'}
-                              {isVerifiedVendor && <FiCheckCircle className="text-emerald-400" size={12} />}
-                            </p>
-                          </div>
-                          <div className="ml-auto bg-white/20 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                            ⭐ {rating.toFixed(1)}
+                          <div className="bg-white/20 px-2 py-1 rounded-lg flex items-center gap-1">
+                            ⭐ <span className="text-white text-[10px] font-bold">{rating.toFixed(1)}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Details Section */}
-                      <div className="p-8 md:p-10 flex-1 flex flex-col relative">
-                        {isSelected && <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-bl-[4rem] pointer-events-none" />}
-
-                        <div className="flex justify-between items-start mb-4 relative z-10">
-                          <div>
-                            <h3 className="font-display font-black text-3xl text-gray-900 leading-tight mb-2 group-hover:text-[#D4AF37] transition-colors">
-                              {cab.name || cab.vehicleName || `${cab.brand} ${cab.model}`}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-4 text-gray-500 font-semibold text-sm mt-1">
-                              <span className="flex items-center gap-1.5"><FiUsers className="text-[#D4AF37]" size={16} /> Up to {cab.seatingCapacity} Guests</span>
-                              <span className="flex items-center gap-1.5"><FiMapPin className="text-[#D4AF37]" size={16} /> Base City: {cityLabel}</span>
-                            </div>
+                      {/* Right: Content Section */}
+                      <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
+                        <div className="mb-4">
+                          <h3 className="font-serif font-bold text-4xl text-[#D4AF37] mb-3">
+                            {cab.name || cab.vehicleName || `${cab.brand} ${cab.model}`}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-4 text-gray-500 font-bold text-sm">
+                            <span className="flex items-center gap-1.5"><FiUsers className="text-[#D4AF37]" size={16} /> Up to {cab.seatingCapacity} Guests</span>
+                            <span className="flex items-center gap-1.5"><FiMapPin className="text-[#D4AF37]" size={16} /> Base City: {cityLabel}</span>
                           </div>
                         </div>
 
-                        {/* Availability Status Badges */}
-                        <div className="mb-6 flex flex-wrap gap-2">
-                          {available === 0 ? (
-                            <span className="bg-rose-50 text-rose-700 border border-rose-200/50 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2">
-                              🔴 Fully Booked
+                        {/* Badges */}
+                        <div className="flex flex-col gap-3 mb-6">
+                          <div>
+                            {available === 0 ? (
+                              <span className="inline-flex items-center gap-2 border border-rose-200 text-rose-700 bg-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                🔴 FULLY BOOKED
+                              </span>
+                            ) : available <= 3 ? (
+                              <span className="inline-flex items-center gap-2 border border-amber-200 text-amber-600 bg-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                🟡 LIMITED AVAILABILITY
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-2 border border-emerald-200 text-emerald-600 bg-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                🟢 AVAILABLE
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <span className="inline-flex bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-[10px] font-black">
+                              Total: {total} vehicles | Left: {available} available
                             </span>
-                          ) : available <= 3 ? (
-                            <span className="bg-amber-50 text-amber-700 border border-amber-200/50 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2">
-                              🟡 Limited Availability
-                            </span>
-                          ) : (
-                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/50 px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2">
-                              🟢 Available
-                            </span>
-                          )}
-                          <span className="bg-gray-50 text-gray-600 border border-gray-200/50 px-3 py-1.5 rounded-xl text-xs font-bold">
-                            Total: {total} vehicles | Left: {available} available
-                          </span>
+                          </div>
                         </div>
 
                         <div className="space-y-3 mb-8">
-                          <div className="flex items-center gap-3 text-sm text-gray-600"><FiShield className="text-emerald-500" /> Fully Insured & Sanitized</div>
-                          <div className="flex items-center gap-3 text-sm text-gray-600"><FiThumbsUp className="text-blue-500" /> Highly rated professional chauffeur</div>
+                          <div className="flex items-center gap-3 text-sm text-gray-500 font-medium"><FiShield className="text-emerald-500" /> Fully Insured & Sanitized</div>
+                          <div className="flex items-center gap-3 text-sm text-gray-500 font-medium"><FiThumbsUp className="text-blue-500" /> Highly rated professional chauffeur</div>
                         </div>
 
-                        <div className="mt-auto flex items-end justify-between border-t border-gray-100 pt-6 relative z-10">
+                        <div className="border-t border-gray-100 pt-6 mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
                           <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Price Per Vehicle</p>
-                            <p className="font-display font-black text-4xl text-gray-900 tracking-tighter">
+                            <p className="font-serif font-black text-4xl text-gray-900 tracking-tighter">
                               {formatPrice(cab.price || cab.pricing?.baseFare || 0)}
                             </p>
                           </div>
 
-                          {/* Action & Quantity Controls */}
-                          <div className="flex flex-col items-end">
-                            {available > 0 && <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 text-right">Step 3: Quantity</p>}
+                          <div className="flex flex-col items-end w-full sm:w-auto">
+                            {available > 0 && <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Step 3: Quantity</p>}
                             {available <= 0 ? (
-                              <div className="bg-rose-50 text-rose-700 border border-rose-200 px-6 py-4 rounded-xl text-xs font-black uppercase tracking-wider text-center select-none">
-                                Booking Disabled
+                              <div className="bg-gray-100 text-gray-400 border border-gray-200 px-6 py-4 rounded-full text-xs font-black uppercase tracking-wider text-center select-none w-full">
+                                Sold Out
                               </div>
                             ) : count === 0 ? (
                               <button
                                 onClick={() => handleUpdateCart(cab, 'add')}
-                                className="h-14 px-8 rounded-full flex items-center justify-center transition-all shadow-xl font-black uppercase tracking-widest text-xs gap-2 bg-gray-900 text-white hover:bg-black hover:-translate-y-1"
+                                className="h-14 px-8 rounded-full flex items-center justify-center transition-all shadow-lg font-black uppercase tracking-widest text-xs gap-2 bg-[#1A1C23] text-white hover:bg-black hover:-translate-y-0.5 w-full sm:w-auto"
                               >
                                 Book Now <FiPlus size={16} />
                               </button>
                             ) : (
-                              <div className="flex items-center bg-gray-900 rounded-full p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-                                <button onClick={() => handleUpdateCart(cab, 'remove')} className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-gray-700 transition-colors">
-                                  <FiMinus size={18} />
+                              <div className="flex items-center bg-[#1A1C23] rounded-full p-1.5 shadow-lg w-full sm:w-auto justify-between sm:justify-start">
+                                <button onClick={() => handleUpdateCart(cab, 'remove')} className="w-11 h-11 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                                  <FiMinus size={16} />
                                 </button>
-                                <span className="w-12 text-center font-display font-black text-white text-2xl">{count}</span>
-                                <button onClick={() => handleUpdateCart(cab, 'add')} className="w-12 h-12 bg-[#D4AF37] rounded-full flex items-center justify-center text-gray-900 hover:bg-[#F4D03F] transition-colors shadow-inner">
-                                  <FiPlus size={18} />
+                                <span className="w-12 text-center font-bold text-white text-lg">{count}</span>
+                                <button onClick={() => handleUpdateCart(cab, 'add')} disabled={count >= available} className="w-11 h-11 bg-[#D4AF37] rounded-full flex items-center justify-center text-white hover:bg-[#B38D22] transition-colors shadow-inner disabled:opacity-50">
+                                  <FiPlus size={16} />
                                 </button>
                               </div>
                             )}
@@ -650,36 +636,30 @@ export default function BaraatCabsPage() {
 
               <div className="mb-8 relative z-10">
                 <p className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest mb-2 flex items-center gap-2"><span className="w-6 h-[2px] bg-[#D4AF37]" /> Step 4</p>
-                <h3 className="font-display text-3xl font-black text-gray-900 tracking-tight">Fleet Summary</h3>
+                <h3 className="font-serif text-4xl font-bold text-gray-900 tracking-tight">Fleet Summary</h3>
               </div>
 
               {/* Capacity Progress */}
-              <div className="mb-8 bg-[#FFF8F0] p-6 rounded-[2rem] border border-[#D4AF37]/20 relative z-10">
-                <div className="flex justify-between items-end mb-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">Guest Capacity</p>
-                  <p className="font-black text-xl text-gray-900">{fleetStats.totalCapacity} <span className="text-gray-400 text-sm font-medium">/ {guestTarget || '?'}</span></p>
+              <div className="mb-8 bg-[#FFF9F2] p-6 rounded-[2rem] border border-[#F4E6D2] relative z-10">
+                <div className="flex justify-between items-end mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#B38D22]">Guest Capacity</p>
+                  <p className="font-black text-2xl text-gray-900 leading-none">{fleetStats.totalCapacity} <span className="text-gray-400 text-base font-bold">/ {guestTarget || '?'}</span></p>
                 </div>
-                <div className="h-3 w-full bg-white rounded-full overflow-hidden shadow-inner border border-gray-100">
+                <div className="h-3 w-full bg-white rounded-full overflow-hidden border border-[#F4E6D2]">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${capacityProgress}%` }}
                     className={`h-full rounded-full transition-all duration-700 ${capacityProgress >= 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-[#D4AF37] to-[#F4D03F]'}`}
                   />
                 </div>
-                {guestTarget > 0 && capacityProgress < 100 && (
-                  <p className="text-[11px] text-gray-500 font-bold mt-4 flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm"><FiInfo className="text-amber-500" /> Select more vehicles for {guestTarget - fleetStats.totalCapacity} guests</p>
-                )}
-                {guestTarget > 0 && capacityProgress >= 100 && (
-                  <p className="text-[11px] text-emerald-700 font-bold mt-4 flex items-center gap-2 bg-emerald-50 px-3 py-2 rounded-xl shadow-sm"><FiCheckCircle className="text-emerald-500" /> Perfect! All guests are covered.</p>
-                )}
               </div>
 
               {/* Selected Vehicles List */}
               <div className="space-y-4 mb-8 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
                 {fleetSelection.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400 text-xs font-bold uppercase tracking-widest border-2 border-dashed border-gray-100 rounded-[2rem]">
-                    <FaTruck className="mx-auto text-3xl mb-3 text-gray-200" />
-                    Cart is Empty
+                  <div className="text-center py-16 text-gray-400 text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-200 rounded-[2rem] bg-gray-50/30">
+                    <FaTruck className="mx-auto text-2xl mb-3 text-gray-300" />
+                    CART IS EMPTY
                   </div>
                 ) : (
                   fleetSelection.map((item, idx) => (
@@ -700,14 +680,14 @@ export default function BaraatCabsPage() {
               </div>
 
               {/* Totals */}
-              <div className="border-t border-gray-100 pt-8 mb-8 space-y-4 relative z-10">
-                <div className="flex justify-between text-sm font-bold text-gray-500">
+              <div className="border-t border-gray-100 pt-8 mb-8 space-y-6 relative z-10">
+                <div className="flex justify-between text-[11px] font-black text-gray-500 uppercase tracking-widest">
                   <span>Vehicles Selected</span>
                   <span className="text-gray-900 bg-gray-100 px-3 py-1 rounded-lg">{fleetStats.totalVehicles}</span>
                 </div>
-                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                <div className="flex justify-between items-center pt-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Estimation</span>
-                  <span className="font-display font-black text-4xl text-gray-900">{formatPrice(fleetStats.totalFare)}</span>
+                  <span className="font-serif font-black text-4xl text-gray-900 tracking-tighter">{formatPrice(fleetStats.totalFare)}</span>
                 </div>
               </div>
 
@@ -715,10 +695,9 @@ export default function BaraatCabsPage() {
               <button
                 onClick={handleCheckout}
                 disabled={fleetSelection.length === 0}
-                className="w-full py-6 bg-gradient-to-r from-gray-900 to-black text-white rounded-[2rem] font-black uppercase tracking-widest text-[11px] shadow-[0_20px_40px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-3 relative overflow-hidden group"
+                className="w-full py-5 bg-[#8C9093] text-white rounded-full font-black uppercase tracking-widest text-[11px] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[gold-shine_2s_infinite]" />
-                <span className="relative z-10">Proceed to Booking</span> <FiArrowRight className="relative z-10" size={18} />
+                <span>PROCEED TO BOOKING</span> <FiArrowRight size={16} />
               </button>
 
               <div className="mt-6 flex items-center justify-center gap-2 text-gray-400 text-[10px] font-bold uppercase tracking-widest">

@@ -118,7 +118,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="overflow-hidden">
+    <div className="w-full overflow-hidden overflow-x-hidden">
       {/* ── 1. Hero Section ── */}
       <section className="relative h-[75vh] min-h-[500px] flex items-center justify-center">
         {HERO_IMAGES.map((src, i) => {
@@ -148,7 +148,7 @@ export default function HomePage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.3em] px-6 py-2.5 rounded-full mb-6 shadow-xl"
+            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.3em] px-4 sm:px-6 py-2.5 rounded-full mb-6 shadow-xl"
           >
             <span className="text-gold">✨</span>
             <span>Premium Wedding Marketplace</span>
@@ -176,7 +176,7 @@ export default function HomePage() {
                 className="w-full outline-none text-gray-800 placeholder-gray-400 font-medium text-base"
               />
             </div>
-            <div className="flex items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 min-w-[200px]">
+            <div className="flex items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 min-w-0 md:min-w-[200px]">
               <FiMapPin className="text-[#C2185B] flex-shrink-0" size={20} />
               <select
                 value={searchCity}
@@ -187,7 +187,7 @@ export default function HomePage() {
                 {INDIAN_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <button type="submit" className="btn-primary whitespace-nowrap !rounded-2xl py-4 px-10 text-sm shine-effect">
+            <button type="submit" className="btn-primary whitespace-nowrap !rounded-2xl py-4 px-10 text-sm shine-effect w-full md:w-auto">
               Find Vendors
             </button>
           </form>
@@ -202,7 +202,7 @@ export default function HomePage() {
               <button
                 key={item.slug}
                 onClick={() => navigate(`/services?category=${item.slug}`)}
-                className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-[#D4AF37] hover:text-white transition-all shadow-lg active:scale-95"
+                className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-4 sm:px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-[#D4AF37] hover:text-white transition-all shadow-lg active:scale-95"
               >
                 {item.label}
               </button>
@@ -261,11 +261,11 @@ export default function HomePage() {
           </div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-white/80 backdrop-blur-md rounded-[2rem] p-4 shadow-sm border border-pink-50 mb-8 flex flex-wrap gap-3 items-center">
-            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none flex-1 min-w-[140px]">
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1 sm:min-w-[140px]">
               <option value="">All Categories</option>
               {categories.map((cat) => <option key={cat._id} value={cat.slug}>{cat.name}</option>)}
             </select>
-            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none flex-1 min-w-[140px]">
+            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1 sm:min-w-[140px]">
               <option value="">All Cities</option>
               {INDIAN_CITIES.map((city) => <option key={city} value={city}>{city}</option>)}
             </select>
@@ -323,7 +323,7 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-6 grid grid-cols-2 gap-4 relative">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
             {/* Simple fleet mock display */}
             <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10 hover:bg-white/20 transition">
               <div className="text-4xl mb-2">🚗</div>

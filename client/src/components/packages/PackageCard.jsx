@@ -7,15 +7,15 @@ export default function PackageCard({ pkg, onOpenDetails, onOpenQuote }) {
   const isPremium = pkg.priority >= 3 || pkg.name?.toLowerCase().includes('premium');
 
   // Premium fallback images
-  const defaultImage = isPremium 
+  const defaultImage = isPremium
     ? "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800"
-    : isGold 
-    ? "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800"
-    : "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800";
+    : isGold
+      ? "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800"
+      : "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800";
 
   const coverImage = pkg.coverImage || pkg.image || defaultImage;
 
-  const displayPrice = pkg.finalPrice 
+  const displayPrice = pkg.finalPrice
     ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pkg.finalPrice)
     : pkg.price;
 
@@ -30,33 +30,32 @@ export default function PackageCard({ pkg, onOpenDetails, onOpenQuote }) {
       whileHover={{ y: -4, transition: { duration: 0.3 } }}
       viewport={{ once: true, margin: "-50px" }}
       className={`group relative flex flex-col transition-all duration-300 overflow-hidden rounded-[20px] w-full max-w-[340px] flex-shrink-0 mx-auto sm:mx-0
-        ${isGold ? 'bg-gradient-to-b from-[#FFFDF0] to-white border border-[#D4AF37]/30 shadow-[0_8px_20px_rgba(212,175,55,0.08)] hover:shadow-[0_15px_30px_rgba(212,175,55,0.15)] z-10' 
-        : isPremium ? 'bg-gradient-to-b from-gray-900 to-[#18181B] border border-gray-800 shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] text-white' 
-        : 'bg-white/90 backdrop-blur-xl border border-gray-100 shadow-sm hover:shadow-lg'}`}
+        ${isGold ? 'bg-gradient-to-b from-[#FFFDF0] to-white border border-[#D4AF37]/30 shadow-[0_8px_20px_rgba(212,175,55,0.08)] hover:shadow-[0_15px_30px_rgba(212,175,55,0.15)] z-10'
+          : isPremium ? 'bg-gradient-to-b from-gray-900 to-[#18181B] border border-gray-800 shadow-[0_8px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_15px_30px_rgba(0,0,0,0.3)] text-white'
+            : 'bg-white/90 backdrop-blur-xl border border-gray-100 shadow-sm hover:shadow-lg'}`}
     >
       {/* Compact Hero Image */}
       <div className="relative w-full h-[180px] overflow-hidden bg-gray-100">
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
-        <img 
-          src={coverImage} 
+        <img
+          src={coverImage}
           alt={pkg.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        
+
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-20">
           {pkg.badge ? (
-            <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shadow-md backdrop-blur-md border ${
-              isGold ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white border-[#D4AF37]/50' : 
-              isPremium ? 'bg-white/10 border-white/20 text-[#D4AF37]' : 
-              'bg-[#C2185B] text-white border-[#C2185B]/50'
-            }`}>
+            <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shadow-md backdrop-blur-md border ${isGold ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white border-[#D4AF37]/50' :
+                isPremium ? 'bg-white/10 border-white/20 text-[#D4AF37]' :
+                  'bg-[#C2185B] text-white border-[#C2185B]/50'
+              }`}>
               {pkg.badge}
             </span>
           ) : <div />}
-          
+
           <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-md text-[8px] font-bold uppercase tracking-wider">
-            <FiShield size={10} className={isGold || isPremium ? "text-[#D4AF37]" : ""} /> 
+            <FiShield size={10} className={isGold || isPremium ? "text-[#D4AF37]" : ""} />
             Verified
           </div>
         </div>
@@ -64,7 +63,7 @@ export default function PackageCard({ pkg, onOpenDetails, onOpenQuote }) {
 
       {/* Compact Content Section */}
       <div className="p-4 flex flex-col flex-1 relative z-20">
-        
+
         {/* Header */}
         <div className="mb-3">
           <h3 className={`font-serif text-[19px] font-bold mb-1 leading-tight ${isPremium ? 'text-white' : 'text-gray-900'}`}>
@@ -115,19 +114,19 @@ export default function PackageCard({ pkg, onOpenDetails, onOpenQuote }) {
 
         {/* Footer Actions */}
         <div className="grid grid-cols-2 gap-2">
-          <button 
+          <button
             onClick={() => onOpenDetails(pkg)}
             className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg border font-black text-[10px] uppercase tracking-wider transition-colors
               ${isPremium ? 'border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
           >
             Details
           </button>
-          <button 
+          <button
             onClick={() => onOpenQuote(pkg)}
             className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider transition-transform active:scale-95 shadow-sm
-            ${isPremium || isGold 
-              ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white hover:opacity-90' 
-              : 'bg-gray-900 text-white hover:bg-gray-800'}`}
+            ${isPremium || isGold
+                ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white hover:opacity-90'
+                : 'bg-gray-900 text-white hover:bg-gray-800'}`}
           >
             Book Now <FiArrowRight size={12} />
           </button>

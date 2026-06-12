@@ -11,7 +11,7 @@ import QuoteFormModal from './QuoteFormModal';
 export default function PackageSection() {
   const dispatch = useDispatch();
   const { packages, loading, error } = useSelector(state => state.packages);
-  
+
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [selectedQuote, setSelectedQuote] = useState(null);
 
@@ -25,13 +25,13 @@ export default function PackageSection() {
   return (
     <section className="py-16 px-4 bg-[#FFF8FA] overflow-hidden" id="wedding-packages">
       <div className="max-w-7xl mx-auto relative">
-        
+
         {/* Decorative Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-64 bg-gradient-to-b from-[#C2185B]/5 to-transparent blur-[100px] pointer-events-none" />
 
         {/* Section Header */}
         <div className="text-center mb-10 relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -39,7 +39,7 @@ export default function PackageSection() {
           >
             <span className="text-[10px] font-black text-[#C2185B] uppercase tracking-[0.2em]">✨ Curated Wedding Experiences</span>
           </motion.div>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -48,7 +48,7 @@ export default function PackageSection() {
           >
             Choose Your Dream Wedding Package
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -85,10 +85,10 @@ export default function PackageSection() {
             </div>
           ) : (
             packages.map((pkg, idx) => (
-              <PackageCard 
-                key={pkg._id} 
-                pkg={pkg} 
-                onOpenDetails={setSelectedDetails} 
+              <PackageCard
+                key={pkg._id}
+                pkg={pkg}
+                onOpenDetails={setSelectedDetails}
                 onOpenQuote={setSelectedQuote}
               />
             ))
@@ -96,7 +96,7 @@ export default function PackageSection() {
         </div>
 
         {/* Bottom Trust Bar */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -105,9 +105,9 @@ export default function PackageSection() {
         >
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
             {[
-              'Verified Vendors', 
-              'Transparent Pricing', 
-              'WhatsApp Support', 
+              'Verified Vendors',
+              'Transparent Pricing',
+              'WhatsApp Support',
               'Secure Booking'
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-1.5 text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest">
@@ -122,19 +122,19 @@ export default function PackageSection() {
       {/* Modals */}
       <AnimatePresence>
         {selectedDetails && (
-          <PackageDetailsModal 
-            pkg={selectedDetails} 
-            onClose={() => setSelectedDetails(null)} 
+          <PackageDetailsModal
+            pkg={selectedDetails}
+            onClose={() => setSelectedDetails(null)}
             onQuote={(pkg) => {
               setSelectedDetails(null);
               setSelectedQuote(pkg);
-            }} 
+            }}
           />
         )}
         {selectedQuote && (
-          <QuoteFormModal 
-            pkg={selectedQuote} 
-            onClose={() => setSelectedQuote(null)} 
+          <QuoteFormModal
+            pkg={selectedQuote}
+            onClose={() => setSelectedQuote(null)}
           />
         )}
       </AnimatePresence>

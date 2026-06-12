@@ -52,7 +52,7 @@ export default function QuoteFormModal({ pkg, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     dispatch(submitPackageInquiry({
       ...formData,
       packageSelected: pkg._id
@@ -84,7 +84,7 @@ export default function QuoteFormModal({ pkg, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -94,7 +94,7 @@ export default function QuoteFormModal({ pkg, onClose }) {
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 bg-gray-100 rounded-full p-1 transition-colors z-10">
           <FiX size={16} />
         </button>
-        
+
         {inquirySuccess ? (
           <div className="p-10 text-center flex flex-col items-center">
             <FiCheckCircle className="text-green-500 mb-4" size={48} />
@@ -182,8 +182,8 @@ export default function QuoteFormModal({ pkg, onClose }) {
                 <textarea name="message" value={formData.message} onChange={handleChange} rows="2" className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C2185B] resize-none" placeholder="Any specific requests or questions?"></textarea>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full bg-[#C2185B] text-white py-4 rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:bg-[#8E244D] active:scale-95 transition-all flex justify-center items-center gap-2"
               >

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function AdminPackageInquiriesPage() {
   const dispatch = useDispatch();
   const { inquiries, loading } = useSelector(state => state.packages);
-  
+
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -147,15 +147,15 @@ export default function AdminPackageInquiriesPage() {
                       </p>
                     </td>
                     <td data-label="Status" className="p-5">
-                      <select 
+                      <select
                         value={inquiry.status}
                         onChange={(e) => handleStatusChange(inquiry._id, e.target.value)}
                         className={`text-xs font-bold rounded-lg px-3 py-1.5 outline-none cursor-pointer border appearance-none text-center min-w-[100px]
-                          ${inquiry.status === 'New' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                            inquiry.status === 'Contacted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
-                            inquiry.status === 'Interested' || inquiry.status === 'Negotiation' ? 'bg-purple-50 text-purple-700 border-purple-200' : 
-                            inquiry.status === 'Converted' ? 'bg-green-50 text-green-700 border-green-200' : 
-                            'bg-gray-100 text-gray-600 border-gray-200'}`}
+                          ${inquiry.status === 'New' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                            inquiry.status === 'Contacted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                              inquiry.status === 'Interested' || inquiry.status === 'Negotiation' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                inquiry.status === 'Converted' ? 'bg-green-50 text-green-700 border-green-200' :
+                                  'bg-gray-100 text-gray-600 border-gray-200'}`}
                       >
                         <option value="New">New</option>
                         <option value="Contacted">Contacted</option>
@@ -168,7 +168,7 @@ export default function AdminPackageInquiriesPage() {
                     </td>
                     <td data-label="Actions" className="p-5">
                       <div className="flex items-center justify-center gap-2 relative">
-                        <a 
+                        <a
                           href={`https://wa.me/91${inquiry.phone}?text=${encodeURIComponent(`Hi ${inquiry.name}, reaching out from ShaadiSaathi regarding your inquiry for the ${inquiry.packageSelected?.name || 'Wedding'} package.`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -177,13 +177,13 @@ export default function AdminPackageInquiriesPage() {
                         >
                           <FaWhatsapp size={16} />
                         </a>
-                        <button 
+                        <button
                           onClick={() => setActiveDropdown(activeDropdown === inquiry._id ? null : inquiry._id)}
                           className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
                         >
                           <FiMoreVertical size={16} />
                         </button>
-                        
+
                         {/* Dropdown Menu */}
                         {activeDropdown === inquiry._id && (
                           <div className="absolute right-10 top-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
@@ -212,7 +212,7 @@ export default function AdminPackageInquiriesPage() {
       <AnimatePresence>
         {isViewModalOpen && selectedInquiry && (
           <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm">
-            <motion.div 
+            <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="bg-white w-full max-w-md h-full shadow-2xl overflow-y-auto"
             >
@@ -221,7 +221,7 @@ export default function AdminPackageInquiriesPage() {
                 <button onClick={() => setIsViewModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition"><FiX /></button>
               </div>
               <div className="p-6 space-y-6">
-                
+
                 {/* Client Info */}
                 <div>
                   <h4 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2"><FiUser /> Client Info</h4>
@@ -270,7 +270,7 @@ export default function AdminPackageInquiriesPage() {
       <AnimatePresence>
         {isEditModalOpen && selectedInquiry && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
             >
@@ -278,15 +278,15 @@ export default function AdminPackageInquiriesPage() {
                 <h3 className="text-lg font-bold font-serif">Edit Inquiry Admin Notes</h3>
                 <button onClick={() => setIsEditModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition"><FiX /></button>
               </div>
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   const note = e.target.note.value;
                   const budget = e.target.budget.value;
-                  dispatch(updatePackageInquiry({ 
-                    id: selectedInquiry._id, 
-                    note: note ? note : undefined, 
-                    budget: budget ? Number(budget) : undefined 
+                  dispatch(updatePackageInquiry({
+                    id: selectedInquiry._id,
+                    note: note ? note : undefined,
+                    budget: budget ? Number(budget) : undefined
                   }));
                   setIsEditModalOpen(false);
                 }}
@@ -300,7 +300,7 @@ export default function AdminPackageInquiriesPage() {
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Add Admin Note</label>
                   <textarea name="note" rows="3" className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C2185B] resize-none" placeholder="Record discussion details here..."></textarea>
                 </div>
-                
+
                 {/* Previous Notes */}
                 {selectedInquiry.notes?.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
