@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNotificationSound } from '../../context/NotificationSoundContext'
+import BrandLogo from '../../components/common/BrandLogo'
 
 const LoginSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -94,10 +95,10 @@ export default function LoginPage() {
         >
           {/* Logo & Header */}
           <div className="text-center mb-10">
-            <Link to="/" className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#C2185B] to-[#8E244D] rounded-2xl mb-6 shadow-[0_0_30px_rgba(194,24,91,0.3)] hover:scale-105 transition-transform">
-              <span className="text-3xl text-white">💒</span>
-            </Link>
-            <h1 className="font-display text-3xl font-black text-gray-900 mb-2">{t('auth.welcomeBack', 'Welcome Back')}</h1>
+            <div className="flex justify-center mb-6">
+              <BrandLogo className="justify-center" />
+            </div>
+            <h1 className="font-display text-3xl font-black text-gray-900 mt-6 mb-2">{t('auth.welcomeBack', 'Welcome Back')}</h1>
             <p className="text-gray-500 font-medium italic text-sm flex items-center justify-center gap-2">
               <FiShield className="text-[#C2185B]" /> {t('auth.loginSecurelyDesc', 'Login securely to your account')}
             </p>

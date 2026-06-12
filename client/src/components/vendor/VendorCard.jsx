@@ -94,7 +94,7 @@ export default function VendorCard({ vendor }) {
         <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/5 to-[#6A11CB]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
         {/* Cover Image Section */}
-        <div className="relative h-64 rounded-[24px] overflow-hidden bg-gray-50 flex-shrink-0 z-10 shadow-sm">
+        <div className="relative h-[180px] rounded-[24px] overflow-hidden bg-gray-50 flex-shrink-0 z-10 shadow-sm">
           {primaryImage ? (
             <img
               src={optimizedImage}
@@ -173,7 +173,7 @@ export default function VendorCard({ vendor }) {
         </div>
 
         {/* Content Section */}
-        <div className="p-5 flex flex-col flex-1 relative z-10">
+        <div className="p-4 flex flex-col flex-1 relative z-10">
 
           {/* Header Row: Logo & Name */}
           <div className="flex gap-4 items-start mb-4">
@@ -181,7 +181,7 @@ export default function VendorCard({ vendor }) {
               {getVendorInitials(vendor.businessName)}
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
-              <h3 className="font-display font-black text-gray-900 text-[22px] leading-tight group-hover:text-[#FF4D6D] transition-colors truncate">
+              <h3 className="font-display font-black text-gray-900 text-[19px] leading-tight group-hover:text-[#FF4D6D] transition-colors truncate">
                 {vendor.businessName}
               </h3>
               <div className="flex flex-wrap items-center gap-2 mt-1">

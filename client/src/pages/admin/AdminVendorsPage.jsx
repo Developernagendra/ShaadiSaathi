@@ -304,7 +304,7 @@ export default function AdminVendorsPage({ defaultTab = 'pending', title = 'Veri
         {/* Desktop Vendors List Display Frame (Wide screen only) */}
         <div className="hidden lg:block bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden mb-8">
           <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-sm">
+            <table className="table-responsive w-full text-sm">
               <thead className="bg-gray-50 text-gray-500 font-semibold uppercase text-[9px] tracking-widest">
                 <tr>
                   {['Vendor Business', 'Authorized Owner', 'Service Slot', 'Operational Base', 'Registered', 'Checkpoints', 'Verification Action'].map(h => (
@@ -326,7 +326,7 @@ export default function AdminVendorsPage({ defaultTab = 'pending', title = 'Veri
                 ) : (
                   filteredVendors.map(v => (
                     <tr key={v._id} className="hover:bg-[#FFF8F0]/20 transition-colors">
-                      <td className="py-6 px-8">
+                      <td data-label="Vendor Business" className="py-6 px-8">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-2xl bg-gray-900 text-[#D4AF37] flex items-center justify-center font-black text-lg shadow-md border-b-2 border-[#D4AF37]">
                             {v.businessName?.charAt(0).toUpperCase()}
@@ -339,26 +339,26 @@ export default function AdminVendorsPage({ defaultTab = 'pending', title = 'Veri
                           </div>
                         </div>
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Authorized Owner" className="py-6 px-8">
                         <div className="flex flex-col">
                           <span className="font-bold text-gray-900 leading-snug">{v.user?.name || '—'}</span>
                           <span className="text-[9px] text-gray-400 font-semibold">{v.email}</span>
                         </div>
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Service Slot" className="py-6 px-8">
                         <span className="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-[8px] font-black uppercase tracking-widest text-gray-500">
                           {v.category?.name || 'Cab Operator'}
                         </span>
                       </td>
-                      <td className="py-6 px-8 text-gray-500 font-semibold text-xs">
+                      <td data-label="Operational Base" className="py-6 px-8 text-gray-500 font-semibold text-xs">
                         <div className="flex items-center gap-1.5 uppercase">
                           <FiMapPin className="text-[#D4AF37]" size={12} /> {v.location?.city || 'Delhi'}
                         </div>
                       </td>
-                      <td className="py-6 px-8 text-gray-400 font-medium text-xs whitespace-nowrap">
+                      <td data-label="Registered" className="py-6 px-8 text-gray-400 font-medium text-xs whitespace-nowrap">
                         {formatDateShort(v.createdAt)}
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Checkpoints" className="py-6 px-8">
                         <div className="flex items-center gap-2">
                           {[
                             { key: 'ID', done: v.verificationDocuments?.some(d => d.verified) },
@@ -378,7 +378,7 @@ export default function AdminVendorsPage({ defaultTab = 'pending', title = 'Veri
                           ))}
                         </div>
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Verification Action" className="py-6 px-8">
                         <button 
                           onClick={() => openDetails(v)} 
                           className="h-11 px-5 rounded-xl bg-gray-900 hover:bg-black text-white font-black text-[9px] uppercase tracking-widest transition-all shadow-md flex items-center gap-2"

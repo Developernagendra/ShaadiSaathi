@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { FiUser, FiBriefcase, FiArrowRight } from 'react-icons/fi'
+import BrandLogo from '../../components/common/BrandLogo'
 
 export default function RegisterSelectionPage() {
   const { t } = useTranslation()
@@ -16,10 +17,8 @@ export default function RegisterSelectionPage() {
       <div className="w-full max-w-5xl relative z-10">
 
         {/* Header */}
-        <div className="text-center mb-16">
-          <Link to="/" className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#C2185B] to-[#8E244D] rounded-3xl mb-8 shadow-[0_10px_40px_rgba(194,24,91,0.3)] hover:scale-105 transition-transform">
-            <span className="text-4xl text-white">💒</span>
-          </Link>
+        <div className="text-center mb-16 flex flex-col items-center">
+          <BrandLogo className="mb-8 justify-center" />
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

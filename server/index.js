@@ -200,6 +200,8 @@ app.use("/api/ai", require("./routes/aiRoutes"));
 app.use("/api/availability", require("./routes/availabilityRoutes"));
 app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/newsletter", require("./routes/newsletterRoutes"));
+app.use("/api/packages", require("./routes/packageRoutes"));
+app.use("/api/package-inquiries", require("./routes/packageInquiryRoutes"));
 
 /* ---------------- 404 ---------------- */
 app.use("*", (req, res) => {
@@ -348,6 +350,10 @@ const startServer = async () => {
 
     // Run self-healing category repair migration
     await repairCategories();
+    
+    // Seed packages
+    const { seedPackagesIfEmpty } = require('./controllers/packageController');
+    await seedPackagesIfEmpty();
 
     // Auto-seed/Ensure default admin exists with correct credentials
     try {

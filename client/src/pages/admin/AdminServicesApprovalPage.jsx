@@ -308,7 +308,7 @@ export default function AdminServicesApprovalPage() {
         {/* Desktop Services List Table Display */}
         <div className="hidden lg:block bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden mb-8">
           <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-sm">
+            <table className="table-responsive w-full text-sm">
               <thead className="bg-gray-50 text-gray-500 font-semibold uppercase text-[9px] tracking-widest">
                 <tr>
                   {['Service Title', 'Vendor Business', 'Category', 'Starting Price', 'Packages', 'Status', 'Submitted On', 'Verification Action'].map(h => (
@@ -339,7 +339,7 @@ export default function AdminServicesApprovalPage() {
                 ) : (
                   filteredServices.map(s => (
                     <tr key={s._id} className="hover:bg-[#FFF8F0]/25 transition-colors">
-                      <td className="py-6 px-8">
+                      <td data-label="Service Title" className="py-6 px-8">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden shadow-inner flex-shrink-0">
                             {s.coverImage || s.images?.[0]?.url ? (
@@ -354,32 +354,32 @@ export default function AdminServicesApprovalPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Vendor Business" className="py-6 px-8">
                         <div className="flex flex-col">
                           <span className="font-bold text-gray-900 leading-snug">{s.vendor?.businessName || 'Independent Vendor'}</span>
                           <span className="text-[9px] text-gray-400 font-semibold uppercase flex items-center gap-1"><FiMapPin size={9} /> {s.city || 'Delhi'}</span>
                         </div>
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Category" className="py-6 px-8">
                         <span className="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-[8px] font-black uppercase tracking-widest text-gray-500 font-display font-black">
                           {s.category?.name || 'Uncategorized'}
                         </span>
                       </td>
-                      <td className="py-6 px-8 font-black text-gray-900">
+                      <td data-label="Starting Price" className="py-6 px-8 font-black text-gray-900">
                         {formatPrice(s.startingPrice || s.price || 0)}
                       </td>
-                      <td className="py-6 px-8 text-gray-500 font-semibold text-xs">
+                      <td data-label="Packages" className="py-6 px-8 text-gray-500 font-semibold text-xs">
                         <div className="flex items-center gap-1.5">
                           <FiLayers className="text-[#C2185B]" size={12} /> {s.packages?.length || 0} Rate Cards
                         </div>
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Status" className="py-6 px-8">
                         {getStatusBadge(s.status)}
                       </td>
-                      <td className="py-6 px-8 text-gray-400 font-medium text-xs whitespace-nowrap">
+                      <td data-label="Submitted On" className="py-6 px-8 text-gray-400 font-medium text-xs whitespace-nowrap">
                         {formatDateShort(s.createdAt)}
                       </td>
-                      <td className="py-6 px-8">
+                      <td data-label="Verification Action" className="py-6 px-8">
                         <button 
                           onClick={() => openDetails(s)} 
                           className="h-11 px-5 rounded-xl bg-gray-900 hover:bg-black text-white font-black text-[9px] uppercase tracking-widest transition-all shadow-md flex items-center gap-2"

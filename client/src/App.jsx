@@ -100,6 +100,7 @@ const TemplateLibrary = lazy(() => import('./pages/invitation/TemplateLibrary'))
 const InvitationPreview = lazy(() => import('./pages/invitation/InvitationPreview'))
 const LeadMarketplacePage = lazy(() => import('./pages/LeadMarketplacePage'))
 const VendorSubscriptionPage = lazy(() => import('./pages/VendorSubscriptionPage'))
+const PackagesPage = lazy(() => import('./pages/PackagesPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'))
@@ -126,6 +127,8 @@ const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
 const AdminReviewsPage = lazy(() => import('./pages/admin/AdminReviewsPage'))
 const AdminSubscriptionsPage = lazy(() => import('./pages/admin/AdminSubscriptionsPage'))
 const AdminNewsletterPage = lazy(() => import('./pages/admin/AdminNewsletterPage'))
+const AdminPackagesPage = lazy(() => import('./pages/admin/AdminPackagesPage'))
+const AdminPackageInquiriesPage = lazy(() => import('./pages/admin/AdminPackageInquiriesPage'))
 
 export default function App() {
   const dispatch = useDispatch()
@@ -233,7 +236,9 @@ export default function App() {
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/services/:categorySlug" element={<ServicesPage />} />
                 <Route path="/service/:id" element={<ServiceDetailPage />} />
+                <Route path="/vendors" element={<ServicesPage />} />
                 <Route path="/vendors/:id" element={<VendorDetailPage />} />
+                <Route path="/packages" element={<PackagesPage />} />
                 <Route path="/cab-booking" element={
                   <Suspense fallback={<BaraatCabsSkeleton />}>
                     <CabBookingPage />
@@ -335,6 +340,8 @@ export default function App() {
                   <Route path="/admin/reviews" element={<AdminReviewsPage />} />
                   <Route path="/admin/settings" element={<AdminSettingsPage />} />
                   <Route path="/admin/newsletter" element={<AdminNewsletterPage />} />
+                  <Route path="/admin/packages" element={<AdminPackagesPage />} />
+                  <Route path="/admin/package-inquiries" element={<AdminPackageInquiriesPage />} />
                 </Route>
 
                 {/* 404 */}

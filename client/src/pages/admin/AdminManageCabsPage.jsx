@@ -183,7 +183,7 @@ export default function AdminManageCabsPage() {
         {/* Registry Table */}
         <div className="bg-white rounded-[3rem] border border-gray-100 shadow-premium overflow-hidden">
            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="table-responsive w-full text-left border-collapse">
                  <thead>
                     <tr className="bg-gray-50/50 border-b border-gray-100">
                        <th className="py-8 px-10 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] italic">Vehicle & Vendor Owner</th>
@@ -196,7 +196,7 @@ export default function AdminManageCabsPage() {
                  <tbody className="divide-y divide-gray-50">
                     {filteredCabs.map(cab => (
                       <motion.tr layout key={cab._id} className="hover:bg-gray-50/30 transition-all group">
-                         <td className="py-8 px-10">
+                         <td data-label="Vehicle & Vendor Owner" className="py-8 px-10">
                             <div className="flex items-center gap-6">
                                <div className="w-20 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm relative flex-shrink-0">
                                   <img src={cab.images?.find(i => i.viewType === 'front' || i.isPrimary)?.url || cab.images?.[0]?.url || 'https://via.placeholder.com/150'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
@@ -211,18 +211,18 @@ export default function AdminManageCabsPage() {
                                </div>
                             </div>
                          </td>
-                         <td className="py-8 px-8">
+                         <td data-label="Specifications" className="py-8 px-8">
                             <div className="space-y-1">
                                <p className="text-xs font-black text-gray-700 uppercase tracking-widest">{cab.type?.replace('_', ' ')}</p>
                                <p className="text-[10px] font-bold text-gray-400 uppercase">Plate: {cab.vehicleNumber}</p>
                                <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><FiMapPin size={10} /> {cab.location?.city}</p>
                             </div>
                          </td>
-                         <td className="py-8 px-8">
+                         <td data-label="Pricing" className="py-8 px-8">
                             <p className="font-black text-gray-900 text-lg">{formatPrice(cab.price || cab.pricing?.baseFare)}</p>
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">Day Rate</p>
                          </td>
-                         <td className="py-8 px-8">
+                         <td data-label="Status Badge" className="py-8 px-8">
                             <span className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center w-fit gap-2 ${
                               cab.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' : 
                               cab.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
@@ -236,7 +236,7 @@ export default function AdminManageCabsPage() {
                                {cab.status?.replace('_', ' ') || 'pending'}
                             </span>
                          </td>
-                         <td className="py-8 px-10">
+                         <td data-label="Moderation Actions" className="py-8 px-10">
                             <div className="flex items-center justify-end gap-3">
                                <button 
                                  onClick={() => openDetails(cab)}

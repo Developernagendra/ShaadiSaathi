@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi'
 import { FaTruck } from 'react-icons/fa'
 import { useTranslation } from 'react-i18next'
+import BrandLogo from '../common/BrandLogo'
 
 export default function Sidebar({ closeSidebar, isCollapsed }) {
   const location = useLocation()
@@ -87,6 +88,8 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
     { to: '/admin/bookings', label: 'Bookings', icon: <FiCalendar /> },
     { to: '/admin/blogs', label: 'Blogs', icon: <FiBookOpen /> },
     { to: '/admin/leads', label: 'Leads', icon: <FiMessageSquare /> },
+    { to: '/admin/packages', label: 'Packages', icon: <FiTag /> },
+    { to: '/admin/package-inquiries', label: 'Package Inquiries', icon: <FiMessageSquare /> },
     { to: '/admin/imperial-fleet', label: 'Fleet Registry', icon: <FaTruck /> },
     { to: '/admin/reviews', label: 'Reviews', icon: <FiStar /> },
     { to: '/admin/newsletter', label: 'Newsletter', icon: <FiMail /> },
@@ -98,8 +101,17 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
   return (
     <aside className="w-full h-full overflow-y-auto scrollbar-hide pb-24 md:pb-6">
       <div className="p-4 space-y-2 flex flex-col h-full">
-        <div className="mb-8 hidden md:block px-4">
-          {!isCollapsed && <p className="text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.4em] drop-shadow-md">{role} Workspace</p>}
+        <div className="mb-8 hidden md:block px-4 pt-4">
+          {!isCollapsed ? (
+            <div className="flex flex-col gap-4">
+              <BrandLogo isDark={true} className="scale-90 origin-left" />
+              <p className="text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.4em] drop-shadow-md">{role} Workspace</p>
+            </div>
+          ) : (
+            <div className="flex justify-center -ml-2">
+              <BrandLogo isDark={true} showTagline={false} className="scale-[0.6] origin-center -ml-4" />
+            </div>
+          )}
         </div>
 
         {links.map((link) => {

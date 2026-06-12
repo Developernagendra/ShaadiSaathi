@@ -118,6 +118,46 @@ const getCampaignEmailHTML = (email, subject, content, bannerUrl) => {
   `;
 };
 
+const getPackageUserEmailHTML = (name, packageName) => {
+  return `
+    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FAFAFA; border-radius: 12px; border: 1px solid #EAEAEA;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #C2185B; margin-bottom: 0;">ShaadiSaathi 💍</h1>
+      </div>
+      <div style="background-color: #FFFFFF; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <h2 style="color: #333333; margin-top: 0;">Hi ${name},</h2>
+        <p style="color: #666666; font-size: 16px; line-height: 1.6;">
+          Thank you for inquiring about our <strong>${packageName}</strong>! We've successfully received your details.
+        </p>
+        <p style="color: #666666; font-size: 16px; line-height: 1.6;">
+          Our wedding coordination team is currently reviewing your requirements and will reach out to you shortly to discuss availability, customizations, and next steps.
+        </p>
+        <p style="color: #666666; font-size: 16px; line-height: 1.6;">
+          If you need immediate assistance, feel free to reply to this email or contact us via WhatsApp.
+        </p>
+      </div>
+    </div>
+  `;
+};
+
+const getPackageAdminEmailHTML = (inquiry, pkg) => {
+  return `
+    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FAFAFA;">
+      <h2 style="color: #C2185B;">🚨 New Package Inquiry Received</h2>
+      <div style="background-color: #FFFFFF; padding: 20px; border-radius: 8px;">
+        <p><strong>Package:</strong> ${pkg.name}</p>
+        <p><strong>Name:</strong> ${inquiry.name}</p>
+        <p><strong>Phone:</strong> ${inquiry.phone}</p>
+        <p><strong>Email:</strong> ${inquiry.email || 'N/A'}</p>
+        <p><strong>City:</strong> ${inquiry.city}</p>
+        <p><strong>Wedding Date:</strong> ${new Date(inquiry.weddingDate).toLocaleDateString()}</p>
+        <p><strong>Guests:</strong> ${inquiry.guestsCount || 'N/A'}</p>
+        <p><strong>Requirements:</strong> ${inquiry.specialRequirements || 'None'}</p>
+      </div>
+    </div>
+  `;
+};
+
 const verifySMTP = async () => {
   return transporter.verify();
 };
@@ -126,5 +166,7 @@ module.exports = {
   sendEmail,
   getWelcomeEmailHTML,
   getCampaignEmailHTML,
+  getPackageUserEmailHTML,
+  getPackageAdminEmailHTML,
   verifySMTP
 };

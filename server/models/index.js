@@ -665,6 +665,9 @@ const { Lead, Guest, Checklist, Blog, Testimonial, HomeStats } = require('./Feat
 const NewsletterSubscriber = require('./NewsletterSubscriber');
 const NewsletterCampaign = require('./NewsletterCampaign');
 
+const Package = require('./Package');
+const PackageInquiry = require('./PackageInquiry');
+
 module.exports = {
   User,
   Vendor,
@@ -686,6 +689,8 @@ module.exports = {
   SystemConfig,
   Offer,
   NewsletterSubscriber,
-  NewsletterCampaign
+  NewsletterCampaign,
+  Package,
+  PackageInquiry
 };
 

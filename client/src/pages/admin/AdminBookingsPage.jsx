@@ -177,7 +177,7 @@ export default function AdminBookingsPage() {
         <div className="bg-white rounded-[3rem] shadow-premium border border-gray-50 overflow-hidden">
           {/* Desktop Table View */}
           <div className="hidden xl:block overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="table-responsive w-full text-left">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/30">
                   <th className="py-6 px-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Booking ID</th>
@@ -215,18 +215,18 @@ export default function AdminBookingsPage() {
                       transition={{ delay: i * 0.02 }}
                       className="group hover:bg-gray-50/50 transition-colors"
                     >
-                      <td className="py-6 px-6 font-black text-gray-900 text-xs">{b.bookingId}</td>
-                      <td className="py-6 px-6 font-bold text-gray-700 text-xs">{b.contactName || b.user?.name || 'N/A'}</td>
-                      <td className="py-6 px-6 text-gray-600 text-xs whitespace-nowrap">{b.contactPhone || b.user?.phone || 'N/A'}</td>
-                      <td className="py-6 px-6 text-gray-600 text-xs max-w-[150px] truncate">{b.contactEmail || b.user?.email || 'N/A'}</td>
-                      <td className="py-6 px-6 font-bold text-gray-800 text-xs">{b.vendor?.businessName || b.vendorProfileId?.businessName || 'N/A'}</td>
-                      <td className="py-6 px-6 font-semibold text-[#C2185B] text-xs">{b.serviceName || 'N/A'}</td>
-                      <td className="py-6 px-6 text-gray-500 font-bold text-[10px] uppercase tracking-wider">{b.serviceCategory || (b.bookingType === 'baraat-cab' ? 'Cab' : 'Wedding Service')}</td>
-                      <td className="py-6 px-6 text-gray-600 text-xs whitespace-nowrap">{formatDateShort(b.eventDate)}</td>
-                      <td className="py-6 px-6 text-gray-600 text-xs">{b.eventCity || b.pickupLocation?.city || 'N/A'}</td>
-                      <td className="py-6 px-6 text-gray-600 text-xs text-center">{b.guestCount || 'N/A'}</td>
-                      <td className="py-6 px-6 font-display font-black text-sm text-gray-900 tracking-tight">{formatPrice(b.amount || b.totalPrice)}</td>
-                      <td className="py-6 px-6">
+                      <td data-label="Booking ID" className="py-6 px-6 font-black text-gray-900 text-xs">{b.bookingId}</td>
+                      <td data-label="Customer Name" className="py-6 px-6 font-bold text-gray-700 text-xs">{b.contactName || b.user?.name || 'N/A'}</td>
+                      <td data-label="Customer Phone" className="py-6 px-6 text-gray-600 text-xs whitespace-nowrap">{b.contactPhone || b.user?.phone || 'N/A'}</td>
+                      <td data-label="Customer Email" className="py-6 px-6 text-gray-600 text-xs max-w-[150px] truncate">{b.contactEmail || b.user?.email || 'N/A'}</td>
+                      <td data-label="Vendor Name" className="py-6 px-6 font-bold text-gray-800 text-xs">{b.vendor?.businessName || b.vendorProfileId?.businessName || 'N/A'}</td>
+                      <td data-label="Service Name" className="py-6 px-6 font-semibold text-[#C2185B] text-xs">{b.serviceName || 'N/A'}</td>
+                      <td data-label="Category" className="py-6 px-6 text-gray-500 font-bold text-[10px] uppercase tracking-wider">{b.serviceCategory || (b.bookingType === 'baraat-cab' ? 'Cab' : 'Wedding Service')}</td>
+                      <td data-label="Event Date" className="py-6 px-6 text-gray-600 text-xs whitespace-nowrap">{formatDateShort(b.eventDate)}</td>
+                      <td data-label="City" className="py-6 px-6 text-gray-600 text-xs">{b.eventCity || b.pickupLocation?.city || 'N/A'}</td>
+                      <td data-label="Guests" className="py-6 px-6 text-gray-600 text-xs text-center">{b.guestCount || 'N/A'}</td>
+                      <td data-label="Total Price" className="py-6 px-6 font-display font-black text-sm text-gray-900 tracking-tight">{formatPrice(b.amount || b.totalPrice)}</td>
+                      <td data-label="Booking Status" className="py-6 px-6">
                          <select 
                             value={b.status} 
                             onChange={(e) => handleStatusChange(b._id, e.target.value)}
@@ -240,8 +240,8 @@ export default function AdminBookingsPage() {
                             <option value="rejected">Rejected</option>
                          </select>
                       </td>
-                      <td className="py-6 px-6 text-gray-500 text-xs whitespace-nowrap">{formatDateShort(b.createdAt)}</td>
-                      <td className="py-6 px-6">
+                      <td data-label="Created Date" className="py-6 px-6 text-gray-500 text-xs whitespace-nowrap">{formatDateShort(b.createdAt)}</td>
+                      <td data-label="Action" className="py-6 px-6">
                          <div className="flex items-center justify-center gap-2">
                             <button onClick={() => navigate(`/admin/bookings/${b._id}`)} className="w-9 h-9 rounded-xl bg-gray-900 text-white flex items-center justify-center hover:bg-primary-600 transition-all shadow-md" title="View Details">
                                <FiArrowRight size={14} />

@@ -281,7 +281,7 @@ exports.getContactInfo = catchAsync(async (req, res, next) => {
   try {
     // In a real app, this might come from a Settings model
     const contact = {
-      email: "support@shaadisaathi.com",
+      email: "n4narendrakr@gmail.com",
       phone: "+91 7903075243",
       address: "Darbhanga, Bihar, India",
       company: "ShaadiSaathi",
@@ -301,7 +301,7 @@ exports.getContactInfo = catchAsync(async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        email: "support@shaadisaathi.com",
+        email: "n4narendrakr@gmail.com",
         phone: "+91 7903075243",
         address: "Darbhanga, Bihar, India"
       }

@@ -74,7 +74,7 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="table-responsive w-full text-sm">
               <thead className="bg-gray-50 text-gray-500 font-semibold uppercase text-[10px] tracking-wider">
                 <tr>
                   {['User Profile', 'Contact', 'Phone', 'Role', 'Joined', 'Verified', 'Status', 'Actions'].map(h => (
@@ -84,10 +84,10 @@ export default function AdminUsersPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
-                  Array(5).fill(0).map((_, i) => <tr key={i}><td colSpan={6} className="py-4 px-4"><div className="h-8 shimmer rounded-lg" /></td></tr>)
+                  Array(5).fill(0).map((_, i) => <tr key={i}><td colSpan={8} className="py-4 px-4"><div className="h-8 shimmer rounded-lg" /></td></tr>)
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-20 text-center">
+                    <td colSpan={8} className="py-20 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-400">
                         <FiUsers size={48} className="mb-4 opacity-20" />
                         <p className="font-display text-xl font-bold">No users found</p>
@@ -97,7 +97,7 @@ export default function AdminUsersPage() {
                   </tr>
                 ) : users.map(u => (
                   <tr key={u._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-6">
+                    <td data-label="User Profile" className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-xs font-black text-primary-600 flex-shrink-0 overflow-hidden border border-primary-100">
                           {u.avatar?.url ? <img src={u.avatar.url} className="w-full h-full object-cover" /> : getInitials(u.name)}
@@ -105,15 +105,15 @@ export default function AdminUsersPage() {
                         <span className="font-bold text-gray-900">{u.name}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 font-medium text-gray-600">{u.email}</td>
-                    <td className="py-4 px-6 text-gray-400">{u.phone || '—'}</td>
-                    <td className="py-4 px-6">
+                    <td data-label="Contact" className="py-4 px-6 font-medium text-gray-600">{u.email}</td>
+                    <td data-label="Phone" className="py-4 px-6 text-gray-400">{u.phone || '—'}</td>
+                    <td data-label="Role" className="py-4 px-6">
                       <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'vendor' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                         {u.role}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-gray-400 whitespace-nowrap">{formatDateShort(u.createdAt)}</td>
-                    <td className="py-4 px-6">
+                    <td data-label="Joined" className="py-4 px-6 text-gray-400 whitespace-nowrap">{formatDateShort(u.createdAt)}</td>
+                    <td data-label="Verified" className="py-4 px-6">
                       {u.isVerified ? (
                         <span className="flex items-center gap-1 text-green-600 font-bold text-[10px] uppercase tracking-widest bg-green-50 px-2 py-1 rounded-full w-fit">
                           ✓ Verified
@@ -124,14 +124,14 @@ export default function AdminUsersPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-4 px-6">
+                    <td data-label="Status" className="py-4 px-6">
                       {u.isActive ? (
                         <span className="text-[10px] font-black bg-green-100 text-green-700 px-2.5 py-1 rounded-full uppercase tracking-wider">Active</span>
                       ) : (
                         <span className="text-[10px] font-black bg-red-100 text-red-600 px-2.5 py-1 rounded-full uppercase tracking-wider">Inactive</span>
                       )}
                     </td>
-                    <td className="py-4 px-6">
+                    <td data-label="Actions" className="py-4 px-6">
                       {u.role !== 'admin' && (
                         <button 
                           onClick={() => handleToggle(u._id)} 

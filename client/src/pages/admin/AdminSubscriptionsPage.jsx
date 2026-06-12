@@ -140,7 +140,7 @@ export default function AdminSubscriptionsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
+            <table className="table-responsive w-full text-sm text-left">
               <thead className="bg-[#FFF8F0]/30">
                 <tr>
                   {['Business Info', 'Current Tier', 'Date Details', 'Access Status', 'Actions'].map(h => (
@@ -157,7 +157,7 @@ export default function AdminSubscriptionsPage() {
                   return (
                     <tr key={v._id} className="hover:bg-[#FFF8F0]/30 transition-all duration-500 group">
                       {/* Name / Category */}
-                      <td className="py-6 px-8">
+                      <td data-label="Business Info" className="py-6 px-8">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center font-display font-black text-[#D4AF37] border border-pink-50 text-lg flex-shrink-0">
                             {v.businessName?.charAt(0)}
@@ -174,7 +174,7 @@ export default function AdminSubscriptionsPage() {
                       </td>
 
                       {/* Subscription Tier */}
-                      <td className="py-6 px-8">
+                      <td data-label="Current Tier" className="py-6 px-8">
                         <span className={`text-[9px] font-black px-3.5 py-1.5 rounded-lg uppercase tracking-wider ${
                           plan === 'elite' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-sm shadow-yellow-500/10' :
                           plan === 'premium' ? 'bg-[#FFF8F0] text-[#C2185B] border border-pink-100' :
@@ -185,7 +185,7 @@ export default function AdminSubscriptionsPage() {
                       </td>
 
                       {/* Subscription Dates */}
-                      <td className="py-6 px-8">
+                      <td data-label="Date Details" className="py-6 px-8">
                         {plan !== 'free' ? (
                           <div className="space-y-1">
                             <p className="text-[10px] font-medium text-gray-500">
@@ -201,7 +201,7 @@ export default function AdminSubscriptionsPage() {
                       </td>
 
                       {/* Statuses */}
-                      <td className="py-6 px-8">
+                      <td data-label="Access Status" className="py-6 px-8">
                         <div className="flex flex-col gap-1.5">
                           <span className={`text-[8px] font-black px-2.5 py-1 rounded uppercase tracking-[0.2em] w-max italic ${
                             status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' :
@@ -219,7 +219,7 @@ export default function AdminSubscriptionsPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-6 px-8">
+                      <td data-label="Actions" className="py-6 px-8">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {

@@ -264,7 +264,7 @@ export default function AdminDashboard() {
             <Link to="/admin/users" className="text-[10px] font-black text-[#C2185B] uppercase tracking-[0.3em] bg-white border border-pink-50 px-6 md:px-8 py-3.5 md:py-4 rounded-2xl shadow-xl hover:scale-105 transition-all italic text-center">View All Users</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
+            <table className="table-responsive w-full text-sm text-left">
               <thead className="bg-[#FFF8F0]/30">
                 <tr>
                   {['Full Name', 'Email Address', 'Joined Date', 'Role', 'Status'].map(h => (
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
               <tbody className="divide-y divide-pink-50">
                 {(data?.recentUsers || []).map(u => (
                   <tr key={u._id} className="hover:bg-[#FFF8F0]/50 transition-all duration-500 group">
-                    <td className="py-4 px-6 md:py-6 md:px-10">
+                    <td data-label="Full Name" className="py-4 px-6 md:py-6 md:px-10">
                       <div className="flex items-center gap-4 md:gap-6">
                         <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center font-display font-black text-[#D4AF37] text-lg border border-pink-50 flex-shrink-0">
                           {u.name?.charAt(0)}
@@ -283,9 +283,9 @@ export default function AdminDashboard() {
                         <span className="font-display text-xl md:text-2xl font-black text-gray-900 group-hover:text-[#C2185B] transition-colors leading-none">{u?.name || 'User'}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-gray-400 uppercase tracking-widest">{u?.email || 'N/A'}</td>
-                    <td className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-[#D4AF37] uppercase tracking-widest italic">{formatDateShort(u.createdAt)}</td>
-                    <td className="py-4 px-6 md:py-6 md:px-10">
+                    <td data-label="Email Address" className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-gray-400 uppercase tracking-widest">{u?.email || 'N/A'}</td>
+                    <td data-label="Joined Date" className="py-4 px-6 md:py-6 md:px-10 text-[10px] font-black text-[#D4AF37] uppercase tracking-widest italic">{formatDateShort(u.createdAt)}</td>
+                    <td data-label="Role" className="py-4 px-6 md:py-6 md:px-10">
                       <span className={`text-[8px] font-black px-4 py-1.5 rounded-lg uppercase tracking-[0.2em] italic ${u?.role === 'admin' ? 'bg-[#8E244D] text-white shadow-lg shadow-pink-900/20' :
                           u?.role === 'vendor' ? 'bg-[#FFF8F0] text-[#8E244D] border border-pink-100 shadow-sm' :
                             'bg-gray-100 text-gray-700'
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
                         {u?.role === 'admin' ? 'Admin' : u?.role === 'vendor' ? 'Vendor' : 'User'}
                       </span>
                     </td>
-                    <td className="py-4 px-6 md:py-6 md:px-10">
+                    <td data-label="Status" className="py-4 px-6 md:py-6 md:px-10">
                       <div className="flex items-center gap-3">
                         <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] animate-pulse" />
                         <span className="text-[10px] font-black text-green-700 uppercase tracking-widest italic">Active</span>

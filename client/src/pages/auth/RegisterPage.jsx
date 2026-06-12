@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useNotificationSound } from '../../context/NotificationSoundContext';
 import { useTranslation } from 'react-i18next';
+import BrandLogo from '../../components/common/BrandLogo';
 
 export default function RegisterPage() {
   const dispatch = useDispatch();
@@ -88,10 +89,9 @@ export default function RegisterPage() {
         <div className="absolute top-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/4" />
 
         <div className="relative z-10">
-          <Link to="/" className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20 hover:bg-white/20 transition-all mb-16">
-            <span className="text-xl">💍</span>
-            <span className="font-display font-black tracking-widest text-sm">ShaadiSaathi</span>
-          </Link>
+          <div className="mb-16">
+            <BrandLogo isDark={true} />
+          </div>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <h1 className="font-display text-5xl xl:text-6xl font-black mb-6 tracking-tighter leading-tight drop-shadow-2xl">
@@ -142,14 +142,10 @@ export default function RegisterPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-2xl bg-white/80 backdrop-blur-xl rounded-[3rem] p-8 sm:p-12 shadow-premium border border-white relative z-10"
         >
-          <div className="mb-10 flex items-center justify-between">
-            <div>
-              <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-3">Join as User</h2>
-              <p className="text-gray-500 font-medium italic">Create your personal account to begin planning your wedding.</p>
-            </div>
-            <div className="hidden sm:flex w-16 h-16 rounded-2xl bg-gray-50 items-center justify-center text-3xl">
-              💍
-            </div>
+          <div className="mb-10 flex flex-col items-center">
+            <BrandLogo className="mb-6 justify-center" />
+            <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-3">Join as User</h2>
+            <p className="text-gray-500 font-medium italic">Create your personal account to begin planning your wedding.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>

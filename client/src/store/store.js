@@ -9,6 +9,8 @@ import featureReducer from './slices/featureSlice'
 import availabilityReducer from './slices/availabilitySlice'
 import invitationReducer from './slices/invitationSlice'
 
+import packageReducer from './slices/packageSlice'
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -20,6 +22,7 @@ export const store = configureStore({
     feature: featureReducer,
     availability: availabilityReducer,
     invitation: invitationReducer,
+    packages: packageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -13,6 +13,7 @@ import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import api from '../../utils/api'
 import { apiCache } from '../../utils/apiCache'
+import BrandLogo from '../common/BrandLogo'
 
 // Preload component chunk
 const preloadBaraatCabsChunk = () => import('../../pages/BaraatCabsPage')
@@ -126,19 +127,10 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* ── Logo ── */}
-            <Link to="/" className="flex items-center gap-3 group" onClick={() => setMobileOpen(false)}>
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-3xl transition-all shadow-xl rotate-3 group-hover:rotate-0 ${navTransparent ? 'bg-white/10 backdrop-blur-md border border-white/20' : 'bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-white shadow-[#C2185B]/20'}`}>
-                <span className="drop-shadow-md">💒</span>
-              </div>
-              <div className="flex flex-col">
-                <span className={`font-display font-black text-2xl tracking-tighter transition-colors leading-none flex items-center gap-2 ${navTransparent ? 'text-white' : 'text-gray-900'}`}>
-                  Shaadi<span className="text-[#D4AF37]">Saathi</span>
-                </span>
-                <span className={`text-[11px] font-bold tracking-widest mt-1.5 transition-opacity italic ${navTransparent ? 'text-[#D4AF37]' : 'text-primary-600'}`}>
-                  Shaadi ka sacha saathi
-                </span>
-              </div>
-            </Link>
+            <BrandLogo 
+              isDark={navTransparent} 
+              onClick={() => setMobileOpen(false)} 
+            />
 
             {/* ── Desktop Nav Links ── */}
             <div className="hidden lg:flex items-center gap-2">
@@ -329,10 +321,7 @@ export default function Navbar() {
               <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
 
               <div className="p-6 flex items-center justify-between border-b border-pink-50 relative z-10">
-                <div className="flex flex-col">
-                  <span className="font-display font-black text-xl text-gray-900 leading-none">ShaadiSaathi</span>
-                  <span className="text-[9px] font-bold text-primary-600 uppercase tracking-widest mt-1">शादी का सच्चा साथी</span>
-                </div>
+                <BrandLogo asLink={false} />
                 <button onClick={() => setMobileOpen(false)} className="p-2 bg-gray-100 rounded-xl text-gray-500 active:scale-90 transition-transform">
                   <FiX size={20} />
                 </button>

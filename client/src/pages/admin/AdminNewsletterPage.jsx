@@ -276,7 +276,7 @@ export default function AdminNewsletterPage() {
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="table-responsive w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-100 text-[10px] uppercase tracking-widest text-gray-400">
                   <th className="pb-3 font-black">Campaign Subject</th>
@@ -295,18 +295,18 @@ export default function AdminNewsletterPage() {
                 ) : (
                   campaigns.map(camp => (
                     <tr key={camp._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 font-medium text-gray-900 max-w-xs truncate">{camp.subject}</td>
-                      <td className="py-4"><StatusBadge status={camp.status} /></td>
-                      <td className="py-4 text-sm text-gray-500">
+                      <td data-label="Campaign Subject" className="py-4 font-medium text-gray-900 max-w-xs truncate">{camp.subject}</td>
+                      <td data-label="Status" className="py-4"><StatusBadge status={camp.status} /></td>
+                      <td data-label="Scheduled/Sent" className="py-4 text-sm text-gray-500">
                         {camp.sentAt ? new Date(camp.sentAt).toLocaleString() : (camp.scheduledAt ? new Date(camp.scheduledAt).toLocaleString() : '-')}
                       </td>
-                      <td className="py-4 text-center text-sm font-bold text-emerald-600">
+                      <td data-label="Delivered" className="py-4 text-center text-sm font-bold text-emerald-600">
                         {camp.stats.delivered}/{camp.stats.totalSent}
                       </td>
-                      <td className="py-4 text-center text-sm font-bold text-red-500">
+                      <td data-label="Failed" className="py-4 text-center text-sm font-bold text-red-500">
                         {camp.stats.failed}
                       </td>
-                      <td className="py-4 text-right space-x-2">
+                      <td data-label="Actions" className="py-4 text-right space-x-2">
                         {['draft', 'scheduled'].includes(camp.status) && (
                           <button onClick={() => loadCampaignToBuilder(camp)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg">
                             <FiEdit />
@@ -449,7 +449,7 @@ export default function AdminNewsletterPage() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="table-responsive w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-100 text-[10px] uppercase tracking-widest text-gray-400">
                   <th className="pb-3 font-black">Email Address</th>
@@ -466,14 +466,14 @@ export default function AdminNewsletterPage() {
                 ) : (
                   filteredSubscribers.map(sub => (
                     <tr key={sub._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 font-medium text-gray-900">{sub.email}</td>
-                      <td className="py-4">
+                      <td data-label="Email Address" className="py-4 font-medium text-gray-900">{sub.email}</td>
+                      <td data-label="Status" className="py-4">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${sub.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                           {sub.status}
                         </span>
                       </td>
-                      <td className="py-4 text-sm text-gray-500">{new Date(sub.subscribedAt).toLocaleDateString()}</td>
-                      <td className="py-4 text-right">
+                      <td data-label="Subscribed Date" className="py-4 text-sm text-gray-500">{new Date(sub.subscribedAt).toLocaleDateString()}</td>
+                      <td data-label="Actions" className="py-4 text-right">
                         <button onClick={() => handleDeleteSubscriber(sub._id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
                           <FiTrash2 />
                         </button>

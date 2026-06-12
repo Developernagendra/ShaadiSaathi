@@ -221,7 +221,7 @@ const GuestManagementPage = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="table-responsive w-full text-left">
               <thead className="bg-gray-50/50 text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">
                 <tr>
                   <th className="px-6 py-5">Guest Detail</th>
@@ -243,7 +243,7 @@ const GuestManagementPage = () => {
                     key={guest._id}
                     className="hover:bg-primary-50/30 transition-all group"
                   >
-                    <td className="px-6 py-5">
+                    <td data-label="Guest Detail" className="px-6 py-5">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-pink-500 text-white flex items-center justify-center font-bold shadow-lg shadow-primary-100 uppercase">
                           {guest.name[0]}
@@ -256,7 +256,7 @@ const GuestManagementPage = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
+                    <td data-label="RSVP Status" className="px-6 py-5">
                       <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${guest.rsvpStatus === 'attending' ? 'bg-green-100 text-green-700' :
                           guest.rsvpStatus === 'not_attending' ? 'bg-red-100 text-red-700' :
                             'bg-yellow-100 text-yellow-700'
@@ -264,7 +264,7 @@ const GuestManagementPage = () => {
                         {guest.rsvpStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-5">
+                    <td data-label="Meal & Group" className="px-6 py-5">
                       <div className="flex flex-col gap-1">
                         <span className="flex items-center gap-1.5 text-xs text-gray-600 font-bold">
                           <LuUtensils size={12} className="text-primary-500" /> {guest.mealPreference || 'Veg'}
@@ -274,13 +274,13 @@ const GuestManagementPage = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
+                    <td data-label="Accommodation" className="px-6 py-5">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <LuHouse size={16} className={guest.roomAllocated ? "text-green-500" : "text-gray-300"} />
                         <span className="font-medium">{guest.roomAllocated || 'Not Assigned'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-5">
+                    <td data-label="Invitation" className="px-6 py-5">
                       {guest.invitationSent ? (
                         <div className="flex items-center gap-1 text-green-600 text-xs font-bold">
                           <CheckCircle size={14} /> Sent
@@ -289,7 +289,7 @@ const GuestManagementPage = () => {
                         <button className="bg-primary-50 text-primary-600 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-primary-100 transition-colors">SEND INVITE</button>
                       )}
                     </td>
-                    <td className="px-6 py-5">
+                    <td data-label="Actions" className="px-6 py-5">
                       <div className="flex items-center gap-2">
                         <button onClick={() => handleOpenModal(guest)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"><LuPencil size={14} /></button>
                         <button onClick={() => handleDelete(guest._id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"><LuTrash2 size={14} /></button>

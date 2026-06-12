@@ -248,7 +248,7 @@ export default function AdminBlogsPage() {
             <>
               {/* Desktop View */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="table-responsive w-full text-left">
                   <thead>
                     <tr className="bg-gray-50/50 border-b border-pink-50">
                       {['Article', 'Category', 'Stats', 'Status', 'Actions'].map(h => (
@@ -259,7 +259,7 @@ export default function AdminBlogsPage() {
                   <tbody className="divide-y divide-pink-50">
                     {filteredBlogs.map(b => (
                       <tr key={b?._id || Math.random()} className="hover:bg-[#FFF8F0]/30 transition-all group">
-                        <td className="py-6 px-8">
+                        <td data-label="Article" className="py-6 px-8">
                           <div className="flex items-center gap-5">
                             <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 border border-pink-50">
                               {b?.coverImage ? (
@@ -276,18 +276,18 @@ export default function AdminBlogsPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-6 px-8">
+                        <td data-label="Category" className="py-6 px-8">
                           <span className="text-[10px] font-black text-[#D4AF37] uppercase tracking-widest italic bg-[#FFF8F0] px-4 py-1.5 rounded-full border border-pink-50">
                             {b?.category || 'General'}
                           </span>
                         </td>
-                        <td className="py-6 px-8">
+                        <td data-label="Stats" className="py-6 px-8">
                           <div className="flex items-center gap-4 text-gray-400 text-xs">
                             <span className="flex items-center gap-1.5 font-bold"><FiEye className="text-blue-400" /> {b?.views || 0}</span>
                             <span className="flex items-center gap-1.5 font-bold"><FiClock className="text-amber-400" /> {b?.content ? Math.ceil(b.content.split(' ').length / 200) : 0}m</span>
                           </div>
                         </td>
-                        <td className="py-6 px-8">
+                        <td data-label="Status" className="py-6 px-8">
                           {b?.isPublished ? (
                             <div className="flex items-center gap-2 text-green-600">
                               <FiGlobe size={14} />
@@ -300,7 +300,7 @@ export default function AdminBlogsPage() {
                             </div>
                           )}
                         </td>
-                        <td className="py-6 px-8">
+                        <td data-label="Actions" className="py-6 px-8">
                           <div className="flex items-center gap-2">
                             <button onClick={() => handleEdit(b)} className="p-3 bg-white text-gray-400 hover:text-blue-500 hover:shadow-lg rounded-xl border border-pink-50 transition-all"><FiEdit2 size={16} /></button>
                             <button onClick={() => handleDelete(b?._id)} className="p-3 bg-white text-gray-400 hover:text-red-500 hover:shadow-lg rounded-xl border border-pink-50 transition-all"><FiTrash2 size={16} /></button>

@@ -6,6 +6,7 @@ import { FiMenu, FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX, FiUser } f
 import ErrorBoundary from '../common/ErrorBoundary'
 import { useNotificationSound } from '../../context/NotificationSoundContext'
 import { getInitials } from '../../utils/helpers'
+import BrandLogo from '../common/BrandLogo'
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
@@ -93,7 +94,10 @@ export default function DashboardLayout() {
             >
               <FiMenu size={22} />
             </button>
-            <div>
+            <div className="md:hidden">
+              <BrandLogo className="scale-[0.6] origin-left -ml-2" showTagline={false} asLink={false} />
+            </div>
+            <div className="hidden md:block">
               <h2 className="font-display text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-none">
                 {getPageTitle(location.pathname)}
               </h2>

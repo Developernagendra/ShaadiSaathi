@@ -860,7 +860,7 @@ exports.rejectServiceAdmin = catchAsync(async (req, res, next) => {
               <div style="text-align:center;margin:30px 0">
                 <a href="${clientUrl}/vendor/dashboard" style="background:#333;color:white;padding:14px 32px;border-radius:30px;text-decoration:none;font-weight:bold">Visit Dashboard</a>
               </div>
-              <p style="color:#999;font-size:13px">Need help? Contact us at support@shaadisaathi.com</p>
+              <p style="color:#999;font-size:13px">Need help? Contact us at n4narendrakr@gmail.com</p>
             </div>
             <div style="background:#f8f8f8;padding:20px;text-align:center;color:#999;font-size:12px">© 2024 ShaadiSaathi</div>
           </div>`,
