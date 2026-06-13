@@ -35,6 +35,43 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
     return next(new AppError('Please provide city, budget and guest count', 400));
   }
 
+  // --- DYNAMIC DATA GENERATION ---
+  const b = Number(budget) || 500000;
+  
+  // 1. Dynamic Budget Breakdown
+  const budgetBreakdown = [
+    { category: "Venue & Catering", amount: Math.floor(b * 0.45), percentage: 45, notes: "Major portion of budget for guest comfort" },
+    { category: "Photography", amount: Math.floor(b * 0.15), percentage: 15, notes: "Capturing memories" },
+    { category: "Decoration", amount: Math.floor(b * 0.15), percentage: 15, notes: "Floral and lighting" },
+    { category: "Attire & Makeup", amount: Math.floor(b * 0.15), percentage: 15, notes: "Bridal and groom wear" },
+    { category: "Miscellaneous", amount: Math.floor(b * 0.10), percentage: 10, notes: "Contingency fund" }
+  ];
+
+  // 2. Dynamic Timeline Calculation
+  const generateDynamicTimeline = (weddingDateStr) => {
+    if (!weddingDateStr) {
+      return [
+        { timeframe: "6-12 Months Before", tasks: ["Set date and budget", "Book primary venue", "Hire planner"] },
+        { timeframe: "3-6 Months Before", tasks: ["Book photographer & decorator", "Finalize guest list"] },
+        { timeframe: "1-3 Months Before", tasks: ["Send invitations", "Book makeup artist & pandit"] },
+        { timeframe: "1 Week Before", tasks: ["Finalize catering headcount", "Reconfirm all vendors"] }
+      ];
+    }
+    const wDate = new Date(weddingDateStr);
+    const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const minusMonths = (d, m) => new Date(new Date(d).setMonth(d.getMonth() - m));
+    const minusDays = (d, days) => new Date(new Date(d).setDate(d.getDate() - days));
+
+    return [
+      { timeframe: `By ${formatDate(minusMonths(wDate, 6))}`, tasks: ["Set date and budget", "Book primary venue", "Hire planner"] },
+      { timeframe: `By ${formatDate(minusMonths(wDate, 3))}`, tasks: ["Book photographer & decorator", "Finalize guest list"] },
+      { timeframe: `By ${formatDate(minusMonths(wDate, 1))}`, tasks: ["Send invitations", "Book makeup artist & pandit"] },
+      { timeframe: `By ${formatDate(minusDays(wDate, 7))}`, tasks: ["Finalize catering headcount", "Reconfirm all vendors"] }
+    ];
+  };
+  const dynamicTimeline = generateDynamicTimeline(weddingDate);
+
+  // --- AI GENERATION ---
   const prompt = `
     You are an expert Indian wedding planner named "ShaadiSaathi AI".
     Create a highly detailed, personalized wedding plan for a couple with these details:
@@ -52,12 +89,6 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
 
     {
       "summary": "Short inspiring summary of the wedding plan",
-      "budgetBreakdown": [
-        { "category": "Venue", "amount": 100000, "percentage": 20, "notes": "example" }
-      ],
-      "timeline": [
-        { "timeframe": "6-12 Months Before", "tasks": ["Book Venue", "Hire Planner"] }
-      ],
       "checklist": [
         { "phase": "Pre-Wedding", "items": ["Finalize Guest List"] }
       ],
@@ -68,45 +99,9 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
     }
   `;
 
-  const generateLocalFallbackPlan = (details) => {
-    const { brideName, groomName, budget, guestCount, city, weddingType } = details;
-    const b = Number(budget) || 500000;
-    return {
-      summary: `A beautiful ${weddingType || 'Traditional'} wedding in ${city} for ${brideName || 'the bride'} and ${groomName || 'the groom'} hosting ${guestCount} guests, crafted with ShaadiSaathi AI.`,
-      budgetBreakdown: [
-        { category: "Venue & Catering", amount: Math.floor(b * 0.45), percentage: 45, notes: "Major portion of budget for guest comfort" },
-        { category: "Photography", amount: Math.floor(b * 0.15), percentage: 15, notes: "Capturing memories" },
-        { category: "Decoration", amount: Math.floor(b * 0.15), percentage: 15, notes: "Floral and lighting" },
-        { category: "Attire & Makeup", amount: Math.floor(b * 0.15), percentage: 15, notes: "Bridal and groom wear" },
-        { category: "Miscellaneous", amount: Math.floor(b * 0.10), percentage: 10, notes: "Contingency fund" }
-      ],
-      timeline: [
-        { timeframe: "6-12 Months Before", tasks: ["Set date and budget", "Book primary venue", "Hire planner"] },
-        { timeframe: "3-6 Months Before", tasks: ["Book photographer & decorator", "Finalize guest list"] },
-        { timeframe: "1-3 Months Before", tasks: ["Send invitations", "Book makeup artist & pandit"] },
-        { timeframe: "1 Week Before", tasks: ["Finalize catering headcount", "Reconfirm all vendors"] }
-      ],
-      checklist: [
-        { phase: "Pre-Wedding", items: ["Venue booked", "Photographer hired", "Outfits purchased"] },
-        { phase: "Wedding Day", items: ["Rings ready", "Vendor payments prepared", "Emergency kit packed"] }
-      ],
-      recommendations: [
-        { service: "Photography", ideas: ["Candid moments", "Drone coverage", "Pre-wedding shoot"] },
-        { service: "Decoration", ideas: ["Pastel floral themes", "Fairy lights canopy"] },
-        { service: "Catering", ideas: ["Live counters", "Local delicacies", "Signature cocktails"] }
-      ],
-      tips: [
-        "Book your venue at least 6 months in advance.",
-        "Keep a 10% buffer in your budget for unexpected costs.",
-        "Delegate tasks to reliable friends and family."
-      ]
-    };
-  };
-
   let aiData = null;
   let isFallback = false;
 
-  if (isDev) console.time("PROVIDER_SELECTION");
   // Check Circuit Breaker
   if (providerHealth.status === 'down') {
     if (Date.now() < providerHealth.retryAfter) {
@@ -116,11 +111,10 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
       providerHealth.status = 'up'; // Reset and try again
     }
   }
-  if (isDev) console.timeEnd("PROVIDER_SELECTION");
 
-  // OpenAI Integration with Smart Error Detection
+  // OpenAI Integration
   if (openai && providerHealth.status === 'up') {
-    let retries = 2; // Reduced retries to fail faster
+    let retries = 2;
     let delay = 1000;
 
     if (isDev) console.time("OPENAI_EXECUTION");
@@ -149,7 +143,6 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
         const aiResponseRaw = completion.choices[0].message.content;
         aiData = JSON.parse(aiResponseRaw);
       } catch (error) {
-        // Smart Error Detection
         const status = error.status;
         const errType = error.error?.type || error.type;
         
@@ -157,16 +150,16 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
           console.error(`❌ OpenAI Critical Error (${status} - ${errType}): Disabling provider for 30 minutes.`);
           providerHealth.status = 'down';
           providerHealth.reason = errType || 'quota_or_auth_error';
-          providerHealth.retryAfter = Date.now() + (5 * 60 * 1000); // 5 mins cooldown (fast recovery)
+          providerHealth.retryAfter = Date.now() + (5 * 60 * 1000);
           aiData = null;
-          break; // Break the retry loop immediately
+          break;
         }
 
         console.warn(`⚠️ OpenAI attempt failed. Retries left: ${retries - 1}. Error:`, error.message);
         retries--;
         if (retries > 0) {
           await new Promise(resolve => setTimeout(resolve, delay));
-          delay *= 1.5; // Mild exponential backoff
+          delay *= 1.5;
         } else {
           console.error("❌ OpenAI completely failed after retries. Falling back to local templates.");
         }
@@ -175,47 +168,98 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
     if (isDev) console.timeEnd("OPENAI_EXECUTION");
   }
 
-  // Fallback if OpenAI fails completely or is not configured
+  // Dynamic DB-driven fallback if OpenAI fails
   if (!aiData) {
     if (isDev) console.time("FALLBACK_GENERATION");
-    aiData = generateLocalFallbackPlan(req.body);
+    aiData = {
+      summary: `A beautiful ${weddingType || 'Traditional'} wedding in ${city} for ${brideName || 'the bride'} and ${groomName || 'the groom'} hosting ${guestCount} guests, crafted dynamically by ShaadiSaathi AI.`,
+      checklist: [
+        { phase: "Pre-Wedding", items: ["Venue booked", "Photographer hired", "Outfits purchased"] },
+        { phase: "Wedding Day", items: ["Rings ready", "Vendor payments prepared", "Emergency kit packed"] }
+      ],
+      recommendations: [
+        { service: "Photography", ideas: ["Candid moments", "Drone coverage", "Pre-wedding shoot"] },
+        { service: "Decoration", ideas: ["Pastel floral themes", "Fairy lights canopy"] },
+        { service: "Catering", ideas: ["Live counters", "Local delicacies", "Signature cocktails"] }
+      ],
+      tips: [
+        "Book your venue at least 6 months in advance.",
+        "Keep a 10% buffer in your budget for unexpected costs.",
+        "Delegate tasks to reliable friends and family."
+      ]
+    };
     isFallback = true;
     if (isDev) console.timeEnd("FALLBACK_GENERATION");
   }
 
+  // Merge the perfect dynamic data with the AI data
+  aiData.budgetBreakdown = budgetBreakdown;
+  aiData.timeline = dynamicTimeline;
+
   if (isDev) console.time("DATABASE_VENDORS_FETCH");
   let localVendors = [];
   try {
-    // Only fetch database vendors if NOT falling back to guarantee < 500ms speed during failures
-    if (!isFallback) {
-      const categories = await Category.find({ isActive: true });
-      
-      const vendorPromises = categories.map(async (cat) => {
-        if (servicesRequired && servicesRequired.length > 0 && !servicesRequired.includes(cat.name)) {
-          return null; // Skip if user specifically didn't ask for this service
-        }
-
-        const vendors = await Vendor.find({
-          'location.city': { $regex: new RegExp(city, 'i') },
-          category: cat._id,
-          approvalStatus: process.env.NODE_ENV === 'development' ? { $in: ['approved', 'pending'] } : 'approved'
-        })
-        .sort({ 'rating.average': -1 })
-        .limit(3)
-        .select('businessName basePrice rating reviews coverImage city category');
-
-        if (vendors.length > 0) {
-          return {
-            categoryName: cat.name,
-            vendors
-          };
-        }
+    const categories = await Category.find({ isActive: true });
+    
+    const vendorPromises = categories.map(async (cat) => {
+      if (servicesRequired && servicesRequired.length > 0 && !servicesRequired.includes(cat.name)) {
         return null;
-      });
+      }
 
-      const resolvedVendors = await Promise.all(vendorPromises);
-      localVendors = resolvedVendors.filter(v => v !== null);
-    }
+      // Calculate allocated budget for this category based on percentage
+      let allocatedBudget = 0;
+      const budgetItem = budgetBreakdown.find(b => cat.name.includes(b.category.split(' ')[0]));
+      if (budgetItem) {
+        allocatedBudget = budgetItem.amount;
+      } else {
+        allocatedBudget = b * 0.10; // 10% default
+      }
+
+      // Fetch vendors where base price or package price is under the allocated budget
+      const vendors = await Vendor.find({
+        'location.city': { $regex: new RegExp(city, 'i') },
+        category: cat._id,
+        approvalStatus: process.env.NODE_ENV === 'development' ? { $in: ['approved', 'pending'] } : 'approved',
+        $or: [
+          { basePrice: { $lte: allocatedBudget } },
+          { 'packages.price': { $lte: allocatedBudget } }
+        ]
+      })
+      .sort({ 'rating.average': -1 })
+      .limit(3)
+      .select('businessName basePrice packages rating reviews coverImage city category');
+
+      if (vendors.length > 0) {
+        // Map to include exact package recommendation
+        const mappedVendors = vendors.map(v => {
+          let recommendedPackage = null;
+          if (v.packages && v.packages.length > 0) {
+            const validPackages = v.packages.filter(p => p.price <= allocatedBudget).sort((a,b) => b.price - a.price);
+            if (validPackages.length > 0) {
+              recommendedPackage = validPackages[0];
+            }
+          }
+          return {
+            _id: v._id,
+            businessName: v.businessName,
+            basePrice: v.basePrice,
+            coverImage: v.coverImage?.url || v.coverImage,
+            rating: v.rating,
+            recommendedPackage
+          };
+        });
+
+        return {
+          categoryName: cat.name,
+          allocatedBudget,
+          vendors: mappedVendors
+        };
+      }
+      return null;
+    });
+
+    const resolvedVendors = await Promise.all(vendorPromises);
+    localVendors = resolvedVendors.filter(v => v !== null);
   } catch (dbError) {
     console.error("❌ Database Error while fetching local vendors:", dbError);
   }

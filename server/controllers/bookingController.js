@@ -66,6 +66,18 @@ exports.createBooking = catchAsync(async (req, res, next) => {
     return next(new AppError('You already have an active booking request with this vendor for the selected date.', 400));
   }
 
+  // Check if date is in vendor's unavailableDates
+  const requestedDate = new Date(eventDate);
+  requestedDate.setHours(0, 0, 0, 0);
+  const isUnavailable = vendor.unavailableDates && vendor.unavailableDates.some(d => {
+    const ud = new Date(d);
+    ud.setHours(0, 0, 0, 0);
+    return ud.getTime() === requestedDate.getTime();
+  });
+  if (isUnavailable) {
+    return next(new AppError('This vendor is already booked for selected date.', 400));
+  }
+
   // DEBUG LOG AS REQUESTED
   console.log(`[BOOKING_DEBUG] Saving VendorId: ${vendor.user} (Matches User: ${vendor.user.toString() === req.user._id.toString()})`);
   console.log(`[BOOKING_DEBUG] Current UserID: ${req.user._id}`);
@@ -924,6 +936,8 @@ exports.getVendorBookings = catchAsync(async (req, res, next) => {
     query.bookingType = 'service';
   } else if (bookingType === 'cab' || bookingType === 'baraat-cab') {
     query.bookingType = { $in: ['cab', 'baraat-cab'] };
+  } else if (bookingType) {
+    query.bookingType = { $in: bookingType.split(',') };
   }
 
   if (status && status !== 'all') {
@@ -948,6 +962,8 @@ exports.getVendorBookings = catchAsync(async (req, res, next) => {
     matchQuery.bookingType = 'service';
   } else if (bookingType === 'cab' || bookingType === 'baraat-cab') {
     matchQuery.bookingType = { $in: ['cab', 'baraat-cab'] };
+  } else if (bookingType) {
+    matchQuery.bookingType = { $in: bookingType.split(',') };
   }
 
   const [bookings, total, serviceCounts] = await Promise.all([
@@ -1045,6 +1061,33 @@ exports.updateBookingStatus = catchAsync(async (req, res, next) => {
   booking.updatedAt = new Date();
   booking.timeline.push({ status, note, updatedBy: req.user._id });
 
+  if (status === 'confirmed') {
+    const vendorProfile = await Vendor.findById(booking.vendorProfileId._id);
+    if (vendorProfile) {
+      if (!vendorProfile.unavailableDates) vendorProfile.unavailableDates = [];
+      if (!vendorProfile.bookings) vendorProfile.bookings = [];
+      
+      const eDate = new Date(booking.eventDate);
+      eDate.setHours(0, 0, 0, 0);
+      
+      const alreadyBlocked = vendorProfile.unavailableDates.some(d => {
+        const ud = new Date(d);
+        ud.setHours(0, 0, 0, 0);
+        return ud.getTime() === eDate.getTime();
+      });
+      
+      if (!alreadyBlocked) {
+        vendorProfile.unavailableDates.push(eDate);
+      }
+      
+      if (!vendorProfile.bookings.includes(booking._id)) {
+        vendorProfile.bookings.push(booking._id);
+      }
+      
+      await vendorProfile.save();
+    }
+  }
+
   if (status === 'completed') {
     await Vendor.findByIdAndUpdate(booking.vendorProfileId._id, {
       $inc: { totalBookings: 1, totalEarnings: booking.amount },
@@ -1078,6 +1121,16 @@ exports.updateBookingStatus = catchAsync(async (req, res, next) => {
         availability.status = 'partially_booked';
       }
       await availability.save();
+    }
+
+    const vendorProfile = await Vendor.findById(booking.vendorProfileId._id);
+    if (vendorProfile && vendorProfile.unavailableDates) {
+      vendorProfile.unavailableDates = vendorProfile.unavailableDates.filter(d => {
+        const ud = new Date(d);
+        ud.setHours(0, 0, 0, 0);
+        return ud.getTime() !== formattedDate.getTime();
+      });
+      await vendorProfile.save();
     }
 
     // Inventory is restored implicitly because booking status changes to 'cancelled' or 'rejected',
@@ -1195,6 +1248,16 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
     }
 
     await availability.save();
+  }
+
+  const vendorProfile = await Vendor.findOne({ user: booking.vendor });
+  if (vendorProfile && vendorProfile.unavailableDates) {
+    vendorProfile.unavailableDates = vendorProfile.unavailableDates.filter(d => {
+      const ud = new Date(d);
+      ud.setHours(0, 0, 0, 0);
+      return ud.getTime() !== formattedDate.getTime();
+    });
+    await vendorProfile.save();
   }
 
   // Inventory is restored implicitly because booking status changes to 'cancelled',

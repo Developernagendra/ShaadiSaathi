@@ -1,6 +1,6 @@
 const express = require('express');
 const availabilityController = require('../controllers/availabilityController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ router.get('/vendors/:id', availabilityController.getPublicAvailability);
 
 // Protected routes for vendors
 router.use(protect);
-router.use(authorize('vendor', 'admin'));
+router.use(restrictTo('vendor', 'admin'));
 
 router.get('/vendor', availabilityController.getVendorAvailability);
 router.post('/', availabilityController.updateAvailability);

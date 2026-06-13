@@ -1,7 +1,7 @@
 // userRoutes.js
 const express = require('express');
 const router = express.Router();
-const { protect, authorize, verified } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const { uploadProfile } = require('../config/cloudinary');
 const {
   getProfile, updateProfile, uploadAvatar, deleteAccount,
@@ -17,7 +17,7 @@ router.post('/addresses', protect, verified, addAddress);
 router.delete('/addresses/:addressId', protect, verified, deleteAddress);
 router.post('/wishlist/:vendorId', protect, verified, toggleWishlist);
 router.get('/wishlist', protect, verified, getWishlist);
-router.get('/', protect, authorize('admin'), getAllUsers);
-router.patch('/:id/toggle-status', protect, authorize('admin'), toggleUserStatus);
+router.get('/', protect, restrictTo('admin'), getAllUsers);
+router.patch('/:id/toggle-status', protect, restrictTo('admin'), toggleUserStatus);
 
 module.exports = router;

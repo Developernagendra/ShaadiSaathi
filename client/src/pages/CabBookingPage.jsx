@@ -292,9 +292,17 @@ export default function CabBookingPage() {
                  </div>
                  
                  {isFleetBuilder ? (
-                    <div className="space-y-6">
+                     <div className="space-y-6">
                       <div className="aspect-[21/9] rounded-[2rem] overflow-hidden bg-gray-100 shadow-inner relative flex items-center justify-center">
-                        <img src="https://images.unsplash.com/photo-1546297374-fb211f4cc09a?w=1200" alt="Fleet" className="w-full h-full object-cover" />
+                        <img 
+                          src="https://images.unsplash.com/photo-1546297374-fb211f4cc09a?w=1200" 
+                          alt="Fleet" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=1200';
+                            e.currentTarget.onerror = null;
+                          }}
+                        />
                         <div className="absolute inset-0 bg-black/50" />
                         <FaCrown className="absolute text-[#D4AF37] text-7xl drop-shadow-2xl" />
                       </div>
@@ -309,12 +317,37 @@ export default function CabBookingPage() {
                                </div>
                              );
                            }
+                           
+                           // Try multiple data fields to find a valid image URL
+                           let imgSrc = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400';
+                           const vData = item.data;
+                           
+                           if (vData?.images && vData.images.length > 0 && vData.images[0]?.url) {
+                             imgSrc = vData.images[0].url;
+                           } else if (vData?.vehicleImages && vData.vehicleImages.length > 0) {
+                             imgSrc = vData.vehicleImages[0];
+                           } else if (vData?.imageUrl) {
+                             imgSrc = vData.imageUrl;
+                           } else if (vData?.image) {
+                             imgSrc = vData.image;
+                           } else if (vData?.thumbnail) {
+                             imgSrc = vData.thumbnail;
+                           }
+
                            return (
                              <div key={idx} className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                               <div className="w-full h-24 bg-white rounded-xl mb-3 overflow-hidden">
-                                 <img src={item.data?.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400'} className="w-full h-full object-cover" />
+                               <div className="w-full h-24 bg-white rounded-xl mb-3 overflow-hidden flex items-center justify-center relative bg-gray-200">
+                                 <img 
+                                   src={imgSrc} 
+                                   alt={vData?.name || vData?.type || 'Vehicle'} 
+                                   className="w-full h-full object-cover" 
+                                   onError={(e) => {
+                                     e.currentTarget.src = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=400';
+                                     e.currentTarget.onerror = null;
+                                   }}
+                                 />
                                </div>
-                               <p className="font-bold text-gray-900 text-sm leading-none mb-1">{item.data?.name || item.data?.type || item.name || 'Vehicle'}</p>
+                               <p className="font-bold text-gray-900 text-sm leading-none mb-1">{vData?.name || vData?.type || item.name || 'Vehicle'}</p>
                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{item.count} Selected</p>
                              </div>
                            );
@@ -334,8 +367,16 @@ export default function CabBookingPage() {
                     </div>
                   ) : cab && (
                     <div className="flex flex-col md:flex-row gap-8 items-center bg-gray-50 p-6 rounded-[2.5rem] border border-gray-100">
-                      <div className="w-full md:w-1/2 aspect-[4/3] rounded-[2rem] overflow-hidden bg-gray-100 shadow-inner">
-                        <img src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'} alt={cab.name} className="w-full h-full object-cover" />
+                      <div className="w-full md:w-1/2 aspect-[4/3] rounded-[2rem] overflow-hidden bg-gray-100 shadow-inner flex items-center justify-center">
+                        <img 
+                          src={cab?.images?.[0]?.url || cab?.vehicleImages?.[0] || cab?.imageUrl || cab?.image || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'} 
+                          alt={cab.name || 'Cab'} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800';
+                            e.currentTarget.onerror = null;
+                          }}
+                        />
                       </div>
                       <div className="w-full md:w-1/2 space-y-4">
                         <h4 className="font-display font-black text-4xl text-gray-900 tracking-tight">{cab.name}</h4>

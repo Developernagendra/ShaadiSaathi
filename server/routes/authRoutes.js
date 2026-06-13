@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { register, login, logout, verifyEmail, forgotPassword, resetPassword, getMe, changePassword, resendVerification, testEmail } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 
 router.post('/register', register);
 router.post('/login', login);

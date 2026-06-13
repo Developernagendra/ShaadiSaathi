@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize, verified, optionalAuth } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const { uploadService } = require('../config/cloudinary');
 const {
   createVendorProfile, getMyVendorProfile, updateVendorProfile,
@@ -12,7 +12,7 @@ const { getVendorBlogs, saveVendorBlog, deleteVendorBlog } = require('../control
 router.get('/', optionalAuth, getAllVendors);
 router.get('/featured', getFeaturedVendors);
 router.get('/profile', protect, getMyVendorProfile);
-router.get('/services', protect, authorize('vendor', 'admin'), async (req, res, next) => {
+router.get('/services', protect, restrictTo('vendor', 'admin'), async (req, res, next) => {
   try {
     const { Service, Vendor } = require('../models/index');
     const { page = 1, limit = 10 } = req.query;
@@ -53,12 +53,12 @@ router.get('/services', protect, authorize('vendor', 'admin'), async (req, res, 
   }
 });
 
-router.get('/dashboard', protect, authorize('vendor', 'admin'), verified, getVendorDashboard);
+router.get('/dashboard', protect, restrictTo('vendor', 'admin'), verified, getVendorDashboard);
 router.get('/:id', optionalAuth, getVendorById);
 router.get('/:id/contact', protect, getVendorContact);
 router.post('/', protect, createVendorProfile);
-router.put('/profile', protect, authorize('vendor', 'admin'), verified, updateVendorProfile);
-router.put('/cab-pricing', protect, authorize('vendor', 'admin'), verified, async (req, res, next) => {
+router.put('/profile', protect, restrictTo('vendor', 'admin'), verified, updateVendorProfile);
+router.put('/cab-pricing', protect, restrictTo('vendor', 'admin'), verified, async (req, res, next) => {
   const Vendor = require('../models/Vendor');
   let vendor;
   if (req.user.role === 'admin' && req.query.vendorId) {
@@ -71,9 +71,9 @@ router.put('/cab-pricing', protect, authorize('vendor', 'admin'), verified, asyn
   await vendor.save();
   res.status(200).json({ status: 'success', cabPricing: vendor.cabPricing });
 });
-router.post('/images', protect, authorize('vendor', 'admin'), uploadService.array('images', 10), uploadVendorImages);
-router.post('/cover-image', protect, authorize('vendor', 'admin'), uploadService.single('coverImage'), uploadVendorCoverImage);
-router.post('/video', protect, authorize('vendor', 'admin'), verified, uploadService.single('video'), async (req, res, next) => {
+router.post('/images', protect, restrictTo('vendor', 'admin'), uploadService.array('images', 10), uploadVendorImages);
+router.post('/cover-image', protect, restrictTo('vendor', 'admin'), uploadService.single('coverImage'), uploadVendorCoverImage);
+router.post('/video', protect, restrictTo('vendor', 'admin'), verified, uploadService.single('video'), async (req, res, next) => {
   if (!req.file) return next(new AppError('Please upload a video.', 400));
   const Vendor = require('../models/Vendor');
   let vendor;
@@ -93,8 +93,8 @@ router.post('/video', protect, authorize('vendor', 'admin'), verified, uploadSer
   await vendor.save();
   res.status(200).json({ status: 'success', video: vendor.video });
 });
-router.delete('/images/:imageId', protect, authorize('vendor', 'admin'), verified, deleteVendorImage);
-router.delete('/video', protect, authorize('vendor', 'admin'), verified, async (req, res) => {
+router.delete('/images/:imageId', protect, restrictTo('vendor', 'admin'), verified, deleteVendorImage);
+router.delete('/video', protect, restrictTo('vendor', 'admin'), verified, async (req, res) => {
   const Vendor = require('../models/Vendor');
   let vendor;
   if (req.user.role === 'admin' && req.query.vendorId) {
@@ -113,16 +113,16 @@ router.delete('/video', protect, authorize('vendor', 'admin'), verified, async (
 
 // Leads pipeline
 const { getVendorLeadsPipeline, updateLeadPipelineStatus } = require('../controllers/vendorController');
-router.get('/leads/pipeline', protect, authorize('vendor', 'admin'), verified, getVendorLeadsPipeline);
-router.patch('/leads/:id/status', protect, authorize('vendor', 'admin'), verified, updateLeadPipelineStatus);
+router.get('/leads/pipeline', protect, restrictTo('vendor', 'admin'), verified, getVendorLeadsPipeline);
+router.patch('/leads/:id/status', protect, restrictTo('vendor', 'admin'), verified, updateLeadPipelineStatus);
 
 // Blog management
-router.get('/blogs', protect, authorize('vendor', 'admin'), getVendorBlogs);
-router.post('/blogs', protect, authorize('vendor', 'admin'), saveVendorBlog);
-router.delete('/blogs/:id', protect, authorize('vendor', 'admin'), deleteVendorBlog);
+router.get('/blogs', protect, restrictTo('vendor', 'admin'), getVendorBlogs);
+router.post('/blogs', protect, restrictTo('vendor', 'admin'), saveVendorBlog);
+router.delete('/blogs/:id', protect, restrictTo('vendor', 'admin'), deleteVendorBlog);
 
 // Subscription Activation (Payment-Free)
-router.post('/activate-subscription', protect, authorize('vendor'), activateSubscription);
+router.post('/activate-subscription', protect, restrictTo('vendor'), activateSubscription);
 
 // ======== Shared helper: fetch vendor's fleet vehicles ========
 const getVendorFleetVehicles = async (userId) => {
@@ -161,21 +161,21 @@ const getVendorFleetVehicles = async (userId) => {
   });
 };
 
-router.get('/fleet', protect, authorize('vendor', 'admin'), async (req, res, next) => {
+router.get('/fleet', protect, restrictTo('vendor', 'admin'), async (req, res, next) => {
   try {
     const data = await getVendorFleetVehicles(req.user._id);
     res.status(200).json({ success: true, data, message: 'Vendor vehicles loaded successfully.' });
   } catch (err) { next(err); }
 });
 
-router.get('/fleet/vehicles', protect, authorize('vendor', 'admin'), async (req, res, next) => {
+router.get('/fleet/vehicles', protect, restrictTo('vendor', 'admin'), async (req, res, next) => {
   try {
     const data = await getVendorFleetVehicles(req.user._id);
     res.status(200).json({ success: true, data, message: 'Vendor vehicles loaded successfully.' });
   } catch (err) { next(err); }
 });
 
-router.get('/fleet/my-vehicles', protect, authorize('vendor', 'admin'), async (req, res, next) => {
+router.get('/fleet/my-vehicles', protect, restrictTo('vendor', 'admin'), async (req, res, next) => {
   try {
     const data = await getVendorFleetVehicles(req.user._id);
     res.status(200).json({ success: true, data, message: 'Vendor vehicles loaded successfully.' });

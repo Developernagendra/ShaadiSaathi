@@ -23,7 +23,7 @@ export default function PackageSection() {
   }, [dispatch, packages.length]);
 
   return (
-    <section className="py-16 px-4 bg-[#FFF8FA] overflow-hidden" id="wedding-packages">
+    <section className="py-10 md:py-16 px-4 bg-[#FFF8FA] overflow-hidden" id="wedding-packages">
       <div className="max-w-7xl mx-auto relative">
 
         {/* Decorative Background Elements */}

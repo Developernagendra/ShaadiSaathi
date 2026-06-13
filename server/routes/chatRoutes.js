@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const { startChat, getMyChats, getChatMessages, sendMessage, getUnreadCount, getAllChatsAdmin } = require('../controllers/chatController');
 router.get('/unread-count', protect, getUnreadCount);
 router.post('/start', protect, startChat);
 router.get('/', protect, getMyChats);
-router.get('/admin/all', protect, authorize('admin'), getAllChatsAdmin);
+router.get('/admin/all', protect, restrictTo('admin'), getAllChatsAdmin);
 router.get('/:chatId/messages', protect, getChatMessages);
 router.post('/:chatId/messages', protect, sendMessage);
 module.exports = router;

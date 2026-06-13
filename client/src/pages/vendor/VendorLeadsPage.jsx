@@ -122,7 +122,7 @@ export default function VendorLeadsPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         key={lead.id}
-                        className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-[0_15px_30px_rgba(0,0,0,0.06)] border border-white hover:border-[#D4AF37]/30 transition-all group relative overflow-hidden flex flex-col"
+                        className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-[0_15px_30px_rgba(0,0,0,0.06)] border border-white hover:border-[#D4AF37]/30 transition-all group relative flex flex-col"
                       >
                         <div className="flex justify-between items-start mb-4">
                           <div>

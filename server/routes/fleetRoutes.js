@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const { 
   createCab, 
   updateCab, 
@@ -44,18 +44,18 @@ router.get('/:id', getCabDetails);
 
 // @desc    Add new vehicle to fleet
 // @route   POST /api/fleet
-router.post('/', authorize('admin', 'vendor'), createCab);
+router.post('/', restrictTo('admin', 'vendor'), createCab);
 
 // @desc    Update vehicle in fleet
 // @route   PATCH /api/fleet/:id
-router.patch('/:id', authorize('admin', 'vendor'), updateCab);
+router.patch('/:id', restrictTo('admin', 'vendor'), updateCab);
 
 // @desc    Delete vehicle from fleet
 // @route   DELETE /api/fleet/:id
-router.delete('/:id', authorize('admin', 'vendor'), deleteCab);
+router.delete('/:id', restrictTo('admin', 'vendor'), deleteCab);
 
 // Admin Moderation
-router.patch('/moderate/:id', authorize('admin'), moderateCab);
+router.patch('/moderate/:id', restrictTo('admin'), moderateCab);
 
 
 module.exports = router;

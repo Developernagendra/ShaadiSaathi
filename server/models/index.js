@@ -208,6 +208,23 @@ const bookingSchema = new mongoose.Schema({
     totalFare: Number
   }],
   cabIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Cab' }],
+  
+  // Live Tracking Feature 4
+  tripStatus: {
+    type: String,
+    enum: ['not_started', 'en_route_pickup', 'arrived', 'in_progress', 'completed'],
+    default: 'not_started'
+  },
+  currentLocation: {
+    lat: Number,
+    lng: Number,
+    updatedAt: Date
+  },
+  driverAssigned: {
+    name: String,
+    phone: String,
+    vehicleNumber: String
+  },
 
   cancellationReason: String,
   cancelledAt: Date,
@@ -667,6 +684,7 @@ const NewsletterCampaign = require('./NewsletterCampaign');
 
 const Package = require('./Package');
 const PackageInquiry = require('./PackageInquiry');
+const Invitation = require('./Invitation');
 
 module.exports = {
   User,
@@ -691,6 +709,7 @@ module.exports = {
   NewsletterSubscriber,
   NewsletterCampaign,
   Package,
-  PackageInquiry
+  PackageInquiry,
+  Invitation
 };
 

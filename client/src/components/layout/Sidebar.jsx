@@ -7,7 +7,7 @@ import {
   FiImage, FiStar, FiMessageSquare, FiPieChart, FiTag, FiBookOpen, FiActivity, FiCheckSquare,
   FiChevronDown, FiChevronRight, FiPlus, FiLayout, FiEye
 } from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FaTruck, FaMapMarkerAlt } from 'react-icons/fa'
 import { useTranslation } from 'react-i18next'
 import BrandLogo from '../common/BrandLogo'
 
@@ -31,7 +31,6 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
       subLinks: [
         { to: '/invitation-creator', label: 'Dashboard', icon: <FiHome size={14} /> },
         { to: '/invitation-creator/new', label: 'Create New', icon: <FiPlus size={14} /> },
-        { to: '/invitation-creator/templates', label: 'Templates', icon: <FiLayout size={14} /> },
       ],
     },
     { to: '/notifications', label: t('userDashboard.notifications', 'Notifications'), icon: <FiBell /> },
@@ -65,6 +64,7 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
     { to: '/vendor/leads', label: t('vendorDashboard.leads', 'Leads'), icon: <FiActivity /> },
     { to: '/vendor/bookings', label: t('vendorDashboard.bookings', 'Bookings'), icon: <FiCalendar /> },
     { to: '/vendor/manage-cabs', label: t('vendorDashboard.myFleet', 'Fleet Management'), icon: <FaTruck /> },
+    { to: '/vendor/active-trips', label: t('vendorDashboard.activeTrips', 'Live Trips'), icon: <FaMapMarkerAlt /> },
     { to: '/vendor/reviews', label: t('vendorDashboard.reviews', 'Reviews'), icon: <FiStar /> },
     { to: '/vendor/messages', label: t('vendorDashboard.messages', 'Messages'), icon: <FiMessageSquare /> },
     { to: '/vendor/analytics', label: t('vendorDashboard.analytics', 'Analytics'), icon: <FiPieChart /> },

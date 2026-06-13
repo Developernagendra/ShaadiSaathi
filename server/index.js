@@ -177,6 +177,18 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+/* ---------------- AUTH MIDDLEWARE VALIDATION ---------------- */
+const authMid = require('./middleware/authMiddleware');
+if (!authMid.protect || !authMid.restrictTo || !authMid.adminOnly) {
+  console.error('❌ CRITICAL: Auth Middleware failed to load properly. restrictTo or protect is missing.');
+  process.exit(1);
+} else {
+  console.log('✓ Auth Middleware Loaded');
+  console.log('✓ Protect Loaded');
+  console.log('✓ RestrictTo Loaded');
+  console.log('✓ Routes Ready');
+}
+
 /* ---------------- ROUTES ---------------- */
 const { testEmail } = require("./controllers/authController");
 app.get("/api/test-email", testEmail);
@@ -202,6 +214,8 @@ app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/newsletter", require("./routes/newsletterRoutes"));
 app.use("/api/packages", require("./routes/packageRoutes"));
 app.use("/api/package-inquiries", require("./routes/packageInquiryRoutes"));
+app.use("/api/invitations", require("./routes/invitationRoutes"));
+app.use("/api/tools", require("./routes/toolRoutes"));
 
 /* ---------------- 404 ---------------- */
 app.use("*", (req, res) => {

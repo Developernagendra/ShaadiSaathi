@@ -110,48 +110,13 @@
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c2185b' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
-  /* Responsive Tables - Converts to Cards on Mobile */
-  @media (max-width: 768px) {
-    .table-responsive, .table-responsive thead, .table-responsive tbody, .table-responsive th, .table-responsive td, .table-responsive tr {
-      display: block;
-    }
-    .table-responsive thead tr {
-      display: none;
-    }
-    .table-responsive tr {
-      margin-bottom: 1rem;
-      background: white;
-      border-radius: 1.5rem;
-      padding: 1rem;
-      box-shadow: 0 10px 25px rgba(194, 24, 91, 0.05);
-      border: 1px solid #fdf2f7;
-    }
-    .table-responsive td {
-      border: none !important;
-      position: relative;
-      padding-left: 45% !important;
-      text-align: left !important;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      min-height: 2rem;
-    }
-    .table-responsive td:before {
-      content: attr(data-label);
-      position: absolute;
-      left: 0;
-      width: 40%;
-      padding-right: 10px;
-      white-space: nowrap;
-      font-weight: 900;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #9ca3af;
-    }
-    .table-responsive td:last-child {
-      margin-bottom: 0;
-    }
+  /* Standardize table wrappers for horizontal scroll */
+  .table-responsive-wrapper {
+    @apply w-full overflow-x-auto rounded-2xl md:rounded-[2rem] border border-gray-100 shadow-sm bg-white;
+  }
+  
+  .table-responsive {
+    @apply w-full text-left min-w-[800px];
   }
 }
 

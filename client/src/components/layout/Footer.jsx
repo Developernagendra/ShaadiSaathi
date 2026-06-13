@@ -191,7 +191,7 @@ export default function Footer() {
 
         {/* ── BOTTOM BAR ── */}
         <div className="border-t border-white/10 bg-black/20 relative z-10">
-          <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+          <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <p className="text-slate-500 text-sm font-medium">
               &copy; {new Date().getFullYear()} ShaadiSaathi. All Rights Reserved.
             </p>

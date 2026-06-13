@@ -304,7 +304,7 @@ const getAllVendors = catchAsync(async (req, res, next) => {
   const {
     page = 1, limit = 12, city, category, minPrice, maxPrice,
     rating, search, sortBy = 'createdAt', order = 'desc', featured,
-    experience, marketplace
+    experience, marketplace, date
   } = req.query;
 
   const query = {
@@ -348,6 +348,21 @@ const getAllVendors = catchAsync(async (req, res, next) => {
         });
       }
     }
+  }
+
+  if (date) {
+    const requestedDate = new Date(date);
+    const startOfDay = new Date(requestedDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(requestedDate.setHours(23, 59, 59, 999));
+    
+    query.unavailableDates = {
+      $not: {
+        $elemMatch: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        }
+      }
+    };
   }
 
   if (minPrice || maxPrice) {
@@ -912,13 +927,33 @@ const updateAvailability = catchAsync(async (req, res, next) => {
   const vendor = await Vendor.findOne({ user: req.user._id });
   if (!vendor) return next(new AppError('Vendor not found.', 404));
 
+  if (!vendor.unavailableDates) vendor.unavailableDates = [];
+
   if (action === 'block') {
     const newDates = dates.map((d) => ({ date: new Date(d), isBooked: true }));
     vendor.availability.push(...newDates);
+    
+    dates.forEach(d => {
+      const eDate = new Date(d);
+      eDate.setHours(0,0,0,0);
+      const exists = vendor.unavailableDates.some(ud => {
+        const dObj = new Date(ud);
+        dObj.setHours(0,0,0,0);
+        return dObj.getTime() === eDate.getTime();
+      });
+      if (!exists) vendor.unavailableDates.push(eDate);
+    });
   } else {
     vendor.availability = vendor.availability.filter(
       (a) => !dates.includes(a.date.toISOString().split('T')[0])
     );
+    
+    vendor.unavailableDates = vendor.unavailableDates.filter(ud => {
+      const dObj = new Date(ud);
+      dObj.setHours(0,0,0,0);
+      const dateStr = dObj.toISOString().split('T')[0];
+      return !dates.includes(dateStr);
+    });
   }
 
   await vendor.save();

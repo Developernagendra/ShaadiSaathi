@@ -1,6 +1,6 @@
 const express = require('express');
 const featureController = require('../controllers/featureController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const rateLimit = require('express-rate-limit');
@@ -52,7 +52,7 @@ router.route('/leads')
   .get(featureController.getLeads)
   .post(featureController.createLead);
 
-router.get('/leads/nearby', authorize('vendor', 'admin'), featureController.getNearbyLeads);
-router.post('/leads/quote', authorize('vendor', 'admin'), featureController.submitQuotation);
+router.get('/leads/nearby', restrictTo('vendor', 'admin'), featureController.getNearbyLeads);
+router.post('/leads/quote', restrictTo('vendor', 'admin'), featureController.submitQuotation);
 
 module.exports = router;

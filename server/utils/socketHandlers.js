@@ -67,6 +67,58 @@ const initSocketHandlers = (io) => {
       }
     });
 
+    // ==================== LIVE TRACKING (FEATURE 4) ====================
+    
+    // Join a specific trip room (both User and Driver)
+    socket.on('join_trip', (bookingId) => {
+      socket.join(`trip_${bookingId}`);
+      console.log(`Socket ${socket.id} joined trip room: trip_${bookingId}`);
+    });
+
+    // Leave a specific trip room
+    socket.on('leave_trip', (bookingId) => {
+      socket.leave(`trip_${bookingId}`);
+      console.log(`Socket ${socket.id} left trip room: trip_${bookingId}`);
+    });
+
+    // Driver updates trip status
+    socket.on('update_trip_status', async ({ bookingId, status, vendorId }) => {
+      try {
+        const { Booking } = require('../models/index');
+        const booking = await Booking.findById(bookingId);
+        if (booking && (booking.vendorId?.toString() === vendorId || booking.vendor?.toString() === vendorId || booking.vendorProfileId?.toString() === vendorId)) {
+          booking.tripStatus = status;
+          if (status === 'completed') {
+             booking.status = 'completed'; // also mark main booking as complete
+          } else if (status !== 'not_started') {
+             booking.status = 'in_progress';
+          }
+          await booking.save();
+          // Broadcast to everyone in the trip room
+          io.to(`trip_${bookingId}`).emit('trip_status_updated', { bookingId, status });
+          console.log(`Trip ${bookingId} status updated to ${status}`);
+        }
+      } catch (err) {
+        console.error('Socket update_trip_status error:', err);
+      }
+    });
+
+    // Driver updates live location
+    socket.on('update_location', async ({ bookingId, lat, lng, vendorId }) => {
+      try {
+        const { Booking } = require('../models/index');
+        // We broadcast immediately for lowest latency
+        io.to(`trip_${bookingId}`).emit('location_updated', { bookingId, lat, lng, updatedAt: new Date() });
+        
+        // Then we save to DB asynchronously (throttle in production if needed)
+        await Booking.findByIdAndUpdate(bookingId, {
+          currentLocation: { lat, lng, updatedAt: new Date() }
+        });
+      } catch (err) {
+        console.error('Socket update_location error:', err);
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log(`🔌 Socket disconnected: ${socket.id}`);
     });

@@ -6,7 +6,7 @@ import { fetchUserDashboard } from '../../store/slices/bookingSlice'
 import { fetchUnreadChatCount } from '../../store/slices/chatSlice'
 import { resendVerification } from '../../store/slices/authSlice'
 import { formatPrice, formatDateShort, getStatusColor, getInitials } from '../../utils/helpers'
-import { FiCalendar, FiHeart, FiMessageCircle, FiBell, FiArrowRight, FiUser, FiEdit3, FiShare2, FiUsers, FiMail, FiCheck, FiLayout, FiSmartphone, FiGlobe, FiSettings } from 'react-icons/fi'
+import { FiCalendar, FiHeart, FiMessageCircle, FiBell, FiArrowRight, FiUser, FiEdit3, FiShare2, FiUsers, FiMail, FiCheck, FiLayout, FiSmartphone, FiGlobe, FiSettings, FiEye } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 import Badge from '../../components/common/Badge'
 
@@ -196,6 +196,7 @@ export default function UserDashboard() {
                 {[
                   { to: '/services', icon: '🔍', label: 'Browse Vendors', color: '#C2185B' },
                   { to: '/baraat-cabs', icon: '🚗', label: 'Imperial Fleet', color: '#8E244D' },
+                  { to: '/tools', icon: '🛠️', label: 'Wedding Tools', color: '#ec4899' },
                   { to: '/wishlist', icon: '❤️', label: 'Saved Vendors', color: '#D4AF37' },
                   { to: '/profile', icon: '👤', label: 'My Profile', color: '#6366f1' },
                   { to: '/chat', icon: '💬', label: 'My Messages', color: '#10b981' },
@@ -214,251 +215,51 @@ export default function UserDashboard() {
         </div>
 
         {/* =========================================
-            INVITATION REDESIGN SECTION 
+            INVITATION STUDIO PREMIUM CARD
             ========================================= */}
-        <div className="mt-20">
-          {/* Hero Banner */}
+        <div className="mt-12 mb-12">
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-br from-[#1a1a2e] to-[#2d2d44] rounded-2xl md:rounded-[3rem] p-6 sm:p-10 md:p-16 relative overflow-hidden shadow-premium mb-8 md:mb-12"
+            className="bg-white rounded-[2rem] p-8 md:p-10 shadow-premium border border-pink-50 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8"
           >
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#C2185B]/20 to-transparent rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gradient-to-tr from-[#D4AF37]/20 to-transparent rounded-full blur-[60px] translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-pink-50 to-transparent rounded-full blur-[40px] pointer-events-none" />
             
-            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
-              <div className="flex-1 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 mb-6">
-                  <span className="text-[#D4AF37]">✨</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white">Premium Feature</span>
-                </div>
-                <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-6 tracking-tight">
-                  Design Your <span className="text-[#D4AF37] italic">Dream</span> Wedding Invitation
-                </h2>
-                <p className="text-white/70 text-base md:text-lg lg:text-xl font-medium mb-6 md:mb-10 max-w-2xl mx-auto lg:mx-0">
-                  Create, personalize, and share stunning digital invitations. Track RSVPs in real-time and manage your guest list effortlessly.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full sm:w-auto bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-[#1a1a2e] font-black text-[12px] uppercase tracking-[0.2em] py-4 px-10 rounded-2xl shadow-xl hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all flex items-center justify-center gap-3"
-                  >
-                    <FiEdit3 size={18} /> Create Invitation
-                  </motion.button>
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full sm:w-auto bg-white/10 text-white font-black text-[12px] uppercase tracking-[0.2em] py-4 px-10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-3 backdrop-blur-sm"
-                  >
-                    <FiLayout size={18} /> Browse Templates
-                  </motion.button>
-                </div>
+            <div className="flex-1 relative z-10 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-[#FFF8F0] px-4 py-1.5 rounded-full mb-4 border border-[#D4AF37]/30 shadow-sm">
+                <span className="text-lg">💌</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C2185B]">Wedding Invitation Studio</span>
               </div>
+              <p className="text-gray-500 font-medium text-lg mb-6 max-w-lg mx-auto md:mx-0">
+                Create beautiful wedding invitations and share them instantly with your guests.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+                <Link to="/invitation-creator/new" className="w-full sm:w-auto bg-gray-900 text-white font-bold text-sm py-4 px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                  ✨ Create Invitation
+                </Link>
+                <Link to="/invitation-creator" className="w-full sm:w-auto bg-gray-100 text-gray-700 font-bold text-sm py-4 px-8 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                  📂 My Invitations
+                </Link>
+              </div>
+            </div>
 
-              {/* Decorative Right Side (Preview Cards) */}
-              <div className="flex-1 relative w-full max-w-md lg:max-w-none h-[400px] hidden md:block pointer-events-none">
-                <motion.div 
-                  initial={{ rotate: 5, x: 50, opacity: 0 }}
-                  whileInView={{ rotate: 12, x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.8 }}
-                  className="absolute right-0 top-10 w-64 h-80 bg-white p-4 rounded-[2rem] shadow-2xl border border-gray-100 z-10"
-                >
-                  <div className="w-full h-full bg-[#FFF8F0] rounded-xl overflow-hidden relative">
-                     <div className="absolute inset-0 floral-pattern opacity-10" />
-                     <div className="absolute inset-0 flex items-center justify-center flex-col text-[#C2185B]">
-                       <span className="text-4xl mb-4">🌺</span>
-                       <h3 className="font-display text-xl font-bold">Aman & Priya</h3>
-                     </div>
-                  </div>
-                </motion.div>
-                <motion.div 
-                  initial={{ rotate: -15, x: -50, opacity: 0 }}
-                  whileInView={{ rotate: -5, x: 0, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.8 }}
-                  className="absolute right-32 top-20 w-64 h-80 bg-white p-4 rounded-[2rem] shadow-2xl border border-gray-100 z-20"
-                >
-                  <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-black rounded-xl overflow-hidden relative">
-                    <div className="absolute inset-0 flex items-center justify-center flex-col text-[#D4AF37]">
-                       <span className="text-4xl mb-4">✨</span>
-                       <h3 className="font-display text-xl font-bold">Royal Wedding</h3>
-                    </div>
-                  </div>
-                </motion.div>
+            <div className="w-full md:w-auto flex flex-row md:flex-col gap-4 relative z-10 justify-center">
+              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px]">
+                <p className="font-display text-3xl font-black text-gray-900">{userDashboard?.stats?.invitationsCreated || 0}</p>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Invitations</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px]">
+                <p className="font-display text-3xl font-black text-gray-900">{userDashboard?.stats?.invitationViews || 0}</p>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Views</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px]">
+                <p className="font-display text-3xl font-black text-emerald-600">{userDashboard?.stats?.rsvpReceived || 0}</p>
+                <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest">RSVP Responses</p>
               </div>
             </div>
           </motion.div>
-
-          {/* Stats Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {[
-              { label: 'Total Invitations', value: '3', icon: <FiMail />, color: 'from-blue-500 to-cyan-500' },
-              { label: 'Guests Invited', value: '450', icon: <FiUsers />, color: 'from-purple-500 to-pink-500' },
-              { label: 'RSVP Received', value: '382', icon: <FiCheck />, color: 'from-emerald-500 to-teal-500' },
-              { label: 'Times Shared', value: '1.2k', icon: <FiShare2 />, color: 'from-orange-500 to-red-500' },
-            ].map((stat, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-2xl md:rounded-[2rem] p-6 md:p-8 shadow-premium border border-pink-50 flex flex-col sm:flex-row items-center gap-4 md:gap-6 group hover:-translate-y-1 transition-transform duration-300 text-center sm:text-left"
-              >
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} text-white flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform`}>
-                  {stat.icon}
-                </div>
-                <div>
-                  <p className="font-display text-3xl font-black text-gray-900 leading-none mb-1">{stat.value}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{stat.label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Templates Gallery */}
-          <div className="mb-16">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-              <div>
-                <h3 className="font-display text-3xl font-black text-gray-900 tracking-tight mb-2">Premium Templates</h3>
-                <p className="text-gray-500 font-medium">Choose from our handcrafted selection of designer templates.</p>
-              </div>
-              <button className="text-[10px] font-black text-[#C2185B] uppercase tracking-[0.2em] flex items-center gap-2 hover:gap-4 transition-all">
-                View All <FiArrowRight size={16} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                { name: 'Royal Rajputana', category: 'Traditional', img: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80', isPopular: true },
-                { name: 'Modern Minimalist', category: 'Minimal', img: 'https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=800&q=80', isPopular: false },
-                { name: 'Floral Elegance', category: 'Premium', img: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80', isPopular: true },
-              ].map((template, idx) => (
-                <motion.div 
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  className="group rounded-2xl md:rounded-[2rem] overflow-hidden bg-white shadow-premium border border-pink-50 relative"
-                >
-                  {template.isPopular && (
-                    <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-[#1a1a2e] text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
-                      Most Popular
-                    </div>
-                  )}
-                  
-                  <div className="aspect-[4/5] overflow-hidden relative">
-                    <img src={template.img} alt={template.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                    
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                      <button className="bg-white text-[#C2185B] font-black text-[11px] uppercase tracking-[0.2em] py-3 px-8 rounded-full shadow-2xl hover:scale-105 transition-transform">
-                        Use Template
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 absolute bottom-0 left-0 right-0 z-10">
-                    <span className="text-[10px] font-black text-[#D4AF37] uppercase tracking-widest mb-1 block">
-                      {template.category}
-                    </span>
-                    <h4 className="font-display text-2xl font-bold text-white leading-tight">
-                      {template.name}
-                    </h4>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Features Grid & Live Editor Preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Left: Features */}
-            <div>
-              <h3 className="font-display text-3xl font-black text-gray-900 tracking-tight mb-8">Everything you need</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[
-                  { icon: <FiLayout />, title: 'Drag & Drop Editor', desc: 'Customize easily without coding.' },
-                  { icon: <FiSmartphone />, title: 'QR Code RSVP', desc: 'Scan to confirm attendance instantly.' },
-                  { icon: <FiGlobe />, title: 'Multi-language', desc: 'Invite guests in their native tongue.' },
-                  { icon: <FiShare2 />, title: 'WhatsApp Ready', desc: 'Optimized for instant messaging sharing.' },
-                ].map((feat, idx) => (
-                  <motion.div 
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    viewport={{ once: true }}
-                    className="flex gap-4"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-pink-50 text-[#C2185B] flex items-center justify-center text-xl flex-shrink-0">
-                      {feat.icon}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 mb-1">{feat.title}</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed">{feat.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right: Live Editor Panel Mockup */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-premium border border-gray-100 p-6 md:p-8"
-            >
-              <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center"><FiSettings size={14}/></div>
-                  <span className="font-bold text-sm">Editor Preview</span>
-                </div>
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-amber-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Couple Names</label>
-                  <div className="bg-gray-50 rounded-xl px-4 py-3 border border-gray-200 text-sm font-medium text-gray-700 flex items-center justify-between">
-                    <span>Aman & Priya</span>
-                    <FiEdit3 className="text-gray-400" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Event Date</label>
-                    <div className="bg-gray-50 rounded-xl px-4 py-3 border border-gray-200 text-sm font-medium text-gray-700">
-                      Dec 12, 2024
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Color Theme</label>
-                    <div className="flex gap-2 mt-2">
-                      <div className="w-8 h-8 rounded-full bg-[#C2185B] shadow-inner ring-2 ring-offset-2 ring-[#C2185B]" />
-                      <div className="w-8 h-8 rounded-full bg-[#D4AF37] shadow-inner opacity-50 cursor-pointer" />
-                      <div className="w-8 h-8 rounded-full bg-[#1a1a2e] shadow-inner opacity-50 cursor-pointer" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <div className="h-2 w-full bg-gradient-to-r from-[#C2185B] to-[#D4AF37] rounded-full opacity-20" />
-                </div>
-              </div>
-            </motion.div>
-
-          </div>
         </div>
 
       </div>

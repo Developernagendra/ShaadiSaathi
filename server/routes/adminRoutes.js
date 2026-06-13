@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 
 // All admin routes are protected and restricted to admin role
 
@@ -24,7 +24,8 @@ const {
   updateConfigAdmin,
   getBookingByIdAdmin,
   getSubscriptionsAdmin,
-  updateVendorSubscriptionAdmin
+  updateVendorSubscriptionAdmin,
+  getAvailabilityMonitor
 } = require('../controllers/adminController');
 const multer = require('multer');
 
@@ -64,13 +65,14 @@ const uploadSecureImage = (req, res, next) => {
 
 // All admin routes are protected and restricted to admin role
 router.use(protect);
-router.use(authorize('admin'));
+router.use(restrictTo('admin'));
 
 router.get('/stats', getAdminStats);
 router.get('/bookings', getAllBookingsAdmin);
 router.get('/bookings/:id', getBookingByIdAdmin);
 router.get('/vendors', getAllVendorsAdmin);
 router.patch('/vendors/:id/status', updateVendorStatus);
+router.get('/availability-monitor', getAvailabilityMonitor);
 router.get('/subscriptions', getSubscriptionsAdmin);
 router.patch('/vendors/:id/subscription', updateVendorSubscriptionAdmin);
 

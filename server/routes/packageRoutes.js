@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const packageController = require('../controllers/packageController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(packageController.getPackages)
-  .post(protect, authorize('admin'), packageController.createPackage);
+  .post(protect, restrictTo('admin'), packageController.createPackage);
 
 router.route('/:id')
   .get(packageController.getPackage)
-  .put(protect, authorize('admin'), packageController.updatePackage)
-  .delete(protect, authorize('admin'), packageController.deletePackage);
+  .put(protect, restrictTo('admin'), packageController.updatePackage)
+  .delete(protect, restrictTo('admin'), packageController.deletePackage);
 
 module.exports = router;

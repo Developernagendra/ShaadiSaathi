@@ -8,6 +8,7 @@ import { FiUsers, FiBriefcase, FiCalendar, FiDollarSign, FiClock, FiArrowRight, 
 import { FaTruck } from 'react-icons/fa'
 import { getSocket } from '../../utils/socket'
 import { toast } from 'react-hot-toast'
+import ToolAnalyticsWidget from '../../components/admin/ToolAnalyticsWidget'
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null)
@@ -126,6 +127,9 @@ export default function AdminDashboard() {
 
         {/* Fleet Inventory & Booking Pipelines */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-12">
+          
+          <ToolAnalyticsWidget />
+
           {/* Live Fleet Inventory widget */}
           <div className="bg-white rounded-[2rem] p-6 md:p-10 shadow-premium border border-pink-50 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-40 h-40 bg-blue-50/20 rounded-bl-full pointer-events-none" />
@@ -306,13 +310,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
             { to: '/admin/users', icon: '👥', label: 'User Management', desc: 'Manage registered users' },
             { to: '/admin/vendors', icon: '🏪', label: 'Vendor Management', desc: 'Manage verified vendors' },
             { to: '/admin/bookings', icon: '📅', label: 'Booking History', desc: 'View all platform bookings' },
             { to: '/admin/categories', icon: '🏷️', label: 'Categories', desc: 'Manage service categories' },
             { to: '/admin/imperial-fleet', icon: '🚗', label: 'Imperial Fleet', desc: 'Manage wedding transport' },
+            { to: '/tools', icon: '🛠️', label: 'Wedding Tools', desc: 'Hub for wedding tools' },
           ].map(({ to, icon, label, desc }) => (
             <Link key={to} to={to} className="bg-white rounded-2xl md:rounded-[2rem] p-6 md:p-8 border border-pink-50 shadow-premium hover:shadow-premium-hover transition-all duration-700 group flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-2xl bg-[#FFF8F0] flex items-center justify-center text-2xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm">

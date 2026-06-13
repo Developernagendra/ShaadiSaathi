@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize, restrictToApproved, optionalAuth, verified } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const { uploadService } = require('../config/cloudinary');
 const { Service } = require('../models/index');
 const Vendor = require('../models/Vendor');
@@ -86,7 +86,7 @@ router.get('/', catchAsync(async (req, res, next) => {
 
 // @desc    Get vendor's own services
 // @route   GET /api/services/my-services
-router.get('/my-services', protect, authorize('vendor', 'admin'), verified, catchAsync(async (req, res, next) => {
+router.get('/my-services', protect, restrictTo('vendor', 'admin'), verified, catchAsync(async (req, res, next) => {
   const { page = 1, limit = 10, vendorId } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
 
@@ -156,7 +156,7 @@ router.get('/:id', optionalAuth, catchAsync(async (req, res, next) => {
 
 // @desc    Create new service
 // @route   POST /api/services
-router.post('/', protect, authorize('vendor', 'admin'), verified, restrictToApproved, uploadService.fields([
+router.post('/', protect, restrictTo('vendor', 'admin'), verified, restrictToApproved, uploadService.fields([
   { name: 'images', maxCount: 10 },
   { name: 'videos', maxCount: 2 }
 ]), catchAsync(async (req, res, next) => {
@@ -262,7 +262,7 @@ router.post('/', protect, authorize('vendor', 'admin'), verified, restrictToAppr
 
 // @desc    Update service
 // @route   PUT /api/services/:id
-router.put('/:id', protect, authorize('vendor', 'admin'), verified, restrictToApproved, uploadService.fields([
+router.put('/:id', protect, restrictTo('vendor', 'admin'), verified, restrictToApproved, uploadService.fields([
   { name: 'images', maxCount: 10 },
   { name: 'videos', maxCount: 2 }
 ]), catchAsync(async (req, res, next) => {
@@ -380,7 +380,7 @@ router.put('/:id', protect, authorize('vendor', 'admin'), verified, restrictToAp
 
 // @desc    Delete service
 // @route   DELETE /api/services/:id
-router.delete('/:id', protect, authorize('vendor', 'admin'), verified, restrictToApproved, catchAsync(async (req, res, next) => {
+router.delete('/:id', protect, restrictTo('vendor', 'admin'), verified, restrictToApproved, catchAsync(async (req, res, next) => {
   const query = { _id: req.params.id };
   if (req.user.role !== 'admin') {
     const vendor = await Vendor.findOne({ user: req.user._id });

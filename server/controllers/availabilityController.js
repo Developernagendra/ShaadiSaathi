@@ -73,6 +73,24 @@ exports.updateAvailability = catchAsync(async (req, res, next) => {
     { new: true, upsert: true, runValidators: true }
   );
 
+  if (vendor.unavailableDates === undefined) vendor.unavailableDates = [];
+  
+  if (isBlocked || maxBookings === 0) {
+    const exists = vendor.unavailableDates.some(ud => {
+      const dObj = new Date(ud);
+      dObj.setHours(0,0,0,0);
+      return dObj.getTime() === formattedDate.getTime();
+    });
+    if (!exists) vendor.unavailableDates.push(formattedDate);
+  } else {
+    vendor.unavailableDates = vendor.unavailableDates.filter(ud => {
+      const dObj = new Date(ud);
+      dObj.setHours(0,0,0,0);
+      return dObj.getTime() !== formattedDate.getTime();
+    });
+  }
+  await vendor.save();
+
   res.status(200).json({
     status: 'success',
     availability
@@ -150,6 +168,33 @@ exports.bulkUpdateAvailability = catchAsync(async (req, res, next) => {
   });
 
   await Availability.bulkWrite(operations);
+
+  if (vendor.unavailableDates === undefined) vendor.unavailableDates = [];
+  
+  if (action === 'block') {
+    dates.forEach(d => {
+      const date = new Date(d);
+      date.setHours(0,0,0,0);
+      const exists = vendor.unavailableDates.some(ud => {
+        const dObj = new Date(ud);
+        dObj.setHours(0,0,0,0);
+        return dObj.getTime() === date.getTime();
+      });
+      if (!exists) vendor.unavailableDates.push(date);
+    });
+  } else if (action === 'available') {
+    vendor.unavailableDates = vendor.unavailableDates.filter(ud => {
+      const dObj = new Date(ud);
+      dObj.setHours(0,0,0,0);
+      const dateStr = dObj.toISOString().split('T')[0];
+      return !dates.some(d => {
+        const innerDate = new Date(d);
+        innerDate.setHours(0,0,0,0);
+        return innerDate.toISOString().split('T')[0] === dateStr;
+      });
+    });
+  }
+  await vendor.save();
 
   res.status(200).json({
     status: 'success',

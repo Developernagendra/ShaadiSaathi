@@ -32,6 +32,7 @@ const GuestManagementPage = () => {
   });
 
   useEffect(() => {
+    api.post('/tools/track', { toolName: 'Guest List Manager', action: 'viewed_tool' }).catch(() => {});
     dispatch(fetchGuests());
   }, [dispatch]);
 

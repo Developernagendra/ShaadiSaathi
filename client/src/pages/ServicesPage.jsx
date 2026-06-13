@@ -54,6 +54,7 @@ export default function ServicesPage() {
     maxPrice: '',
     rating: '',
     sortBy: 'rating',
+    date: searchParams.get('date') || ''
   })
 
   const activeCategoryData = useMemo(() => {
@@ -72,6 +73,7 @@ export default function ServicesPage() {
       maxPrice: localFilters.maxPrice || undefined,
       rating: localFilters.rating || undefined,
       sortBy: localFilters.sortBy,
+      date: localFilters.date || undefined,
     }))
   }, [dispatch, page, searchInput, localFilters, categorySlug])
 
@@ -110,7 +112,7 @@ export default function ServicesPage() {
   }
 
   const handleClearFilters = () => {
-    setLocalFilters({ city: '', categorySlug: '', minPrice: '', maxPrice: '', rating: '', sortBy: 'rating' })
+    setLocalFilters({ city: '', categorySlug: '', minPrice: '', maxPrice: '', rating: '', sortBy: 'rating', date: '' })
     setSearchInput('')
     setPage(1)
     setSearchParams({})
@@ -119,7 +121,8 @@ export default function ServicesPage() {
   const activeFilterCount = [
     localFilters.city,
     localFilters.minPrice,
-    localFilters.rating
+    localFilters.rating,
+    localFilters.date
   ].filter(Boolean).length
 
   return (
@@ -127,7 +130,7 @@ export default function ServicesPage() {
       <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
 
       {/* ── 🏆 VENDORS HERO SECTION ── */}
-      <div className="relative bg-[#1a1a1a] py-28 px-4 overflow-hidden shadow-2xl">
+      <div className="relative bg-[#1a1a1a] py-20 md:py-28 px-4 overflow-hidden shadow-2xl">
         <div className="absolute inset-0 floral-pattern opacity-[0.05]" />
         <div className="absolute top-0 right-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#C2185B]/20 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3 animate-pulse" />
         <div className="absolute bottom-0 left-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-[#D4AF37]/10 rounded-full blur-[150px] translate-y-1/2 -translate-x-1/3" />
@@ -135,13 +138,13 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto relative z-10 text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-12">
           <div className="max-w-3xl">
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-6">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-4 md:mb-6">
                 <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-widest">
                   {activeCategoryData ? `Explore ${activeCategoryData.name}` : 'Verified Partners'}
                 </span>
               </div>
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-6 tracking-tighter drop-shadow-2xl">
-                Find Trusted Wedding <br />
+              <h1 className="font-display text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight mb-4 md:mb-6 tracking-tighter drop-shadow-2xl">
+                Find Trusted Wedding <br className="hidden md:block" />
                 <span className="text-[#D4AF37] italic">{activeCategoryData ? activeCategoryData.name : 'Vendors'}</span>
               </h1>
               <p className="text-white/70 text-lg md:text-xl font-medium italic leading-relaxed max-w-2xl">
@@ -152,18 +155,18 @@ export default function ServicesPage() {
 
           {/* Search Box */}
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="w-full md:w-auto">
-            <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[2.5rem] p-3 flex gap-3 w-full md:w-[480px] shadow-[0_0_50px_rgba(0,0,0,0.3)] relative group">
-              <div className="flex-1 relative">
-                <FiSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4AF37] text-xl" />
+            <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[2rem] md:rounded-[2.5rem] p-3 flex flex-col md:flex-row gap-3 w-full md:w-[480px] shadow-[0_0_50px_rgba(0,0,0,0.3)] relative group">
+              <div className="flex-1 relative w-full">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] text-xl" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
-                  placeholder="Search vendors or services..."
-                  className="w-full bg-white/5 pl-16 pr-6 py-5 rounded-2xl outline-none text-white placeholder-white/50 text-base font-medium transition-all focus:bg-white/10"
+                  placeholder="Search vendors..."
+                  className="w-full bg-white/5 pl-12 pr-4 py-4 rounded-xl md:rounded-2xl outline-none text-white placeholder-white/50 text-base font-medium transition-all focus:bg-white/10"
                 />
               </div>
-              <button type="submit" className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-gray-900 font-black text-[10px] uppercase tracking-[0.3em] px-8 py-5 rounded-2xl transition-all shadow-xl hover:scale-105 active:scale-95">
+              <button type="submit" className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-gray-900 font-black text-[10px] uppercase tracking-[0.3em] px-8 py-4 md:py-5 rounded-xl md:rounded-2xl transition-all shadow-xl hover:scale-105 active:scale-95 w-full md:w-auto">
                 Explore
               </button>
             </form>
@@ -187,6 +190,19 @@ export default function ServicesPage() {
               </div>
 
               <div className="space-y-10">
+                {/* Date Filter */}
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-4 block">Wedding Date</label>
+                  <div className="relative group">
+                    <input
+                      type="date"
+                      value={localFilters.date}
+                      onChange={e => { setLocalFilters(prev => ({ ...prev, date: e.target.value })); setPage(1) }}
+                      className="w-full bg-gray-50 border border-transparent rounded-[1.5rem] px-6 py-4 text-gray-900 focus:outline-none focus:border-[#C2185B] focus:bg-white transition-all font-bold text-sm"
+                    />
+                  </div>
+                </div>
+
                 {/* City Filter */}
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mb-4 block">Select City</label>

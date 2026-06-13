@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const {
   subscribe,
   unsubscribe,
@@ -21,7 +21,7 @@ router.get('/unsubscribe', unsubscribe);
 
 // Protected Admin Routes
 router.use(protect);
-router.use(authorize('admin'));
+router.use(restrictTo('admin'));
 
 // Subscriber routes
 router.route('/subscribers')

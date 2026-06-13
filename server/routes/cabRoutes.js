@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize, verified, restrictToApproved } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 const {
   createCabBooking, getMyBookings, getVendorBookings, getBookingById, updateBookingStatus
 } = require('../controllers/bookingController');
@@ -12,8 +12,8 @@ router.get('/details/:id', getCabDetails);
 router.get('/bundle/:bundleId', getBundleDetails);
 
 // User Protected routes
-router.post('/', protect, authorize('user'), verified, createCabBooking);
-router.post('/book-bundle', protect, authorize('user'), verified, createCabBooking);
+router.post('/', protect, restrictTo('user'), verified, createCabBooking);
+router.post('/book-bundle', protect, restrictTo('user'), verified, createCabBooking);
 router.get('/my-bookings', protect, (req, res, next) => {
   req.query.bookingType = 'baraat-cab';
   getMyBookings(req, res, next);
@@ -22,7 +22,7 @@ router.get('/:id', protect, getBookingById);
 
 // Vendor & Admin Protected routes
 router.use(protect);
-router.use(authorize('vendor', 'admin'));
+router.use(restrictTo('vendor', 'admin'));
 
 router.get('/vendor-bookings', restrictToApproved, (req, res, next) => {
   req.query.bookingType = 'baraat-cab';

@@ -23,8 +23,10 @@ import { NotificationSoundProvider } from './context/NotificationSoundContext'
 const BaraatCabsPage = lazy(() => import('./pages/BaraatCabsPage'))
 const CabDetailPage = lazy(() => import('./pages/CabDetailPage'))
 const VendorManageCabsPage = lazy(() => import('./pages/vendor/VendorManageCabsPage'))
+const VendorActiveTripsPage = lazy(() => import('./pages/vendor/VendorActiveTripsPage'))
 const BundleDetailPage = lazy(() => import('./pages/BundleDetailPage'))
 const CustomBundleBuilderPage = lazy(() => import('./pages/CustomBundleBuilderPage'))
+const CustomPackageBuilderPage = lazy(() => import('./pages/CustomPackageBuilderPage'))
 
 // Lazy Load Pages
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -92,12 +94,16 @@ const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage
 const CabBookingPage = lazy(() => import('./pages/CabBookingPage'))
 const AIPlannerPage = lazy(() => import('./pages/AIPlannerPage'))
 const BudgetCalculatorPage = lazy(() => import('./pages/BudgetCalculatorPage'))
+const ToolsHubPage = lazy(() => import('./pages/tools/ToolsHubPage'))
+const VendorAvailabilityCheckerPage = lazy(() => import('./pages/tools/VendorAvailabilityCheckerPage'))
+const VendorComparePage = lazy(() => import('./pages/tools/VendorComparePage'))
+const BaraatCalculatorPage = lazy(() => import('./pages/tools/BaraatCalculatorPage'))
+const CostPredictorPage = lazy(() => import('./pages/tools/CostPredictorPage'))
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage'))
 const ChecklistPage = lazy(() => import('./pages/ChecklistPage'))
-const InvitationDashboard = lazy(() => import('./pages/invitation/InvitationDashboard'))
-const InvitationBuilder = lazy(() => import('./pages/invitation/InvitationBuilder'))
-const TemplateLibrary = lazy(() => import('./pages/invitation/TemplateLibrary'))
-const InvitationPreview = lazy(() => import('./pages/invitation/InvitationPreview'))
+const MyInvitationsPage = lazy(() => import('./pages/invitation/MyInvitationsPage'))
+const SimpleInvitationBuilder = lazy(() => import('./pages/invitation/SimpleInvitationBuilder'))
+const PublicInvitationPage = lazy(() => import('./pages/invitation/PublicInvitationPage'))
 const LeadMarketplacePage = lazy(() => import('./pages/LeadMarketplacePage'))
 const VendorSubscriptionPage = lazy(() => import('./pages/VendorSubscriptionPage'))
 const PackagesPage = lazy(() => import('./pages/PackagesPage'))
@@ -205,7 +211,17 @@ export default function App() {
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<HomePage />} />
-                <Route path="/ai-planner" element={<AIPlannerPage />} />
+                <Route path="/tools" element={<ToolsHubPage />} />
+                <Route path="/tools/ai-planner" element={<AIPlannerPage />} />
+                <Route path="/tools/budget-planner" element={<BudgetCalculatorPage />} />
+                <Route path="/tools/guest-manager" element={<GuestManagementPage />} />
+                <Route path="/tools/checklist" element={<ChecklistPage />} />
+                <Route path="/tools/vendor-availability" element={<VendorAvailabilityCheckerPage />} />
+                <Route path="/tools/package-builder" element={<CustomPackageBuilderPage />} />
+                <Route path="/tools/invitation-generator" element={<SimpleInvitationBuilder />} />
+                <Route path="/tools/vendor-compare" element={<VendorComparePage />} />
+                <Route path="/tools/baraat-calculator" element={<BaraatCalculatorPage />} />
+                <Route path="/tools/cost-predictor" element={<CostPredictorPage />} />
                 {/* Baraat Cabs Routes — use skeleton fallback, NOT global LoadingScreen */}
                 <Route path="/baraat-cabs" element={
                   <Suspense fallback={<BaraatCabsSkeleton />}>
@@ -232,6 +248,11 @@ export default function App() {
                     <CustomBundleBuilderPage />
                   </Suspense>
                 } />
+                <Route path="/build-package" element={
+                  <Suspense fallback={<LoadingScreen />}>
+                    <CustomPackageBuilderPage />
+                  </Suspense>
+                } />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/services/:categorySlug" element={<ServicesPage />} />
@@ -244,7 +265,7 @@ export default function App() {
                     <CabBookingPage />
                   </Suspense>
                 } />
-                <Route path="/budget-calculator" element={<BudgetCalculatorPage />} />
+                <Route path="/tools/budget-planner" element={<BudgetCalculatorPage />} />
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:slug" element={<BlogDetailPage />} />
                 <Route path="/faq" element={<FAQPage />} />
@@ -257,6 +278,9 @@ export default function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/our-story" element={<Navigate to="/about" replace />} />
                 <Route path="/reviews" element={<Navigate to="/testimonials" replace />} />
+                
+                {/* Public Invitation Route */}
+                <Route path="/invitation/:id" element={<PublicInvitationPage />} />
 
 
                 {/* Auth Routes */}
@@ -280,11 +304,9 @@ export default function App() {
                   <Route path="/wishlist" element={<WishlistPage />} />
                   <Route path="/guests" element={<GuestManagementPage />} />
                   <Route path="/checklist" element={<ChecklistPage />} />
-                  <Route path="/invitation-creator" element={<InvitationDashboard />} />
-                  <Route path="/invitation-creator/new" element={<InvitationBuilder />} />
-                  <Route path="/invitation-creator/edit/:id" element={<InvitationBuilder />} />
-                  <Route path="/invitation-creator/templates" element={<TemplateLibrary />} />
-                  <Route path="/invitation-creator/preview/:id" element={<InvitationPreview />} />
+                  <Route path="/invitation-creator" element={<MyInvitationsPage />} />
+                  <Route path="/invitation-creator/new" element={<SimpleInvitationBuilder />} />
+                  <Route path="/invitation-creator/edit/:id" element={<SimpleInvitationBuilder />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/chat" element={<ChatPage />} />
@@ -313,7 +335,9 @@ export default function App() {
                   <Route path="/vendor/reviews" element={<VendorReviewsPage />} />
                   <Route path="/vendor/notifications" element={<VendorNotificationsPage />} />
                   <Route path="/vendor/settings" element={<VendorSettingsPage />} />
+                  {/* Vendor Cab Fleet */}
                   <Route path="/vendor/manage-cabs" element={<VendorManageCabsPage />} />
+                  <Route path="/vendor/active-trips" element={<VendorActiveTripsPage />} />
                   <Route path="/vendor/leads" element={<VendorLeadsPage />} />
                   <Route path="/vendor/analytics" element={<VendorAnalyticsPage />} />
                   <Route path="/vendor/offers" element={<VendorOffersPage />} />

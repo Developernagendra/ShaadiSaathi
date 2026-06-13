@@ -144,7 +144,7 @@ export default function HomePage() {
 
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-10">
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-24 md:pt-32 pb-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -154,7 +154,7 @@ export default function HomePage() {
             <span>Premium Wedding Marketplace</span>
           </motion.div>
 
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-4 text-shadow drop-shadow-2xl">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight mb-4 text-shadow drop-shadow-2xl">
             {t('home.title', 'Find Trusted Wedding Services For Your Special Day')}
           </h1>
 
@@ -166,28 +166,28 @@ export default function HomePage() {
 
           <form onSubmit={handleSearch} className="bg-white rounded-[2rem] p-3 shadow-2xl flex flex-col md:flex-row gap-3 max-w-4xl mx-auto mb-8 border border-gold-100 relative group overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-400 via-pink-500 to-gold-400 opacity-50" />
-            <div className="flex items-center gap-3 flex-1 px-4 py-2">
+            <div className="flex items-center gap-3 flex-1 px-4 py-2 w-full">
               <FiSearch className="text-[#C2185B] flex-shrink-0" size={22} />
               <input
                 type="text"
-                placeholder="Ex: Luxury Venues, Bridal Makeup..."
+                placeholder="Ex: Luxury Venues..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full outline-none text-gray-800 placeholder-gray-400 font-medium text-base"
+                className="w-full outline-none text-gray-800 placeholder-gray-400 font-medium text-base min-w-0"
               />
             </div>
-            <div className="flex items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 min-w-0 md:min-w-[200px]">
+            <div className="flex items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 w-full md:w-auto md:min-w-[200px]">
               <FiMapPin className="text-[#C2185B] flex-shrink-0" size={20} />
               <select
                 value={searchCity}
                 onChange={(e) => setSearchCity(e.target.value)}
-                className="outline-none text-gray-800 font-bold text-sm bg-transparent w-full cursor-pointer"
+                className="outline-none text-gray-800 font-bold text-sm bg-transparent w-full cursor-pointer min-w-0"
               >
                 <option value="">All Cities</option>
                 {INDIAN_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <button type="submit" className="btn-primary whitespace-nowrap !rounded-2xl py-4 px-10 text-sm shine-effect w-full md:w-auto">
+            <button type="submit" className="btn-primary whitespace-nowrap !rounded-2xl py-4 px-10 text-sm shine-effect w-full md:w-auto flex-shrink-0">
               Find Vendors
             </button>
           </form>
@@ -212,13 +212,13 @@ export default function HomePage() {
       </section>
 
       {/* ── 2. Services Section ── */}
-      <section className="py-20 px-4 bg-[#FFF8F0]/50 relative overflow-hidden">
+      <section className="py-10 md:py-16 lg:py-24 px-4 bg-[#FFF8F0]/50 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-72 h-72 md:w-[400px] md:h-[400px] bg-[#C2185B]/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-4">
+          <div className="text-center mb-8 md:mb-12">
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="font-display text-2xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-2 md:mb-4">
               Explore <span className="text-[#D4AF37] italic">Wedding Services</span>
             </motion.h2>
           </div>
@@ -244,14 +244,14 @@ export default function HomePage() {
       </section>
 
       {/* ── 3. Featured Vendors ── */}
-      <section className="relative py-20 px-4 bg-gradient-to-br from-[#FFF8F0] via-[#FDF2F8] to-[#FFF5F3] overflow-hidden">
+      <section className="relative py-10 md:py-16 lg:py-24 px-4 bg-gradient-to-br from-[#FFF8F0] via-[#FDF2F8] to-[#FFF5F3] overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-6">
             <div>
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/40 shadow-sm mb-4">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/40 shadow-sm mb-3 md:mb-4">
                 <span className="text-[#C2185B] font-black text-[10px] uppercase tracking-[0.25em]">🌟 Top Picks</span>
               </motion.div>
-              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-2xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight">
                 Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">Vendors</span>
               </motion.h2>
             </div>
@@ -260,12 +260,12 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-white/80 backdrop-blur-md rounded-[2rem] p-4 shadow-sm border border-pink-50 mb-8 flex flex-wrap gap-3 items-center">
-            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1 sm:min-w-[140px]">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-white/80 backdrop-blur-md rounded-[1.5rem] p-3 shadow-sm border border-pink-50 mb-6 flex flex-col sm:flex-row gap-3 items-center">
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1">
               <option value="">All Categories</option>
               {categories.map((cat) => <option key={cat._id} value={cat.slug}>{cat.name}</option>)}
             </select>
-            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1 sm:min-w-[140px]">
+            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1">
               <option value="">All Cities</option>
               {INDIAN_CITIES.map((city) => <option key={city} value={city}>{city}</option>)}
             </select>
@@ -297,7 +297,7 @@ export default function HomePage() {
       <PackageSection />
 
       {/* ── 4. Baraat Cabs (USP Section) ── */}
-      <section className="py-20 md:py-24 px-4 relative overflow-hidden bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#111111]">
+      <section className="py-10 md:py-16 lg:py-24 px-4 relative overflow-hidden bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#111111]">
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#C2185B]/20 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
 
@@ -346,10 +346,10 @@ export default function HomePage() {
       </section>
 
       {/* ── 5. Why Choose ShaadiSaathi ── */}
-      <section className="py-20 px-4 bg-[#FFF8F0]">
+      <section className="py-10 md:py-16 lg:py-24 px-4 bg-[#FFF8F0]">
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 mb-2 md:mb-4 tracking-tight">
               Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">ShaadiSaathi?</span>
             </h2>
           </div>
@@ -369,13 +369,13 @@ export default function HomePage() {
       </section>
 
       {/* ── 6. Final CTA Section ── */}
-      <section className="py-24 px-4 bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-center relative overflow-hidden">
+      <section className="py-12 md:py-16 lg:py-24 px-4 bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]" />
         <div className="max-w-3xl mx-auto relative z-10">
-          <h2 className="font-display text-4xl md:text-5xl font-black text-white mb-6 tracking-tight drop-shadow-md">
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 md:mb-6 tracking-tight drop-shadow-md">
             Ready To Plan Your <span className="italic text-[#D4AF37]">Dream Wedding?</span>
           </h2>
-          <p className="text-white/80 text-lg mb-10 font-medium">
+          <p className="text-white/80 text-base md:text-lg mb-8 md:mb-10 font-medium">
             Join thousands of happy couples who found their perfect vendors on ShaadiSaathi.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">

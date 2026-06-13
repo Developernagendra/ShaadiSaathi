@@ -87,6 +87,13 @@ const vendorSchema = new mongoose.Schema({
   specializations: [String],
   languages: [String],
   availability: [availabilitySchema],
+  availabilityStatus: {
+    type: String,
+    enum: ['available', 'unavailable'],
+    default: 'available',
+  },
+  unavailableDates: [{ type: Date }],
+  bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
   rating: {
     average: { type: Number, default: 0, min: 0, max: 5 },
     count: { type: Number, default: 0 },

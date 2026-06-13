@@ -980,9 +980,84 @@ exports.updateConfigAdmin = catchAsync(async (req, res, next) => {
  
    await vendor.save();
  
-   res.status(200).json({
+    res.status(200).json({
      status: 'success',
      message: `Subscription successfully updated to ${vendor.subscription.plan} (${vendor.subscription.status})`,
      data: vendor
    });
  });
+ 
+// @desc    Get Vendor Availability Monitor Data
+// @route   GET /api/admin/availability-monitor
+// @access  Private (Admin)
+exports.getAvailabilityMonitor = catchAsync(async (req, res, next) => {
+  const { Vendor } = require('../models/index');
+  
+  const vendors = await Vendor.find({ approvalStatus: 'approved' })
+    .populate('category', 'name')
+    .select('businessName category location unavailableDates bookings availabilityStatus');
+
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  
+  let totalAvailable = 0;
+  let totalUnavailable = 0;
+  let inactiveAlerts = [];
+  
+  const mappedVendors = vendors.map(v => {
+    const isUnavailableToday = v.unavailableDates && v.unavailableDates.some(d => {
+      const ud = new Date(d);
+      ud.setHours(0,0,0,0);
+      return ud.getTime() === now.getTime();
+    });
+    
+    if (isUnavailableToday || v.availabilityStatus === 'unavailable') {
+      totalUnavailable++;
+    } else {
+      totalAvailable++;
+    }
+    
+    let futureBlocks = 0;
+    if (v.unavailableDates) {
+      futureBlocks = v.unavailableDates.filter(d => {
+        const ud = new Date(d);
+        ud.setHours(0,0,0,0);
+        return ud.getTime() >= now.getTime();
+      }).length;
+    }
+    
+    if (futureBlocks >= 30) {
+      inactiveAlerts.push({
+        vendorId: v._id,
+        businessName: v.businessName,
+        message: 'Vendor inactive for long period (30+ blocked dates)'
+      });
+    }
+    
+    return {
+      _id: v._id,
+      businessName: v.businessName,
+      category: v.category?.name || 'Unknown',
+      city: v.location?.city || 'Unknown',
+      availabilityStatus: isUnavailableToday ? 'unavailable' : (v.availabilityStatus || 'available'),
+      blockedDatesCount: v.unavailableDates ? v.unavailableDates.length : 0,
+      upcomingBookingsCount: v.bookings ? v.bookings.length : 0,
+      unavailableDates: v.unavailableDates || []
+    };
+  });
+  
+  const mostBooked = [...mappedVendors].sort((a, b) => b.upcomingBookingsCount - a.upcomingBookingsCount).slice(0, 5);
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      vendors: mappedVendors,
+      stats: {
+        totalAvailable,
+        totalUnavailable,
+        mostBooked
+      },
+      alerts: inactiveAlerts
+    }
+  });
+});

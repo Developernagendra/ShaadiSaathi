@@ -44,7 +44,7 @@ const protect = async (req, res, next) => {
 };
 
 // Role-based authorization
-const authorize = (...roles) => {
+const restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
@@ -151,4 +151,17 @@ const verified = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, authorize, optionalAuth, restrictToApproved, verified };
+const adminOnly = restrictTo('admin');
+const vendorOnly = restrictTo('vendor');
+const userOnly = restrictTo('user');
+
+module.exports = { 
+  protect, 
+  restrictTo, 
+  adminOnly, 
+  vendorOnly, 
+  userOnly, 
+  optionalAuth, 
+  restrictToApproved, 
+  verified 
+};

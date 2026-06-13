@@ -15,17 +15,19 @@ export const NotificationSoundProvider = ({ children }) => {
 
   // Preload audio files
   useEffect(() => {
-    const loadAudio = (type, filename) => {
-      const audio = new Audio(`/sounds/${filename}`);
-      audio.volume = 0.5; // Default volume 
-      audioRefs.current[type] = audio;
-    };
+    import('../utils/sounds').then(({ SOUNDS }) => {
+      const loadAudio = (type, dataUri) => {
+        const audio = new Audio(dataUri);
+        audio.volume = 0.5; // Default volume 
+        audioRefs.current[type] = audio;
+      };
 
-    loadAudio('success', 'success.mp3');
-    loadAudio('error', 'error.mp3');
-    loadAudio('approval', 'approval.mp3');
-    loadAudio('lead', 'lead.mp3');
-    loadAudio('notification', 'notification.mp3');
+      loadAudio('success', SOUNDS.success);
+      loadAudio('error', SOUNDS.error);
+      loadAudio('approval', SOUNDS.approval);
+      loadAudio('lead', SOUNDS.lead);
+      loadAudio('notification', SOUNDS.notification);
+    }).catch(err => console.error("Failed to load sounds", err));
   }, []);
 
   const toggleMute = useCallback(() => {

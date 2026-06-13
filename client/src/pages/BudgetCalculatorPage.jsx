@@ -5,28 +5,65 @@ import { LuWallet as Wallet, LuUsers as Users, LuDownload as Download, LuTrendin
 import { FiCheckCircle, FiPieChart as PieChartIcon } from 'react-icons/fi';
 import { jsPDF } from 'jspdf';
 import { formatPrice } from '../utils/helpers';
+import api from '../utils/api';
+import React, { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 const COLORS = ['#C2185B', '#D4AF37', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
 
 const BudgetCalculatorPage = () => {
   const [budget, setBudget] = useState(1500000);
   const [guestCount, setGuestCount] = useState(300);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+
+  useEffect(() => {
+    api.post('/tools/track', { toolName: 'Budget Planner', action: 'viewed_tool' }).catch(() => {});
+    
+    // Fetch saved budget
+    api.get('/tools/budget')
+      .then(res => {
+        if (res.data.success && res.data.data) {
+          setBudget(res.data.data.totalBudget);
+          setGuestCount(300); // we could store guestCount in budget later, but for now we have totalBudget
+        }
+      })
+      .catch(err => console.log('No saved budget found', err));
+  }, []);
+
+  const handleSaveBudget = async () => {
+    setIsSaving(true);
+    try {
+      const allocations = {};
+      distribution.forEach(d => { allocations[d.name] = d.value; });
+      await api.post('/tools/budget', { totalBudget: budget, allocations, customCategories: [] });
+      setHasSaved(true);
+      toast.success('Budget saved to your profile!');
+    } catch (err) {
+      toast.error('Failed to save budget. Please ensure you are logged in.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const costPerGuest = useMemo(() => {
     return guestCount && Number(guestCount) > 0 ? Math.round(budget / guestCount) : 0;
   }, [budget, guestCount]);
 
   const distribution = useMemo(() => [
-    { name: 'Venue & Catering', value: budget * 0.45, icon: '🏰', color: '#C2185B' },
+    { name: 'Venue', value: budget * 0.25, icon: '🏰', color: '#C2185B' },
+    { name: 'Catering', value: budget * 0.20, icon: '🍽️', color: '#f59e0b' },
+    { name: 'Photography', value: budget * 0.15, icon: '📸', color: '#10b981' },
     { name: 'Decoration', value: budget * 0.15, icon: '🌸', color: '#D4AF37' },
-    { name: 'Photography', value: budget * 0.10, icon: '📸', color: '#10b981' },
-    { name: 'Jewelry & Attire', value: budget * 0.10, icon: '💍', color: '#3b82f6' },
-    { name: 'Entertainment', value: budget * 0.08, icon: '🎵', color: '#8b5cf6' },
+    { name: 'Makeup', value: budget * 0.08, icon: '💄', color: '#3b82f6' },
+    { name: 'Mehndi', value: budget * 0.05, icon: '🌿', color: '#8b5cf6' },
+    { name: 'DJ', value: budget * 0.05, icon: '🎵', color: '#64748b' },
     { name: 'Baraat Cabs', value: budget * 0.07, icon: '🚖', color: '#ec4899' },
-    { name: 'Miscellaneous', value: budget * 0.05, icon: '✨', color: '#64748b' },
   ], [budget]);
 
   const handleDownloadPDF = () => {
+    api.post('/tools/track', { toolName: 'Budget Planner', action: 'saved_budget', metadata: { budget, guestCount } }).catch(() => {});
+    
     const doc = new jsPDF();
     
     // Header
@@ -141,10 +178,17 @@ const BudgetCalculatorPage = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-50">
+                <div className="pt-4 border-t border-gray-50 flex flex-col gap-3">
+                  <button 
+                    onClick={handleSaveBudget}
+                    disabled={isSaving}
+                    className="w-full bg-[#C2185B] text-white py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {isSaving ? 'Saving...' : (hasSaved ? <><FiCheckCircle size={16} /> Saved to Profile</> : 'Save to Profile')}
+                  </button>
                   <button 
                     onClick={handleDownloadPDF}
-                    className="w-full bg-[#1a1a1a] text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
+                    className="w-full bg-[#1a1a1a] text-white py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
                   >
                     <Download size={16} /> Export PDF Report
                   </button>

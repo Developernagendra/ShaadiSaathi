@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const packageInquiryController = require('../controllers/packageInquiryController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, restrictTo, adminOnly, vendorOnly, userOnly, verified, optionalAuth, restrictToApproved } = require('../middleware/authMiddleware');
 
 router.route('/')
   .post(packageInquiryController.submitInquiry)
-  .get(protect, authorize('admin'), packageInquiryController.getInquiries);
+  .get(protect, restrictTo('admin'), packageInquiryController.getInquiries);
 
 router.route('/:id')
-  .put(protect, authorize('admin'), packageInquiryController.updateInquiry)
-  .delete(protect, authorize('admin'), packageInquiryController.deleteInquiry);
+  .put(protect, restrictTo('admin'), packageInquiryController.updateInquiry)
+  .delete(protect, restrictTo('admin'), packageInquiryController.deleteInquiry);
 
 module.exports = router;

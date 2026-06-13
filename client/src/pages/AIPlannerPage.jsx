@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { generateOpenAIWeddingPlan } from '../store/slices/featureSlice';
 import { LuSparkles as Sparkles, LuMapPin as MapPin, LuWallet as Wallet, LuCalendar as Calendar, LuDownload as Download, LuCopy as Copy, LuRefreshCw as RefreshCw, LuInfo as Info } from 'react-icons/lu';
+import api from '../utils/api';
 import { FiUsers, FiAlertTriangle as AlertTriangle, FiCheckCircle as CheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
@@ -30,6 +31,10 @@ export default function AIPlannerPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { aiRecommendations, loading, error } = useSelector((state) => state.feature);
+
+  React.useEffect(() => {
+    api.post('/tools/track', { toolName: 'AI Wedding Planner', action: 'viewed_tool' }).catch(() => {});
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -62,6 +67,22 @@ export default function AIPlannerPage() {
     } else {
       setStep(3); // Show Results
       toast.success("Plan Generated Successfully!");
+      
+      // Save the generated plan to the database
+      try {
+        await api.post('/tools/ai-planner', {
+          weddingDate: formData.weddingDate,
+          location: formData.city,
+          budget: Number(formData.budget),
+          guestCount: Number(formData.guestCount),
+          weddingType: formData.weddingType,
+          roadmap: result.payload 
+        });
+      } catch (err) {
+        console.error("Failed to save plan to DB", err);
+      }
+
+      api.post('/tools/track', { toolName: 'AI Wedding Planner', action: 'generated_plan', metadata: { budget: formData.budget } }).catch(() => {});
     }
   };
 
@@ -470,14 +491,27 @@ ${plan.tips.map(t => `- ${t}`).join('\n')}
                               {cat.vendors.map((vendor, vidx) => (
                                 <div key={vidx} className="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
                                   <img src={vendor.coverImage} alt={vendor.businessName} className="w-full h-32 object-cover" />
-                                  <div className="p-4">
+                                  <div className="p-4 flex-1 flex flex-col">
                                     <h5 className="font-bold text-slate-800 truncate">{vendor.businessName}</h5>
-                                    <div className="flex justify-between items-center mt-2">
-                                      <span className="text-sm text-slate-500">₹{vendor.basePrice.toLocaleString('en-IN')}</span>
+                                    <div className="flex justify-between items-center mt-2 mb-3">
                                       <span className="text-sm font-medium flex items-center gap-1 text-amber-500">
                                         ⭐ {vendor.rating?.average || 'New'}
                                       </span>
                                     </div>
+                                    
+                                    {vendor.recommendedPackage ? (
+                                      <div className="mt-auto bg-emerald-50 rounded-lg p-3 border border-emerald-100 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wider">Perfect Match</div>
+                                        <h6 className="text-sm font-bold text-emerald-900 truncate pr-16">{vendor.recommendedPackage.name}</h6>
+                                        <p className="text-xs text-emerald-700 mt-1 line-clamp-2">{vendor.recommendedPackage.features?.join(', ')}</p>
+                                        <div className="text-sm font-bold text-emerald-800 mt-2">₹{vendor.recommendedPackage.price.toLocaleString('en-IN')}</div>
+                                      </div>
+                                    ) : (
+                                      <div className="mt-auto bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                        <h6 className="text-sm font-bold text-slate-700">Starting from</h6>
+                                        <div className="text-sm font-bold text-slate-900 mt-1">₹{vendor.basePrice?.toLocaleString('en-IN') || 0}</div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               ))}

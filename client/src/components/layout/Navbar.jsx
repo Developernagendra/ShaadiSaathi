@@ -27,6 +27,7 @@ export default function Navbar() {
   const { cartItems = [] } = useSelector((s) => s.ui || {})
 
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -69,10 +70,27 @@ export default function Navbar() {
 
   const navTransparent = isHome && !scrolled
 
+  const toolsMenu = { 
+    label: 'Tools', 
+    icon: <FiGrid />, 
+    children: [
+      { to: '/tools', label: '🛠 All Tools Hub' },
+      { to: '/tools/ai-planner', label: '🤖 AI Wedding Planner' },
+      { to: '/tools/budget-planner', label: '💰 Budget Planner' },
+      { to: '/tools/guest-manager', label: '👥 Guest List Manager' },
+      { to: '/tools/checklist', label: '✅ Wedding Checklist' },
+      { to: '/tools/vendor-availability', label: '📍 Vendor Availability' },
+      { to: '/tools/package-builder', label: '📦 Package Builder' },
+      { to: '/tools/invitation-generator', label: '💌 Invitation Generator' },
+      { to: '/tools/vendor-compare', label: '⚖ Vendor Comparison' },
+      { to: '/tools/baraat-calculator', label: '🚘 Baraat Fleet Calculator' },
+      { to: '/tools/cost-predictor', label: '📈 Wedding Cost Predictor' }
+    ]
+  };
+
   const publicLinks = [
     { to: '/services', label: t('nav.vendors', 'Vendors'), icon: <FiSearch /> },
-    { to: '/ai-planner', label: t('nav.aiPlanner', 'AI Planner'), icon: <FiGrid /> },
-    { to: '/budget-calculator', label: t('nav.budget', 'Budget'), icon: <FiCalendar /> },
+    toolsMenu,
     { to: '/baraat-cabs', label: t('nav.cabs', 'Baraat Cabs'), icon: '🚗' },
   ]
 
@@ -83,17 +101,20 @@ export default function Navbar() {
         { to: '/admin', label: 'Dashboard' },
         { to: '/admin/vendors', label: 'Vendors' },
         { to: '/admin/users', label: 'Users' },
+        toolsMenu,
       ]
       : user?.role === 'vendor'
         ? [
           { to: '/vendor/dashboard', label: t('nav.vendorDashboard', 'Vendor Dashboard') },
           { to: '/vendor/services', label: t('nav.services', 'My Services') },
           { to: '/vendor/bookings', label: t('nav.booking', 'Bookings') },
+          toolsMenu,
         ]
         : [
           { to: '/dashboard', label: t('nav.userDashboard', 'Dashboard') },
           { to: '/bookings', label: t('nav.booking', 'Bookings') },
           { to: '/wishlist', label: 'Wishlist' },
+          toolsMenu,
           { to: '/baraat-cabs', label: 'Baraat Cabs' },
         ]
 
@@ -122,20 +143,50 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navTransparent ? 'bg-transparent py-6' : 'bg-white/90 backdrop-blur-md shadow-premium border-b border-pink-50 py-3'
+      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${navTransparent ? 'bg-transparent py-2 md:py-4' : 'bg-white/95 backdrop-blur-md shadow-sm border-b border-pink-50/50 py-2 md:py-3'
         }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             {/* ── Logo ── */}
-            <BrandLogo 
-              isDark={navTransparent} 
-              onClick={() => setMobileOpen(false)} 
-            />
+            <div className="flex-shrink-0 min-w-0">
+              <BrandLogo 
+                isDark={navTransparent} 
+                onClick={() => setMobileOpen(false)} 
+              />
+            </div>
 
             {/* ── Desktop Nav Links ── */}
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => {
                 const isCabs = link.to === '/baraat-cabs';
+                
+                if (link.children) {
+                  return (
+                    <div key={link.label} className="relative group">
+                      <button
+                        className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 flex items-center gap-2 ${
+                          navTransparent ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-primary-600'
+                        }`}
+                      >
+                        {link.icon} {link.label} <FiChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300" />
+                      </button>
+                      <div className="absolute top-full left-0 mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-[#D4AF37]/20 p-2">
+                          {link.children.map(child => (
+                            <Link
+                              key={child.to}
+                              to={child.to}
+                              className="flex flex-col gap-1 p-3 rounded-xl hover:bg-[#FFF8F0] transition-colors group/item"
+                            >
+                              <span className="text-sm font-black text-gray-900 group-hover/item:text-[#C2185B] transition-colors flex items-center gap-2">{child.label}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+
                 return (
                   <Link
                     key={link.to}
@@ -304,7 +355,7 @@ export default function Navbar() {
               )}
 
               {/* Mobile Toggle */}
-              <button onClick={() => setMobileOpen(true)} className={`lg:hidden p-2.5 rounded-xl transition-all active:scale-90 ${navTransparent ? 'text-white bg-white/10' : 'text-gray-900 bg-gray-100'}`}>
+              <button onClick={() => setMobileOpen(true)} className={`lg:hidden flex-shrink-0 w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${navTransparent ? 'text-white bg-white/10 border border-white/20' : 'text-gray-900 bg-gray-100'}`}>
                 <FiMenu size={22} />
               </button>
             </div>
@@ -327,16 +378,70 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-2 relative z-10">
-                {navLinks.map((link) => (
-                  <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${location.pathname === link.to ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50'}`}>
-                    <span className="text-xl">{link.icon || <FiGrid />}</span>
-                    {link.label}
-                  </Link>
-                ))}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 relative z-10 scrollbar-hide">
+                {[
+                  { to: '/', label: 'Home', icon: <FiHome /> },
+                  { to: '/services', label: 'Vendors', icon: <FiGrid /> },
+                  { 
+                    label: 'Tools', 
+                    icon: <FiGrid />, 
+                    children: [
+                      { to: '/tools', label: '🛠 All Tools Hub' },
+                      { to: '/tools/ai-planner', label: '🤖 AI Wedding Planner' },
+                      { to: '/tools/budget-planner', label: '💰 Budget Planner' },
+                      { to: '/tools/guest-manager', label: '👥 Guest List Manager' },
+                      { to: '/tools/checklist', label: '✅ Wedding Checklist' },
+                      { to: '/tools/vendor-availability', label: '📍 Vendor Availability' },
+                      { to: '/tools/package-builder', label: '📦 Package Builder' },
+                      { to: '/tools/invitation-generator', label: '💌 Invitation Generator' },
+                      { to: '/tools/vendor-compare', label: '⚖ Vendor Comparison' },
+                      { to: '/tools/baraat-calculator', label: '🚘 Baraat Fleet Calculator' },
+                      { to: '/tools/cost-predictor', label: '📈 Wedding Cost Predictor' }
+                    ]
+                  },
+                  { to: '/packages', label: 'Packages', icon: <FiBriefcase /> },
+                  { to: '/invitation-creator/new', label: 'Create Invitation', icon: <FiMessageCircle /> },
+                  ...(isAuthenticated ? [
+                    { to: '/bookings', label: 'My Bookings', icon: <FiCalendar /> },
+                    { to: '/wishlist', label: 'Wishlist', icon: <FiHeart /> }
+                  ] : []),
+                  { to: '/contact', label: 'Contact', icon: <FiSearch /> }
+                ].map((link) => {
+                  if (link.children) {
+                    return (
+                      <div key={link.label} className="flex flex-col">
+                        <button onClick={() => setMobileToolsOpen(!mobileToolsOpen)} className="flex justify-between items-center px-5 py-4 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all w-full">
+                          <div className="flex items-center gap-4">
+                            <span className="text-xl text-gray-400">{link.icon}</span>
+                            {link.label}
+                          </div>
+                          <FiChevronDown className={`transition-transform duration-300 ${mobileToolsOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        <AnimatePresence>
+                          {mobileToolsOpen && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden ml-12 border-l-2 border-pink-50 pl-4 flex flex-col gap-2 mt-2">
+                              {link.children.map(child => (
+                                <Link key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className="text-sm font-bold text-gray-600 hover:text-[#C2185B] py-2 transition-colors">
+                                  {child.label}
+                                </Link>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <Link key={link.label} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
+                      <span className={`text-xl ${location.pathname === link.to ? 'text-[#C2185B]' : 'text-gray-400'}`}>{link.icon}</span>
+                      {link.label}
+                    </Link>
+                  )
+                })}
 
                 {!isAuthenticated && (
-                  <Link to="/register/vendor" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold bg-gold-50 text-gold-700 border border-gold-200">
+                  <Link to="/register/vendor" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-5 py-4 mt-4 rounded-2xl text-sm font-bold bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] border border-[#D4AF37]/20">
                     <span className="text-xl">🏪</span>
                     Apna Business Jodein
                   </Link>

@@ -6,6 +6,7 @@ import { formatPrice, formatDate, formatDateShort, getStatusColor } from '../../
 import { FiPhone, FiMapPin, FiCalendar, FiArrowLeft, FiClock, FiInfo, FiUser, FiMail, FiZap, FiGlobe, FiInstagram, FiFacebook, FiYoutube, FiMessageCircle } from 'react-icons/fi'
 import { FaTruck } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import { getSocket } from '../../utils/socket'
 import toast from 'react-hot-toast'
 
 export default function CabBookingDetailPage() {
@@ -15,8 +16,46 @@ export default function CabBookingDetailPage() {
   const { currentCabBooking: booking, loading, error } = useSelector(s => s.booking)
   const { user } = useSelector(s => s.auth)
   const [processing, setProcessing] = useState(false)
+  const [liveLocation, setLiveLocation] = useState(null)
+  const [tripStatus, setTripStatus] = useState(null)
 
   useEffect(() => { dispatch(fetchCabBookingById(id)) }, [dispatch, id])
+
+  useEffect(() => {
+    if (booking) {
+      setTripStatus(booking.tripStatus)
+      if (booking.currentLocation) {
+        setLiveLocation(booking.currentLocation)
+      }
+      
+      const socket = getSocket()
+      if (socket) {
+        socket.emit('join_trip', booking._id)
+        
+        socket.on('location_updated', (data) => {
+          if (data.bookingId === booking._id) {
+            setLiveLocation({ lat: data.lat, lng: data.lng, updatedAt: data.updatedAt })
+          }
+        })
+        
+        socket.on('trip_status_updated', (data) => {
+          if (data.bookingId === booking._id) {
+            setTripStatus(data.status)
+            if (data.status === 'completed') toast.success('Trip Completed!')
+            else toast(`Trip Status: ${data.status.replace('_', ' ')}`, { icon: '🚕' })
+          }
+        })
+      }
+      
+      return () => {
+        if (socket) {
+          socket.emit('leave_trip', booking._id)
+          socket.off('location_updated')
+          socket.off('trip_status_updated')
+        }
+      }
+    }
+  }, [booking])
 
   if (loading) {
     return (
@@ -224,6 +263,82 @@ export default function CabBookingDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* LIVE TRACKING UI */}
+          {['en_route_pickup', 'arrived', 'in_progress'].includes(tripStatus) && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 bg-gray-900 rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden border border-emerald-500/20">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
+              <h3 className="font-display font-black text-2xl text-white mb-8 flex items-center gap-3 relative z-10">
+                <span className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 border border-emerald-500/30">
+                  <FiMapPin className="animate-bounce" />
+                </span>
+                Live Trip Tracker
+              </h3>
+              
+              <div className="flex flex-col gap-8 relative z-10">
+                {/* Status Indicator */}
+                <div className="bg-white/5 rounded-3xl p-6 border border-white/10 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Current Status</p>
+                    <p className="text-xl font-black">{tripStatus.replace(/_/g, ' ').toUpperCase()}</p>
+                  </div>
+                  {liveLocation && (
+                    <div className="text-right">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Last Updated</p>
+                      <p className="text-sm font-bold text-gray-300">{new Date(liveLocation.updatedAt).toLocaleTimeString()}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Animated Route Progress */}
+                <div className="relative pt-8 pb-4 px-4">
+                  <div className="absolute top-1/2 left-4 right-4 h-1 bg-white/10 -translate-y-1/2 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-emerald-500 to-emerald-300"
+                      initial={{ width: 0 }}
+                      animate={{ 
+                        width: tripStatus === 'en_route_pickup' ? '25%' : 
+                               tripStatus === 'arrived' ? '50%' : 
+                               tripStatus === 'in_progress' ? '75%' : '100%' 
+                      }}
+                      transition={{ duration: 1 }}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-between relative z-10">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${['en_route_pickup', 'arrived', 'in_progress'].includes(tripStatus) ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-white/20'}`} />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Dispatch</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${['arrived', 'in_progress'].includes(tripStatus) ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-white/20'}`} />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Arrived</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full ${tripStatus === 'in_progress' ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]' : 'bg-white/20'}`} />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">En Route</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-white/20" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Dest</span>
+                    </div>
+                  </div>
+                </div>
+
+                {liveLocation && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-2xl flex items-center justify-between">
+                     <p className="text-emerald-400 text-sm font-bold flex items-center gap-2">
+                       <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" /> Live GPS streaming active
+                     </p>
+                     <div className="text-right">
+                       <p className="text-[10px] text-emerald-400/50 uppercase font-mono tracking-widest">Lat: {liveLocation.lat.toFixed(4)}</p>
+                       <p className="text-[10px] text-emerald-400/50 uppercase font-mono tracking-widest">Lng: {liveLocation.lng.toFixed(4)}</p>
+                     </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Pricing Summary Card */}
