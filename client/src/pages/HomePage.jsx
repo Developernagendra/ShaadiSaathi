@@ -118,7 +118,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="w-full overflow-hidden overflow-x-hidden">
+    <div className="w-full max-w-[100vw] overflow-hidden overflow-x-hidden">
       {/* ── 1. Hero Section ── */}
       <section className="relative h-[75vh] min-h-[500px] flex items-center justify-center">
         {HERO_IMAGES.map((src, i) => {
@@ -164,7 +164,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <form onSubmit={handleSearch} className="bg-white rounded-[2rem] p-3 shadow-2xl flex flex-col md:flex-row gap-3 max-w-4xl mx-auto mb-8 border border-gold-100 relative group overflow-hidden">
+          <form onSubmit={handleSearch} className="bg-white rounded-[2rem] p-3 shadow-2xl flex flex-col md:flex-row gap-3 max-w-4xl w-full mx-auto mb-8 border border-gold-100 relative group overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-400 via-pink-500 to-gold-400 opacity-50" />
             <div className="flex items-center gap-3 flex-1 px-4 py-2 w-full">
               <FiSearch className="text-[#C2185B] flex-shrink-0" size={22} />
@@ -260,7 +260,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-white/80 backdrop-blur-md rounded-[1.5rem] p-3 shadow-sm border border-pink-50 mb-6 flex flex-col sm:flex-row gap-3 items-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-white/80 backdrop-blur-md rounded-[1.5rem] p-3 shadow-sm border border-pink-50 mb-6 flex flex-col sm:flex-row gap-3 items-center w-full max-w-full">
             <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-700 outline-none w-full sm:flex-1">
               <option value="">All Categories</option>
               {categories.map((cat) => <option key={cat._id} value={cat.slug}>{cat.name}</option>)}

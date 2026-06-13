@@ -87,7 +87,7 @@ export default function VendorCard({ vendor }) {
   return (
     <div
       onClick={() => navigate(`/vendors/${vendor._id}`)}
-      className="block h-full cursor-pointer group"
+      className="block h-full cursor-pointer group w-full max-w-full overflow-hidden"
     >
       <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(255,77,109,0.15)] border border-white hover:border-pink-100 transition-all duration-500 overflow-hidden relative flex flex-col h-full group hover:-translate-y-2">
         {/* Hover Glow Effect */}
@@ -112,25 +112,25 @@ export default function VendorCard({ vendor }) {
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
 
           {/* Premium Ribbons & Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2 z-20 items-start">
+          <div className="absolute top-4 left-4 right-16 flex flex-col gap-2 z-20 items-start overflow-hidden">
             {vendor.subscription?.plan === 'elite' ? (
-              <span className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white text-[10px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                💎 Premium Partner
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white text-[10px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 max-w-full truncate">
+                💎 <span className="truncate">Premium Partner</span>
               </span>
             ) : vendor.subscription?.plan === 'premium' ? (
-              <span className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white text-[10px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                💎 Premium Partner
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white text-[10px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 max-w-full truncate">
+                💎 <span className="truncate">Premium Partner</span>
               </span>
             ) : null}
 
             {vendor.isTrending && (
-              <span className="bg-white/90 backdrop-blur-md text-[#FF4D6D] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-md flex items-center gap-1">
-                <FiTrendingUp strokeWidth={3} /> Trending
+              <span className="bg-white/90 backdrop-blur-md text-[#FF4D6D] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 max-w-full truncate">
+                <FiTrendingUp strokeWidth={3} className="flex-shrink-0" /> <span className="truncate">Trending</span>
               </span>
             )}
             {vendor.isFeatured && (
-              <span className="bg-white/90 backdrop-blur-md text-[#6A11CB] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-md flex items-center gap-1">
-                🏆 Top Rated
+              <span className="bg-white/90 backdrop-blur-md text-[#6A11CB] text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 max-w-full truncate">
+                🏆 <span className="truncate">Top Rated</span>
               </span>
             )}
           </div>
@@ -149,18 +149,18 @@ export default function VendorCard({ vendor }) {
           </div>
 
           {/* Social Proof & Location Overlay */}
-          <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between">
-            <div className="flex flex-col gap-1.5">
-              <span className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full w-fit">
-                {vendor.category?.icon} {vendor.category?.name || 'Service'}
+          <div className="absolute bottom-4 left-4 right-4 z-20 flex items-end justify-between gap-2">
+            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+              <span className="bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full w-fit max-w-full truncate inline-block">
+                {vendor.category?.icon} <span className="truncate">{vendor.category?.name || 'Service'}</span>
               </span>
-              <div className="flex items-center gap-1 text-white/90 text-xs font-bold drop-shadow-md">
-                <FiMapPin size={12} className="text-[#D4AF37]" />
-                <span className="truncate max-w-[120px]">{vendor.location?.city || 'India'}</span>
+              <div className="flex items-center gap-1 text-white/90 text-xs font-bold drop-shadow-md min-w-0">
+                <FiMapPin size={12} className="text-[#D4AF37] flex-shrink-0" />
+                <span className="truncate flex-1">{vendor.location?.city || 'India'}</span>
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <div className="bg-white/95 backdrop-blur-md rounded-xl px-2.5 py-1 flex items-center gap-1.5 shadow-lg border border-white/50">
                 <span className="text-yellow-500 text-sm">⭐</span>
                 <span className="text-gray-900 font-bold text-sm leading-none">{vendor.rating?.average || '4.9'}</span>
@@ -205,7 +205,7 @@ export default function VendorCard({ vendor }) {
           </div>
 
           {/* Price & Actions Row */}
-          <div className="mt-auto pt-5 border-t border-gray-50/80 flex flex-wrap items-center justify-between gap-4">
+          <div className="mt-auto pt-5 border-t border-gray-50/80 flex flex-wrap items-center justify-between gap-4 w-full">
             <div>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Starting Price</p>
               <p className="font-display font-black text-gray-900 text-xl tracking-tight">

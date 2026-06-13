@@ -84,7 +84,7 @@ export default function Footer() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
               onClick={scrollToTop}
-              className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-gradient-to-tr from-[#C2185B] to-[#8E244D] text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(194,24,91,0.4)] hover:shadow-[0_0_30px_rgba(194,24,91,0.6)] hover:-translate-y-1 transition-all duration-300"
+              className="fixed bottom-6 right-4 md:bottom-8 md:right-8 z-50 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-[#C2185B] to-[#8E244D] text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(194,24,91,0.4)] hover:shadow-[0_0_30px_rgba(194,24,91,0.6)] hover:-translate-y-1 transition-all duration-300"
               aria-label="Scroll to top"
             >
               <FiArrowUp size={20} strokeWidth={3} />

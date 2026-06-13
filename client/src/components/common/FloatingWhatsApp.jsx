@@ -12,7 +12,7 @@ export default function FloatingWhatsApp() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-[90] bg-[#25D366] hover:bg-[#128C7E] text-white rounded-full p-4 shadow-xl flex items-center justify-center cursor-pointer transition-colors"
+      className="fixed bottom-24 right-4 md:bottom-8 md:right-24 z-[90] bg-[#25D366] hover:bg-[#128C7E] text-white rounded-full p-4 shadow-xl flex items-center justify-center cursor-pointer transition-colors"
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       initial={{ opacity: 0, y: 50 }}
