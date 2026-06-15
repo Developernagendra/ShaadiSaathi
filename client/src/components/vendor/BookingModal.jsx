@@ -12,6 +12,7 @@ export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
   const { user } = useSelector(s => s.auth)
   const { loading } = useSelector(s => s.booking)
   const { publicAvailability, loading: availLoading } = useSelector(s => s.availability || {})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [form, setForm] = useState({
     packageIdx: 0,
@@ -52,6 +53,8 @@ export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
 
     if (user && user.role !== 'user') {
       return toast.error('Access denied. Only users can book services.')
@@ -81,6 +84,7 @@ export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
     }
 
     const result = await dispatch(createBooking(payload))
+    setIsSubmitting(false)
     if (!result.error) { 
       onClose(); 
       navigate(`/bookings/${result.payload.booking._id}`) 
@@ -206,7 +210,7 @@ export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
 
           <button
             type="submit"
-            disabled={loading || !(vendor.packages?.[form.packageIdx]?.price || vendor.price || vendor.basePrice)}
+            disabled={isSubmitting || loading || !(vendor.packages?.[form.packageIdx]?.price || vendor.price || vendor.basePrice)}
             className="w-full py-5 bg-primary-600 text-white rounded-2xl font-black shadow-xl hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing...' : (vendor.packages?.[form.packageIdx]?.price || vendor.price || vendor.basePrice) ? 'Confirm Booking' : 'Price unavailable'}

@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const [selectedPkg, setSelectedPkg] = useState(0)
   const [orderConfirmed, setOrderConfirmed] = useState(false)
   const [service, setService] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (targetId) {
@@ -58,7 +59,8 @@ export default function CheckoutPage() {
   const advanceAmount = Math.ceil(amount * 0.5)
 
   const handleSubmit = async (values) => {
-
+    if (isSubmitting) return
+    setIsSubmitting(true)
 
     const payload = {
       vendorId: vendor?._id || service?.vendor?._id || service?.vendor || targetId,
@@ -78,6 +80,7 @@ export default function CheckoutPage() {
     }
 
     const result = await dispatch(createBooking(payload))
+    setIsSubmitting(false)
 
     if (!result.error) {
       setOrderConfirmed(true)
@@ -174,7 +177,7 @@ export default function CheckoutPage() {
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isSubmitting || loading}
                     className="btn-primary w-full py-6 text-xl shadow-2xl group transition-all duration-300 shadow-pink-200"
                   >
                     {loading ? (

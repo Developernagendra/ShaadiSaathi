@@ -51,7 +51,8 @@ exports.createBooking = catchAsync(async (req, res, next) => {
     return next(new AppError('Vendor not found or not available.', 404));
   }
 
-  // Duplicate Booking Prevention: same user, same vendor, same date, pending/confirmed status
+  // Duplicate Booking Prevention: same user, same vendor, same date, any active status
+  console.log(`[DUPLICATE_CHECK] UserId: ${req.user._id} | VendorId: ${vendor.user} | Date: ${eventDate}`);
   const existingBooking = await Booking.findOne({
     userId: req.user._id,
     vendorId: vendor.user,
@@ -59,12 +60,14 @@ exports.createBooking = catchAsync(async (req, res, next) => {
       $gte: new Date(new Date(eventDate).setHours(0, 0, 0, 0)),
       $lte: new Date(new Date(eventDate).setHours(23, 59, 59, 999))
     },
-    status: { $in: ['pending', 'confirmed'] }
+    status: { $in: ['pending', 'confirmed', 'accepted', 'in_progress'] }
   });
 
   if (existingBooking) {
+    console.log(`[DUPLICATE_CHECK] FoundBooking: ${existingBooking.bookingId} | Status: ${existingBooking.status}`);
     return next(new AppError('You already have an active booking request with this vendor for the selected date.', 400));
   }
+  console.log('[DUPLICATE_CHECK] No duplicate found — proceeding with booking creation.');
 
   // Check if date is in vendor's unavailableDates
   const requestedDate = new Date(eventDate);
@@ -178,8 +181,9 @@ exports.createBooking = catchAsync(async (req, res, next) => {
   }
 
   // Ensure serviceName is populated dynamically if not set
+  // IMPORTANT: Never use vendor.businessName as serviceName — they are different fields
   if (!serviceName && vendor) {
-    serviceName = vendor.businessName || 'Wedding Service';
+    serviceName = vendor.category ? (vendor.category.name || vendor.category.toString()) : 'Wedding Service';
     serviceCategory = vendor.category ? (vendor.category.name || vendor.category.toString()) : 'Wedding Service';
   }
 
@@ -260,102 +264,9 @@ exports.createBooking = catchAsync(async (req, res, next) => {
     io.to('admin').emit('booking_updated', { booking });
   }
 
-  // Send confirmation email
-  console.log(`[EMAIL] 📨 BOOKING EMAIL FLOW STARTED for booking: ${booking._id}`);
-  try {
-    const bookingWithDetails = await Booking.findById(booking._id)
-      .populate('service')
-      .populate('vendor')
-      .populate('cab')
-      .populate('cabIds')
-      .populate('vendorProfileId');
-
-    let bookedServiceName = bookingWithDetails.serviceName || 'Wedding Service';
-
-    if (!bookingWithDetails.serviceName) {
-      if ((bookingWithDetails.bookingType === 'cab' || bookingWithDetails.bookingType === 'baraat-cab') && (bookingWithDetails.cab || (bookingWithDetails.cabIds && bookingWithDetails.cabIds[0]))) {
-        const cabObj = bookingWithDetails.cab || bookingWithDetails.cabIds[0];
-        bookedServiceName =
-          cabObj.brand ||
-          cabObj.model ||
-          cabObj.vehicleName ||
-          cabObj.name ||
-          'Baraat Cab';
-      } else if (bookingWithDetails.bookingType === 'service' && bookingWithDetails.service) {
-        bookedServiceName =
-          bookingWithDetails.service.title ||
-          bookingWithDetails.service.name ||
-          (bookingWithDetails.service.category && (bookingWithDetails.service.category.name || bookingWithDetails.service.category)) ||
-          'Wedding Service';
-      } else if (bookingWithDetails.vendorProfileId) {
-        bookedServiceName = bookingWithDetails.vendorProfileId.businessName || 'Wedding Service';
-      }
-    }
-
-    const bookingPayload = {
-      bookingId: bookingWithDetails.bookingId || "N/A",
-      customerName: req.user.name || "Customer",
-      customerEmail: req.user.email || "Not Provided",
-      customerPhone: contactPhone || req.user?.phone || "Not Provided",
-      vendorName: vendor ? (vendor.businessName || "Vendor") : "Wedding Service Vendor",
-      serviceName: bookedServiceName || "Wedding Service",
-      eventDate: eventDate ? new Date(eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
-      eventTime: eventTime || "TBD",
-      eventLocation: eventVenue || eventCity || "TBD",
-      bookingAmount: amount || bookingWithDetails.amount || 0,
-      bookingStatus: bookingWithDetails.status || "pending"
-    };
-
-    console.log("[EMAIL PAYLOAD] createBooking:", bookingPayload);
-
-    // 1. Send User Confirmation Email
-    try {
-      console.log(`[EMAIL] Sending booking confirmation to user: ${req.user.email}`);
-      const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
-      await sendEmail({ to: req.user.email, ...template });
-    } catch (emailErr) {
-      console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for booking ${bookingPayload.bookingId}:`, emailErr.message);
-      // Do not throw; we must not cancel the booking over an email failure
-    }
-
-    // 2. Send Vendor Alert Email (if vendor email exists)
-    if (vendor && vendor.email) {
-      try {
-        console.log(`[EMAIL] Sending booking alert to vendor: ${vendor.email}`);
-        const vendorTemplate = emailTemplates.vendorBookingAlert(
-          vendor.businessName || 'Vendor Partner',
-          bookingPayload
-        );
-        await sendEmail({ to: vendor.email, ...vendorTemplate });
-      } catch (err) {
-        console.error('[EMAIL] ❌ Failed to send vendor booking alert email:', err.message);
-      }
-    } else {
-      console.warn('[EMAIL] ⚠️ Vendor has no email address — skipping vendor alert email');
-    }
-
-    // 3. Send Admin Alert Email (to all admin users)
-    try {
-      const adminsList = await User.find({ role: 'admin' }).lean();
-      for (const adm of adminsList) {
-        if (adm.email) {
-          console.log(`[EMAIL] Sending booking alert to admin: ${adm.email}`);
-          const adminTemplate = emailTemplates.adminBookingAlert(
-            adm.name || 'Administrator',
-            bookingPayload
-          );
-          await sendEmail({ to: adm.email, ...adminTemplate });
-        }
-      }
-    } catch (err) {
-      console.error('[EMAIL] ❌ Failed to send admin booking alert email:', err.message);
-    }
-
-    console.log('[EMAIL] ✅ ALL BOOKING EMAILS DISPATCHED SUCCESSFULLY');
-  } catch (error) {
-    console.error('[EMAIL] ❌ BOOKING EMAIL FLOW FAILED:', error.message);
-  }
-
+  // ─── RESPOND TO CLIENT IMMEDIATELY ─────────────────────────────────
+  // Return success before attempting any email dispatch so the frontend
+  // never hangs waiting for SMTP retries.
   const populatedBooking = await Booking.findById(booking._id)
     .populate('vendorProfileId', 'businessName phone email location images')
     .populate('userId', 'name email phone');
@@ -365,6 +276,105 @@ exports.createBooking = catchAsync(async (req, res, next) => {
     message: 'Booking created successfully!',
     booking: populatedBooking
   });
+
+  // ─── FIRE-AND-FORGET: Background Email Dispatch ────────────────────
+  // All email work happens AFTER the response has been sent to the user.
+  // Errors here are logged but can never affect the booking or the API response.
+  (async () => {
+    try {
+      console.log(`[EMAIL] 📨 BOOKING EMAIL FLOW STARTED (background) for booking: ${booking._id}`);
+      const bookingWithDetails = await Booking.findById(booking._id)
+        .populate('service')
+        .populate('vendor')
+        .populate('cab')
+        .populate('cabIds')
+        .populate('vendorProfileId');
+
+      let bookedServiceName = bookingWithDetails.serviceName || 'Wedding Service';
+
+      if (!bookingWithDetails.serviceName) {
+        if ((bookingWithDetails.bookingType === 'cab' || bookingWithDetails.bookingType === 'baraat-cab') && (bookingWithDetails.cab || (bookingWithDetails.cabIds && bookingWithDetails.cabIds[0]))) {
+          const cabObj = bookingWithDetails.cab || bookingWithDetails.cabIds[0];
+          bookedServiceName =
+            cabObj.brand ||
+            cabObj.model ||
+            cabObj.vehicleName ||
+            cabObj.name ||
+            'Baraat Cab';
+        } else if (bookingWithDetails.bookingType === 'service' && bookingWithDetails.service) {
+          bookedServiceName =
+            bookingWithDetails.service.title ||
+            bookingWithDetails.service.name ||
+            (bookingWithDetails.service.category && (bookingWithDetails.service.category.name || bookingWithDetails.service.category)) ||
+            'Wedding Service';
+        } else if (bookingWithDetails.vendorProfileId) {
+          bookedServiceName = bookingWithDetails.vendorProfileId.businessName || 'Wedding Service';
+        }
+      }
+
+      const bookingPayload = {
+        bookingId: bookingWithDetails.bookingId || "N/A",
+        customerName: req.user.name || "Customer",
+        customerEmail: req.user.email || "Not Provided",
+        customerPhone: contactPhone || req.user?.phone || "Not Provided",
+        vendorName: vendor ? (vendor.businessName || "Vendor") : "Wedding Service Vendor",
+        serviceName: bookedServiceName || "Wedding Service",
+        eventDate: eventDate ? new Date(eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
+        eventTime: eventTime || "TBD",
+        eventLocation: eventVenue || eventCity || "TBD",
+        bookingAmount: amount || bookingWithDetails.amount || 0,
+        bookingStatus: bookingWithDetails.status || "pending"
+      };
+
+      console.log("[EMAIL PAYLOAD] createBooking:", bookingPayload);
+
+      // 1. Send User Confirmation Email
+      try {
+        console.log(`[EMAIL] Sending booking confirmation to user: ${req.user.email}`);
+        const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
+        await sendEmail({ to: req.user.email, ...template });
+      } catch (emailErr) {
+        console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for booking ${bookingPayload.bookingId}:`, emailErr.message);
+      }
+
+      // 2. Send Vendor Alert Email (if vendor email exists)
+      if (vendor && vendor.email) {
+        try {
+          console.log(`[EMAIL] Sending booking alert to vendor: ${vendor.email}`);
+          const vendorTemplate = emailTemplates.vendorBookingAlert(
+            vendor.businessName || 'Vendor Partner',
+            bookingPayload
+          );
+          await sendEmail({ to: vendor.email, ...vendorTemplate });
+        } catch (err) {
+          console.error('[EMAIL] ❌ Failed to send vendor booking alert email:', err.message);
+        }
+      } else {
+        console.warn('[EMAIL] ⚠️ Vendor has no email address — skipping vendor alert email');
+      }
+
+      // 3. Send Admin Alert Email (to all admin users)
+      try {
+        const adminsList = await User.find({ role: 'admin' }).lean();
+        for (const adm of adminsList) {
+          if (adm.email) {
+            console.log(`[EMAIL] Sending booking alert to admin: ${adm.email}`);
+            const adminTemplate = emailTemplates.adminBookingAlert(
+              adm.name || 'Administrator',
+              bookingPayload
+            );
+            await sendEmail({ to: adm.email, ...adminTemplate });
+          }
+        }
+      } catch (err) {
+        console.error('[EMAIL] ❌ Failed to send admin booking alert email:', err.message);
+      }
+
+      console.log('[EMAIL] ✅ ALL BOOKING EMAILS DISPATCHED SUCCESSFULLY');
+    } catch (error) {
+      console.error('[EMAIL] ❌ BOOKING EMAIL FLOW FAILED:', error.message);
+    }
+  })();
 });
 
 // @desc    Create cab booking
@@ -632,7 +642,7 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
     serviceName: serviceName,
     serviceCategory: 'Baraat Cab',
     eventDate,
-    eventTime: "Not specified",
+    eventTime: "TBD",
     contactName: name,
     contactPhone: phone,
     contactEmail: email,
@@ -709,97 +719,102 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
     io.to('admin').emit('new_booking_admin', { booking: cabBooking });
   }
 
-  // Send confirmation email
-  try {
-    const bookingWithDetails = await Booking.findById(cabBooking._id)
-      .populate('service')
-      .populate('vendor')
-      .populate('cab')
-      .populate('cabIds')
-      .populate('vendorProfileId');
-
-    let bookedServiceName = bookingWithDetails.serviceName || 'Baraat Cab';
-
-    if (!bookingWithDetails.serviceName) {
-      if ((bookingWithDetails.bookingType === 'cab' || bookingWithDetails.bookingType === 'baraat-cab') && (bookingWithDetails.cab || (bookingWithDetails.cabIds && bookingWithDetails.cabIds[0]))) {
-        const cabObj = bookingWithDetails.cab || bookingWithDetails.cabIds[0];
-        bookedServiceName =
-          cabObj.brand ||
-          cabObj.model ||
-          cabObj.vehicleName ||
-          cabObj.name ||
-          'Baraat Cab';
-      }
-    }
-
-    const bookingPayload = {
-      bookingId: bookingWithDetails.bookingId || "N/A",
-      customerName: req.user.name || "Customer",
-      customerEmail: req.user.email || "Not Provided",
-      customerPhone: phone || req.user?.phone || "Not Provided",
-      vendorName: "Cab Vendor Partner(s)",
-      serviceName: bookedServiceName || "Wedding Service",
-      eventDate: eventDate ? new Date(eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
-      eventTime: "TBD",
-      eventLocation: typeof pickupLocation === 'object' ? pickupLocation.address : (pickupLocation || city || "TBD"),
-      bookingAmount: finalPrice || bookingWithDetails.amount || 0,
-      bookingStatus: bookingWithDetails.status || "confirmed"
-    };
-
-    console.log("[EMAIL PAYLOAD] createCabBooking:", bookingPayload);
-
-    // 1. Send User Confirmation Email
-    try {
-      console.log(`[EMAIL] Sending cab booking confirmation to user: ${req.user.email}`);
-      const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
-      await sendEmail({ to: req.user.email, ...template });
-    } catch (emailErr) {
-      console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for cab booking ${bookingPayload.bookingId}:`, emailErr.message);
-    }
-
-    // 2. Send Vendor Alert Email(s)
-    for (const vId of vendorsSet) {
-      try {
-        const vUser = await User.findById(vId);
-        if (vUser && vUser.email) {
-          const vProfile = await Vendor.findOne({ user: vId });
-          const vendorPayload = { ...bookingPayload, vendorName: vProfile ? vProfile.businessName : 'Cab Vendor Partner' };
-          const vendorTemplate = emailTemplates.vendorBookingAlert(
-            vendorPayload.vendorName,
-            vendorPayload
-          );
-          await sendEmail({ to: vUser.email, ...vendorTemplate });
-        }
-      } catch (err) {
-        console.error("❌ Failed to send cab vendor booking alert email:", err.message);
-      }
-    }
-
-    // 3. Send Admin Alert Email (to all admin users)
-    try {
-      const adminsList = await User.find({ role: 'admin' }).lean();
-      for (const adm of adminsList) {
-        if (adm.email) {
-          const adminTemplate = emailTemplates.adminBookingAlert(
-            adm.name || 'Administrator',
-            bookingPayload
-          );
-          await sendEmail({ to: adm.email, ...adminTemplate });
-        }
-      }
-    } catch (err) {
-      console.error("❌ Failed to send admin booking alert email:", err.message);
-    }
-  } catch (error) {
-    console.error('Email error:', error);
-  }
-
+  // ─── RESPOND TO CLIENT IMMEDIATELY ─────────────────────────────────
   res.status(201).json({
     success: true,
     status: 'success',
     message: activeBundleId ? 'Bundle booking confirmed' : 'Cab booking created successfully!',
     booking: cabBooking
   });
+
+  // ─── FIRE-AND-FORGET: Background Email Dispatch ────────────────────
+  (async () => {
+    try {
+      const bookingWithDetails = await Booking.findById(cabBooking._id)
+        .populate('service')
+        .populate('vendor')
+        .populate('cab')
+        .populate('cabIds')
+        .populate('vendorProfileId');
+
+      let bookedServiceName = bookingWithDetails.serviceName || 'Baraat Cab';
+
+      if (!bookingWithDetails.serviceName) {
+        if ((bookingWithDetails.bookingType === 'cab' || bookingWithDetails.bookingType === 'baraat-cab') && (bookingWithDetails.cab || (bookingWithDetails.cabIds && bookingWithDetails.cabIds[0]))) {
+          const cabObj = bookingWithDetails.cab || bookingWithDetails.cabIds[0];
+          bookedServiceName =
+            cabObj.brand ||
+            cabObj.model ||
+            cabObj.vehicleName ||
+            cabObj.name ||
+            'Baraat Cab';
+        }
+      }
+
+      const bookingPayload = {
+        bookingId: bookingWithDetails.bookingId || "N/A",
+        customerName: req.user.name || "Customer",
+        customerEmail: req.user.email || "Not Provided",
+        customerPhone: phone || req.user?.phone || "Not Provided",
+        vendorName: "Cab Vendor Partner(s)",
+        serviceName: bookedServiceName || "Wedding Service",
+        eventDate: eventDate ? new Date(eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
+        eventTime: "TBD",
+        eventLocation: typeof pickupLocation === 'object' ? pickupLocation.address : (pickupLocation || city || "TBD"),
+        bookingAmount: finalPrice || bookingWithDetails.amount || 0,
+        bookingStatus: bookingWithDetails.status || "confirmed"
+      };
+
+      console.log("[EMAIL PAYLOAD] createCabBooking:", bookingPayload);
+
+      // 1. Send User Confirmation Email
+      try {
+        console.log(`[EMAIL] Sending cab booking confirmation to user: ${req.user.email}`);
+        const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
+        await sendEmail({ to: req.user.email, ...template });
+      } catch (emailErr) {
+        console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for cab booking ${bookingPayload.bookingId}:`, emailErr.message);
+      }
+
+      // 2. Send Vendor Alert Email(s)
+      for (const vId of vendorsSet) {
+        try {
+          const vUser = await User.findById(vId);
+          if (vUser && vUser.email) {
+            const vProfile = await Vendor.findOne({ user: vId });
+            const vendorPayload = { ...bookingPayload, vendorName: vProfile ? vProfile.businessName : 'Cab Vendor Partner' };
+            const vendorTemplate = emailTemplates.vendorBookingAlert(
+              vendorPayload.vendorName,
+              vendorPayload
+            );
+            await sendEmail({ to: vUser.email, ...vendorTemplate });
+          }
+        } catch (err) {
+          console.error("❌ Failed to send cab vendor booking alert email:", err.message);
+        }
+      }
+
+      // 3. Send Admin Alert Email (to all admin users)
+      try {
+        const adminsList = await User.find({ role: 'admin' }).lean();
+        for (const adm of adminsList) {
+          if (adm.email) {
+            const adminTemplate = emailTemplates.adminBookingAlert(
+              adm.name || 'Administrator',
+              bookingPayload
+            );
+            await sendEmail({ to: adm.email, ...adminTemplate });
+          }
+        }
+      } catch (err) {
+        console.error("❌ Failed to send admin booking alert email:", err.message);
+      }
+
+      console.log('[EMAIL] ✅ ALL CAB BOOKING EMAILS DISPATCHED SUCCESSFULLY');
+    } catch (error) {
+      console.error('[EMAIL] ❌ CAB BOOKING EMAIL FLOW FAILED:', error.message);
+    }
+  })();
 });
 
 
