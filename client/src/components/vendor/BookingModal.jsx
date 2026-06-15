@@ -5,7 +5,7 @@ import { fetchPublicAvailability } from '../../store/slices/availabilitySlice'
 import Modal from '../common/Modal'
 import { formatPrice } from '../../utils/helpers'
 import toast from 'react-hot-toast'
-import { FiCheck, FiInfo, FiCalendar } from 'react-icons/fi'
+import { FiCheck } from 'react-icons/fi';
 
 export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
   const dispatch = useDispatch()
@@ -216,8 +216,7 @@ export default function BookingModal({ isOpen, onClose, vendor, navigate }) {
             {loading ? 'Processing...' : (vendor.packages?.[form.packageIdx]?.price || vendor.price || vendor.basePrice) ? 'Confirm Booking' : 'Price unavailable'}
           </button>
 
-
-        </form>
+</form>
       </div>
     </Modal>
   )

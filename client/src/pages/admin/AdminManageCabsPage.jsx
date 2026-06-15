@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiCheck, FiX, FiSearch, FiMapPin, 
-  FiStar, FiFilter, FiAlertCircle, FiEye, 
-  FiShield, FiActivity, FiBriefcase, FiFileText, FiUser, FiCalendar, FiChevronRight,
-  FiImage, FiClock
-} from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FiCheck, FiX, FiSearch, FiMapPin, FiAlertCircle, FiEye, FiShield, FiActivity, FiBriefcase, FiFileText, FiUser, FiCalendar, FiImage, FiClock } from 'react-icons/fi';
+import { FaTruck } from 'react-icons/fa';
 import { toast } from 'react-hot-toast'
 import api from '../../utils/api'
 import { formatPrice } from '../../utils/helpers'

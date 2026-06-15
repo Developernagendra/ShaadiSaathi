@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../../utils/api'
 import { formatDateShort } from '../../utils/helpers'
 import StarRating from '../../components/common/StarRating'
-import { FiTrash2, FiSearch, FiAlertCircle } from 'react-icons/fi'
+import { FiTrash2, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 
 export default function AdminReviewsPage() {

@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import { uploadVendorImages, updateVendorProfile } from '../../store/slices/vendorSlice'
-import { FiImage, FiPlus, FiX, FiUpload, FiCheck, FiStar, FiGrid, FiFilm, FiTrash2, FiTag } from 'react-icons/fi'
+import { FiImage, FiUpload, FiStar, FiGrid, FiFilm, FiTrash2, FiTag } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 import api from '../../utils/api'
 

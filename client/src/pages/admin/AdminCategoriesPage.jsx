@@ -4,7 +4,7 @@ import { fetchCategories } from '../../store/slices/vendorSlice'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 import Modal from '../../components/common/Modal'
-import { FiPlus, FiEdit, FiTrash2 } from 'react-icons/fi'
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
 export default function AdminCategoriesPage() {
   const dispatch = useDispatch()

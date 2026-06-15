@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FiSettings, FiLock, FiGlobe, FiDatabase, FiSave } from 'react-icons/fi'
+import { FiSettings, FiGlobe, FiDatabase, FiSave } from 'react-icons/fi';
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false)

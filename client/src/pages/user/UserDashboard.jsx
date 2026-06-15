@@ -6,7 +6,7 @@ import { fetchUserDashboard } from '../../store/slices/bookingSlice'
 import { fetchUnreadChatCount } from '../../store/slices/chatSlice'
 import { resendVerification } from '../../store/slices/authSlice'
 import { formatPrice, formatDateShort, getStatusColor, getInitials } from '../../utils/helpers'
-import { FiCalendar, FiHeart, FiMessageCircle, FiBell, FiArrowRight, FiUser, FiEdit3, FiShare2, FiUsers, FiMail, FiCheck, FiLayout, FiSmartphone, FiGlobe, FiSettings, FiEye } from 'react-icons/fi'
+import { FiCalendar, FiHeart, FiMessageCircle, FiBell, FiArrowRight, FiUser } from 'react-icons/fi';
 import { motion } from 'framer-motion'
 import Badge from '../../components/common/Badge'
 
@@ -187,8 +187,7 @@ export default function UserDashboard() {
           {/* Quick Actions */}
           <div className="space-y-10">
 
-
-            {/* Quick Actions List */}
+{/* Quick Actions List */}
             <div className="bg-white rounded-2xl md:rounded-[2.5rem] shadow-premium border border-pink-50 p-6 md:p-10 relative overflow-hidden">
               <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-50/20 rounded-tl-full" />
               <h3 className="font-display text-2xl font-black text-gray-900 mb-6 md:mb-8 tracking-tight relative z-10">Quick Actions</h3>
@@ -197,8 +196,9 @@ export default function UserDashboard() {
                   { to: '/services', icon: '🔍', label: 'Browse Vendors', color: '#C2185B' },
                   { to: '/baraat-cabs', icon: '🚗', label: 'Imperial Fleet', color: '#8E244D' },
                   { to: '/tools', icon: '🛠️', label: 'Wedding Tools', color: '#ec4899' },
+                  { to: '/astrology-reports', icon: '✨', label: 'My Astrology', color: '#6366f1' },
                   { to: '/wishlist', icon: '❤️', label: 'Saved Vendors', color: '#D4AF37' },
-                  { to: '/profile', icon: '👤', label: 'My Profile', color: '#6366f1' },
+                  { to: '/profile', icon: '👤', label: 'My Profile', color: '#10b981' },
                   { to: '/chat', icon: '💬', label: 'My Messages', color: '#10b981' },
                 ].map(({ to, icon, label, color }) => (
                   <Link key={to} to={to} className="flex items-center gap-6 p-5 rounded-[1.5rem] hover:bg-[#FFF8F0] border border-transparent hover:border-pink-50 transition-all duration-500 group">

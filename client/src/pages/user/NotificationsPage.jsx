@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { FiBell, FiCheckCircle, FiInfo, FiCalendar, FiCreditCard, FiMessageSquare, FiTrash2, FiClock } from 'react-icons/fi'
+import { FiBell, FiCheckCircle, FiCalendar, FiCreditCard, FiMessageSquare, FiClock, FiArrowRight } from 'react-icons/fi';
 import { timeAgo } from '../../utils/helpers'
 import { markAllRead, markSingleRead } from '../../store/slices/notificationSlice'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -134,8 +134,3 @@ export default function NotificationsPage() {
   );
 }
 
-const FiArrowRight = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12h14m-7-7 7 7-7 7" />
-  </svg>
-);

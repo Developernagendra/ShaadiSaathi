@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 import { formatDateShort, formatPrice } from '../../utils/helpers'
-import { 
-  FiCheck, FiX, FiSearch, FiFilter, FiAlertCircle, FiEye, 
-  FiShield, FiFileText, FiUser, FiCalendar, FiChevronRight,
-  FiImage, FiInfo, FiDownload, FiCheckCircle, FiAlertTriangle,
-  FiTrendingUp, FiCheckSquare, FiSquare, FiList, FiPhone, FiMail, FiMapPin
-} from 'react-icons/fi'
+import { FiCheck, FiX, FiSearch, FiAlertCircle, FiEye, FiShield, FiFileText, FiUser, FiImage, FiDownload, FiCheckCircle, FiAlertTriangle, FiCheckSquare, FiSquare, FiMapPin } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion'
 
 const STATUS_TABS = [

@@ -2,11 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector, useDispatch } from 'react-redux'
-import { 
-  FiMapPin, FiCalendar, FiClock, FiUsers, FiArrowRight, 
-  FiArrowLeft, FiCheck, FiTruck, FiStar, FiUser, FiPhone 
-} from 'react-icons/fi'
-import { FaCrown, FaTruck } from 'react-icons/fa'
+import { FiMapPin, FiCalendar, FiClock, FiArrowRight, FiArrowLeft, FiCheck, FiTruck, FiStar, FiUser, FiPhone } from 'react-icons/fi';
+import { FaCrown, FaTruck } from 'react-icons/fa';
 import { formatPrice, optimizeImage } from '../utils/helpers'
 import api from '../utils/api'
 import { toast } from 'react-hot-toast'
@@ -74,9 +71,7 @@ export default function CustomBundleBuilderPage() {
     window.scrollTo(0, 0)
   }, [])
 
-
-
-  const filteredVendors = useMemo(() => {
+const filteredVendors = useMemo(() => {
     if (!selectedCity) return vendors
     return vendors.filter(v => v.fleet.some(c => c.location?.city?.toLowerCase() === selectedCity.toLowerCase()))
   }, [vendors, selectedCity])
@@ -159,9 +154,7 @@ export default function CustomBundleBuilderPage() {
       return
     }
 
-
-
-    // Validation
+// Validation
     if (!form.pickupLocation) return toast.error('Pickup location is required')
     if (!form.dropLocation) return toast.error('Drop location is required')
     if (!form.eventDate) return toast.error('Event date is required')
@@ -531,8 +524,7 @@ export default function CustomBundleBuilderPage() {
 
         </div>
       </div>
-      
 
-    </div>
+</div>
   )
 }

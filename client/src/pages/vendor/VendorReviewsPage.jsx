@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import api from '../../utils/api'
 import { formatDateShort } from '../../utils/helpers'
 import StarRating from '../../components/common/StarRating'
-import { FiMessageSquare, FiCornerUpRight, FiSearch } from 'react-icons/fi'
+import { FiMessageSquare, FiCornerUpRight } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 
 export default function VendorReviewsPage() {

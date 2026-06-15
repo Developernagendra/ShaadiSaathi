@@ -19,17 +19,7 @@ import {
   eachDayOfInterval,
   isToday
 } from 'date-fns'
-import { 
-  FiChevronLeft, 
-  FiChevronRight, 
-  FiPlus, 
-  FiX, 
-  FiLock, 
-  FiUnlock, 
-  FiClock, 
-  FiUsers, 
-  FiSave 
-} from 'react-icons/fi'
+import { FiChevronLeft, FiChevronRight, FiPlus, FiX, FiLock, FiUnlock, FiClock, FiUsers, FiSave } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion'
 import Modal from '../../components/common/Modal'
 

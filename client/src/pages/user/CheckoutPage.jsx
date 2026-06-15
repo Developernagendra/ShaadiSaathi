@@ -7,7 +7,7 @@ import { formatPrice } from '../../utils/helpers'
 import api from '../../utils/api'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import { FiCheck, FiArrowRight } from 'react-icons/fi'
+import { FiCheck, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 import { getMe, resendVerification } from '../../store/slices/authSlice'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -52,9 +52,7 @@ export default function CheckoutPage() {
     }
   }, [dispatch, targetId])
 
-
-
-  const pkg = vendor?.packages?.[selectedPkg]
+const pkg = vendor?.packages?.[selectedPkg]
   const amount = pkg?.price || vendor?.basePrice || 0
   const advanceAmount = Math.ceil(amount * 0.5)
 
@@ -240,7 +238,6 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-
-    </div>
+</div>
   )
 }

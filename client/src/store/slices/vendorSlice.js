@@ -132,7 +132,6 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
-
 export const uploadVendorImages = createAsyncThunk('vendor/uploadImages', async (formData, { rejectWithValue }) => {
   try {
     const res = await api.post('/vendors/images', formData, {

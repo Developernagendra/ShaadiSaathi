@@ -59,9 +59,39 @@ const baraatBookingRequestSchema = new mongoose.Schema({
 baraatBookingRequestSchema.index({ user: 1 });
 const BaraatBookingRequest = mongoose.model('BaraatBookingRequest', baraatBookingRequestSchema);
 
+// ==================== SAVED KUNDLI REPORT ====================
+const savedKundliSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  brideName: { type: String },
+  groomName: { type: String },
+  totalScore: { type: Number },
+  percentage: { type: Number },
+  reportData: { type: mongoose.Schema.Types.Mixed }, // Full JSON from astrology engine
+  language: { type: String, default: 'en' }
+}, { timestamps: true });
+
+savedKundliSchema.index({ user: 1 });
+const SavedKundli = mongoose.model('SavedKundli', savedKundliSchema);
+
+// ==================== SAVED MUHURAT SEARCH ====================
+const savedMuhuratSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  city: { type: String },
+  state: { type: String },
+  year: { type: Number },
+  month: { type: Number },
+  muhurats: [{ type: mongoose.Schema.Types.Mixed }], // Array of dates from astrology engine
+  language: { type: String, default: 'en' }
+}, { timestamps: true });
+
+savedMuhuratSchema.index({ user: 1 });
+const SavedMuhurat = mongoose.model('SavedMuhurat', savedMuhuratSchema);
+
 module.exports = {
   WeddingPlan,
   BudgetPlan,
   CostPrediction,
-  BaraatBookingRequest
+  BaraatBookingRequest,
+  SavedKundli,
+  SavedMuhurat
 };

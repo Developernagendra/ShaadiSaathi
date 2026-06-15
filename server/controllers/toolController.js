@@ -309,3 +309,95 @@ exports.deleteWeddingPlan = catchAsync(async (req, res) => {
   res.status(200).json({ success: true, message: 'Plan deleted' });
 });
 
+// ==================== ASTROLOGY PREMIUM TOOLS ====================
+const astrologyEngine = require('../utils/astrologyEngine');
+
+exports.calculateKundli = catchAsync(async (req, res) => {
+  const { bride, groom, language = 'en' } = req.body;
+  if (!bride || !groom) {
+    return res.status(400).json({ success: false, message: 'Bride and Groom details required' });
+  }
+
+  const report = astrologyEngine.calculateGunMilan(bride, groom);
+
+  // Analytics tracking
+  await ToolAnalytics.create({
+    toolName: 'Kundli Matching',
+    action: 'calculated_gun_milan',
+    user: req.user ? req.user._id : null,
+    metadata: { score: report.totalScore, percentage: report.percentage },
+    language,
+    state: bride.state || groom.state || ''
+  });
+
+  res.status(200).json({ success: true, data: report });
+});
+
+exports.saveKundli = catchAsync(async (req, res) => {
+  const { brideName, groomName, totalScore, percentage, reportData, language = 'en' } = req.body;
+  const { SavedKundli } = require('../models/ToolModels');
+  
+  const saved = await SavedKundli.create({
+    user: req.user._id,
+    brideName, groomName, totalScore, percentage, reportData, language
+  });
+  
+  res.status(201).json({ success: true, data: saved });
+});
+
+exports.calculateMuhurat = catchAsync(async (req, res) => {
+  const { city, state, year, month, brideName, groomName, language = 'en' } = req.body;
+  if (!city || !year || !month) {
+    return res.status(400).json({ success: false, message: 'City, year, and month required' });
+  }
+
+  const muhurats = astrologyEngine.calculateMuhurat(city, state, year, month, brideName, groomName);
+
+  // Analytics tracking
+  await ToolAnalytics.create({
+    toolName: 'Shubh Muhurat Finder',
+    action: 'calculated_muhurat',
+    user: req.user ? req.user._id : null,
+    metadata: { city, year, month },
+    language,
+    state
+  });
+
+  res.status(200).json({ success: true, data: muhurats });
+});
+
+exports.saveMuhurat = catchAsync(async (req, res) => {
+  const { city, state, year, month, muhurats, language = 'en' } = req.body;
+  const { SavedMuhurat } = require('../models/ToolModels');
+  
+  const saved = await SavedMuhurat.create({
+    user: req.user._id,
+    city, state, year, month, muhurats, language
+  });
+  
+  res.status(201).json({ success: true, data: saved });
+});
+
+exports.getSavedKundlis = catchAsync(async (req, res) => {
+  const { SavedKundli } = require('../models/ToolModels');
+  const reports = await SavedKundli.find({ user: req.user._id }).sort({ createdAt: -1 });
+  res.status(200).json({ success: true, data: reports });
+});
+
+exports.deleteSavedKundli = catchAsync(async (req, res) => {
+  const { SavedKundli } = require('../models/ToolModels');
+  await SavedKundli.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+  res.status(204).json({ success: true });
+});
+
+exports.getSavedMuhurats = catchAsync(async (req, res) => {
+  const { SavedMuhurat } = require('../models/ToolModels');
+  const reports = await SavedMuhurat.find({ user: req.user._id }).sort({ createdAt: -1 });
+  res.status(200).json({ success: true, data: reports });
+});
+
+exports.deleteSavedMuhurat = catchAsync(async (req, res) => {
+  const { SavedMuhurat } = require('../models/ToolModels');
+  await SavedMuhurat.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+  res.status(204).json({ success: true });
+});

@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  FiInstagram, FiFacebook, FiLinkedin, FiMail, FiPhone, FiMapPin,
-  FiArrowUp, FiArrowRight, FiHeart, FiChevronRight
-} from 'react-icons/fi'
-import { FaWhatsapp } from 'react-icons/fa'
+import { FiInstagram, FiFacebook, FiLinkedin, FiMail, FiPhone, FiMapPin, FiArrowUp, FiHeart, FiChevronRight } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import api from '../../utils/api'
 import { useTranslation } from 'react-i18next'
 import BrandLogo from '../common/BrandLogo'
@@ -94,9 +91,7 @@ export default function Footer() {
           )}
         </AnimatePresence>
 
-
-
-        {/* ── FOOTER STRUCTURE ── */}
+{/* ── FOOTER STRUCTURE ── */}
         <div className="max-w-7xl mx-auto px-4 pb-16 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
 

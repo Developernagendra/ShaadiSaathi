@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Formik, Form, Field } from 'formik'
 import { updateProfile, uploadAvatar, changePassword } from '../../store/slices/authSlice'
 import { getInitials, INDIAN_CITIES } from '../../utils/helpers'
-import { FiCamera, FiSave, FiLock } from 'react-icons/fi'
+import { FiCamera, FiSave, FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 
 export default function ProfilePage() {

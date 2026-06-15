@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 import api from '../../utils/api'
 import { formatPrice, formatDateShort } from '../../utils/helpers'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { FiUsers, FiBriefcase, FiCalendar, FiDollarSign, FiClock, FiArrowRight, FiCheckSquare } from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FiUsers, FiBriefcase, FiCalendar, FiClock, FiArrowRight, FiCheckSquare } from 'react-icons/fi';
+import { FaTruck } from 'react-icons/fa';
 import { getSocket } from '../../utils/socket'
 import { toast } from 'react-hot-toast'
 import ToolAnalyticsWidget from '../../components/admin/ToolAnalyticsWidget'

@@ -1,10 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  FiMapPin, FiUsers, FiArrowRight, FiFilter,
-  FiStar, FiCheck, FiChevronRight, FiCheckCircle, FiGift, FiPlus, FiMinus, FiInfo, FiCalendar, FiSearch, FiShield, FiThumbsUp, FiAlertTriangle
-} from 'react-icons/fi'
-import { FaTruck, FaCrown, FaWrench } from 'react-icons/fa'
+import { FiMapPin, FiUsers, FiArrowRight, FiFilter, FiStar, FiPlus, FiMinus, FiCalendar, FiSearch, FiShield, FiAlertTriangle } from 'react-icons/fi';
+import { FaTruck, FaCrown } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import 'react-lazy-load-image-component/src/effects/blur.css'

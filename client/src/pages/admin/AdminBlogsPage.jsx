@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FiPlus, FiEdit2, FiTrash2, FiEye, FiSearch, FiFileText, FiGlobe, FiImage, FiClock, FiX, FiCheck, FiArrowRight, FiLoader } from 'react-icons/fi'
+import { FiPlus, FiEdit2, FiTrash2, FiEye, FiSearch, FiFileText, FiGlobe, FiImage, FiClock, FiLoader } from 'react-icons/fi';
 import { formatDateShort, optimizeImage } from '../../utils/helpers'
 import Modal from '../../components/common/Modal'
 import { motion, AnimatePresence } from 'framer-motion'

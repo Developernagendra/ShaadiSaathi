@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FiCheck, FiStar, FiZap, FiClock, FiShield, FiCalendar, FiCheckCircle } from 'react-icons/fi';
+import { FiCheck, FiStar, FiZap, FiCalendar } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import api from '../utils/api';

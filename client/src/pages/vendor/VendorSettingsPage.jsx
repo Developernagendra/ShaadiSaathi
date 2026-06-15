@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FiLock, FiBell, FiShield, FiCreditCard } from 'react-icons/fi'
+import { FiLock, FiBell, FiShield, FiCreditCard } from 'react-icons/fi';
 
 export default function VendorSettingsPage() {
   const { user } = useSelector(s => s.auth)

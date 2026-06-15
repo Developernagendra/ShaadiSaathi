@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { forgotPassword } from '../../store/slices/authSlice'
-import { FiMail, FiArrowLeft } from 'react-icons/fi'
+import { FiMail, FiArrowLeft } from 'react-icons/fi';
 
 export default function ForgotPasswordPage() {
   const dispatch = useDispatch()

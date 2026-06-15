@@ -7,8 +7,8 @@ import VendorCard from '../components/vendor/VendorCard'
 import { SkeletonCard } from '../components/common/Skeleton'
 import PackageSection from '../components/packages/PackageSection'
 import { INDIAN_CITIES } from '../utils/helpers'
-import { FiSearch, FiMapPin, FiArrowRight } from 'react-icons/fi'
-import { FaCrown, FaStar, FaMapMarkerAlt, FaUsers, FaCheckCircle, FaWhatsapp, FaShieldAlt, FaCarSide, FaHeadset } from 'react-icons/fa'
+import { FiSearch, FiMapPin, FiArrowRight } from 'react-icons/fi';
+import { FaCrown, FaCheckCircle } from 'react-icons/fa';
 import api from '../utils/api'
 import { getSocket } from '../utils/socket'
 import { useTranslation } from 'react-i18next'
@@ -177,16 +177,18 @@ export default function HomePage() {
                 className="w-full outline-none text-gray-800 placeholder-gray-400 font-medium text-base min-w-0"
               />
             </div>
-            <div className="flex items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 w-full md:w-auto md:min-w-[200px]">
-              <FiMapPin className="text-[#C2185B] flex-shrink-0" size={20} />
-              <select
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className="outline-none text-gray-800 font-bold text-sm bg-transparent w-full cursor-pointer min-w-0"
-              >
-                <option value="">All Cities</option>
-                {INDIAN_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
+            <div className="flex flex-col md:flex-row items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 w-full md:w-auto md:min-w-[200px]">
+              <div className="flex items-center gap-3 w-full">
+                <FiMapPin className="text-[#C2185B] flex-shrink-0" size={20} />
+                <select
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className="outline-none text-gray-800 font-bold text-sm bg-transparent w-full cursor-pointer min-w-0"
+                >
+                  <option value="">All Cities</option>
+                  {INDIAN_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
             </div>
             <button type="submit" className="btn-primary whitespace-nowrap !rounded-2xl py-4 px-10 text-sm shine-effect w-full md:w-auto flex-shrink-0">
               Find Vendors
@@ -224,18 +226,18 @@ export default function HomePage() {
             </motion.h2>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="flex overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 snap-x snap-mandatory scrollbar-hide">
             {STATIC_SERVICES.map((service, i) => (
               <Link
                 key={service.slug}
                 to={`/services?category=${service.slug}`}
-                className="flex flex-col items-center gap-3 p-6 bg-white rounded-[1.5rem] shadow-sm hover:shadow-premium hover:-translate-y-1 hover:border-pink-200/50 transition-all duration-300 group text-center border border-gray-100 active:scale-95 relative overflow-hidden"
+                className="flex flex-col items-center gap-3 p-5 md:p-6 bg-white rounded-[1.5rem] shadow-sm hover:shadow-premium hover:-translate-y-1 hover:border-pink-200/50 transition-all duration-300 group text-center border border-gray-100 active:scale-95 relative overflow-hidden min-w-[140px] md:min-w-0 snap-start shrink-0"
               >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-[#C2185B] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="w-16 h-16 bg-[#FFF8F0] rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                <div className="w-14 h-14 md:w-16 md:h-16 bg-[#FFF8F0] rounded-2xl flex items-center justify-center text-2xl md:text-3xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                   {service.icon}
                 </div>
-                <span className="text-[11px] font-black uppercase tracking-[0.15em] text-gray-900 group-hover:text-[#C2185B] transition-colors break-words">
+                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] text-gray-900 group-hover:text-[#C2185B] transition-colors break-words">
                   {service.name}
                 </span>
               </Link>
@@ -328,7 +330,7 @@ export default function HomePage() {
                 Book premium wedding vehicles for your special day. From decorated luxury SUVs to vintage cars and complete baraat fleets.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6 mb-12 w-full max-w-lg">
+              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-y-3 sm:gap-y-5 gap-x-6 mb-12 w-full max-w-lg">
                 {[
                   { icon: <FaCheckCircle />, text: 'Verified Drivers' },
                   { icon: <FaCheckCircle />, text: 'Luxury Fleet' },
@@ -336,8 +338,8 @@ export default function HomePage() {
                   { icon: <FaCheckCircle />, text: 'WhatsApp Updates' },
                   { icon: <FaCheckCircle />, text: 'Wedding Decor Options' }
                 ].map((feature, i) => (
-                  <div key={i} className="flex items-center gap-3 text-gray-200 text-sm md:text-base font-bold bg-white/5 border border-white/10 px-4 py-3 rounded-2xl backdrop-blur-sm hover:bg-white/10 transition-colors shadow-sm">
-                    <span className="text-[#D4AF37] text-xl drop-shadow-md">{feature.icon}</span>
+                  <div key={i} className="flex items-center gap-3 text-gray-200 text-xs sm:text-sm md:text-base font-bold bg-white/5 border border-white/10 px-4 py-3 sm:py-3 rounded-xl sm:rounded-2xl backdrop-blur-sm hover:bg-white/10 transition-colors shadow-sm">
+                    <span className="text-[#D4AF37] text-lg sm:text-xl drop-shadow-md">{feature.icon}</span>
                     <span>{feature.text}</span>
                   </div>
                 ))}

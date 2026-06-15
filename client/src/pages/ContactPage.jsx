@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
-import { FiMail, FiPhone, FiMapPin, FiSend, FiMessageCircle, FiHelpCircle, FiGrid, FiUserCheck, FiCalendar, FiArrowRight } from 'react-icons/fi'
+import { FiMail, FiPhone, FiMapPin, FiSend, FiMessageCircle, FiHelpCircle, FiGrid, FiUserCheck, FiCalendar, FiArrowRight } from 'react-icons/fi';
 import { motion } from 'framer-motion'
 import api from '../utils/api'
 import { Link } from 'react-router-dom'

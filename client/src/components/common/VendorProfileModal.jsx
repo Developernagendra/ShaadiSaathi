@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiX, FiStar, FiMapPin, FiCheckCircle, FiShield, FiHeart } from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FiX, FiStar, FiMapPin, FiCheckCircle, FiShield, FiHeart } from 'react-icons/fi';
+import { FaTruck } from 'react-icons/fa';
 
 export default function VendorProfileModal({ isOpen, onClose, vendor }) {
   if (!isOpen || !vendor) return null

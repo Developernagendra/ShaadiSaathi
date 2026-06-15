@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FiSearch, FiFilter, FiUser, FiCalendar, FiMapPin, FiDollarSign } from 'react-icons/fi'
+import { FiSearch, FiFilter, FiCalendar, FiMapPin, FiDollarSign } from 'react-icons/fi';
 import { formatDateShort, formatPrice } from '../../utils/helpers'
 
 export default function AdminLeadsPage() {

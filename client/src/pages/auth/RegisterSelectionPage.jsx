@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { FiUser, FiBriefcase, FiArrowRight } from 'react-icons/fi'
+import { FiUser, FiBriefcase, FiArrowRight } from 'react-icons/fi';
 import BrandLogo from '../../components/common/BrandLogo'
 
 export default function RegisterSelectionPage() {

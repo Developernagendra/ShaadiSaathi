@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../utils/api'
 import { formatDateShort } from '../../utils/helpers'
-import { FiBell, FiCheckCircle, FiInfo, FiAlertCircle, FiTrash2, FiMail, FiArrowRight } from 'react-icons/fi'
+import { FiBell, FiCheckCircle, FiInfo, FiAlertCircle, FiTrash2, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 import EmptyState from '../../components/common/EmptyState'
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
-import { FiPlus, FiEdit2, FiTrash2, FiEye, FiGlobe, FiFileText, FiSearch, FiImage, FiLoader, FiClock } from 'react-icons/fi'
+import { FiPlus, FiEdit2, FiTrash2, FiEye, FiGlobe, FiSearch, FiImage, FiLoader } from 'react-icons/fi';
 import { formatDateShort, optimizeImage } from '../../utils/helpers'
 import Modal from '../../components/common/Modal'
 import { Link } from 'react-router-dom'

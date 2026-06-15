@@ -4,7 +4,7 @@ import api from '../../utils/api'
 import { formatPrice, formatDateShort } from '../../utils/helpers'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiDollarSign, FiTrendingUp, FiArrowUpRight, FiDownload, FiActivity, FiBriefcase, FiFilter, FiCalendar, FiClock } from 'react-icons/fi'
+import { FiDollarSign, FiTrendingUp, FiDownload, FiBriefcase, FiClock } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 
 export default function VendorEarningsPage() {

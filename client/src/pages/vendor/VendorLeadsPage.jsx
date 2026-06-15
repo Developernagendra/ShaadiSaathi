@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMessageCircle, FiMapPin, FiCalendar, FiAlignLeft, FiMoreHorizontal } from 'react-icons/fi'
+import { FiMessageCircle, FiMapPin, FiCalendar, FiAlignLeft, FiMoreHorizontal } from 'react-icons/fi';
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 

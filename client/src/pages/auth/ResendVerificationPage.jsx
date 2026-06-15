@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { resendVerification } from '../../store/slices/authSlice'
-import { FiMail, FiArrowLeft } from 'react-icons/fi'
+import { FiMail, FiArrowLeft } from 'react-icons/fi';
 
 export default function ResendVerificationPage() {
   const [email, setEmail] = useState('')

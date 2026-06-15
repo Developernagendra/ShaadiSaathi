@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 import { formatDateShort, getInitials } from '../../utils/helpers'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch, FiUsers } from 'react-icons/fi';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([])

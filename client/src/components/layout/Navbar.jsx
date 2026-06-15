@@ -4,10 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logoutUser } from '../../store/slices/authSlice'
 import { fetchNotifications, markAllRead, markSingleRead } from '../../store/slices/notificationSlice'
 import { getInitials, timeAgo } from '../../utils/helpers'
-import {
-  FiMenu, FiX, FiUser, FiLogOut, FiHeart, FiShoppingCart,
-  FiBell, FiHome, FiGrid, FiMessageCircle, FiChevronDown, FiBriefcase, FiCalendar, FiSearch
-} from 'react-icons/fi'
+import { FiMenu, FiX, FiUser, FiLogOut, FiHeart, FiShoppingCart, FiBell, FiHome, FiGrid, FiMessageCircle, FiChevronDown, FiBriefcase, FiCalendar, FiSearch } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
@@ -38,9 +35,7 @@ export default function Navbar() {
   const isHome = location.pathname === '/'
   const { t, i18n } = useTranslation?.() || { t: (key) => key, i18n: { language: 'en', changeLanguage: () => { } } };
 
-
-
-  useEffect(() => {
+useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -59,11 +54,23 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.classList.add('mobile-drawer-open');
+    } else {
+      document.body.classList.remove('mobile-drawer-open');
+    }
+    return () => {
+      document.body.classList.remove('mobile-drawer-open');
+    };
+  }, [mobileOpen]);
+
   const handleLogout = () => {
     dispatch(logoutUser())
     toast.success('Logged out successfully')
     navigate('/')
     setUserMenuOpen(false)
+    setMobileOpen(false)
   }
 
   const navTransparent = isHome && !scrolled
@@ -358,13 +365,15 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-md z-[60]" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white/95 backdrop-blur-2xl rounded-l-[2.5rem] z-[70] shadow-[0_0_60px_rgba(194,24,91,0.15)] overflow-hidden flex flex-col border-l border-white/50">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]" />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-[320px] bg-white/95 backdrop-blur-2xl rounded-l-[2.5rem] z-[120] shadow-[0_0_60px_rgba(194,24,91,0.15)] overflow-hidden flex flex-col border-l border-white/50 pt-safe pb-safe">
               <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
 
-              <div className="p-6 flex items-center justify-between border-b border-pink-50 relative z-10">
-                <BrandLogo asLink={false} />
-                <button onClick={() => setMobileOpen(false)} className="p-2 bg-gray-100 rounded-xl text-gray-500 active:scale-90 transition-transform">
+              <div className="p-5 flex items-center justify-between border-b border-pink-50 relative z-10 pt-safe">
+                <div className="transform scale-[0.8] origin-left">
+                  <BrandLogo asLink={false} />
+                </div>
+                <button onClick={() => setMobileOpen(false)} className="p-3 bg-gray-100 rounded-xl text-gray-500 active:scale-90 transition-transform">
                   <FiX size={20} />
                 </button>
               </div>
@@ -401,7 +410,7 @@ export default function Navbar() {
                   if (link.children) {
                     return (
                       <div key={link.label} className="flex flex-col">
-                        <button onClick={() => setMobileToolsOpen(!mobileToolsOpen)} className="flex justify-between items-center px-5 py-4 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all w-full">
+                        <button onClick={() => setMobileToolsOpen(!mobileToolsOpen)} className="flex justify-between items-center px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all w-full active:scale-[0.98]">
                           <div className="flex items-center gap-4">
                             <span className="text-xl text-gray-400">{link.icon}</span>
                             {link.label}
@@ -424,7 +433,7 @@ export default function Navbar() {
                   }
 
                   return (
-                    <Link key={link.label} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
+                    <Link key={link.label} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold transition-all active:scale-[0.98] ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
                       <span className={`text-xl ${location.pathname === link.to ? 'text-[#C2185B]' : 'text-gray-400'}`}>{link.icon}</span>
                       {link.label}
                     </Link>
@@ -443,14 +452,14 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-pink-50 relative z-10 bg-gray-50">
+              <div className="p-4 border-t border-pink-50 relative z-10 bg-gray-50 pb-safe">
                 {!isAuthenticated ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link to="/login" onClick={() => setMobileOpen(false)} className="py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-gray-700 bg-white border border-gray-200 shadow-sm">{t('auth.login', 'Login')}</Link>
-                    <Link to="/register" onClick={() => setMobileOpen(false)} className="py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-white bg-primary-600 shadow-lg shadow-primary-900/20">{t('auth.register', 'Join')}</Link>
+                  <div className="flex flex-col gap-3">
+                    <Link to="/login" onClick={() => setMobileOpen(false)} className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-gray-700 bg-white border border-gray-200 shadow-sm active:scale-95 transition-all">{t('auth.login', 'Login')}</Link>
+                    <Link to="/register" onClick={() => setMobileOpen(false)} className="w-full py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-white bg-primary-600 shadow-lg shadow-primary-900/20 active:scale-95 transition-all">{t('auth.register', 'Join')}</Link>
                   </div>
                 ) : (
-                  <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-sm font-bold text-red-600 bg-white border border-red-50 shadow-sm">
+                  <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 min-h-[48px] rounded-2xl text-sm font-bold text-red-600 bg-white border border-red-50 shadow-sm active:scale-95 transition-all">
                     <FiLogOut /> {t('auth.logout', 'Sign Out')}
                   </button>
                 )}

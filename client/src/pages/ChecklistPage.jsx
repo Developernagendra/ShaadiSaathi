@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchChecklist, updateChecklistTask } from '../store/slices/featureSlice';
-import { LuCircle as Circle, LuPlus as Plus, LuTrash2 as Trash2, LuCalendar as Calendar, LuChevronRight as ChevronRight } from 'react-icons/lu';
-import { FiCheckCircle as CheckCircle2, FiLayout as Layout } from 'react-icons/fi';
+import { LuCircle as Circle, LuPlus as Plus, LuTrash2 as Trash2, LuCalendar as Calendar } from 'react-icons/lu';
+import { FiCheckCircle as CheckCircle2 } from 'react-icons/fi';
 import api from '../utils/api';
 
 const ChecklistPage = () => {

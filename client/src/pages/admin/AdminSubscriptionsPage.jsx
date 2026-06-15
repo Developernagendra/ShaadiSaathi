@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import api from '../../utils/api'
 import { formatPrice, formatDateShort } from '../../utils/helpers'
-import { FiUser, FiDollarSign, FiClock, FiShield, FiAlertTriangle, FiRefreshCw, FiGrid, FiActivity, FiZap } from 'react-icons/fi'
-import { FaCrown } from 'react-icons/fa'
+import { FiAlertTriangle, FiActivity, FiZap } from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
 import toast from 'react-hot-toast'
 
 export default function AdminSubscriptionsPage() {

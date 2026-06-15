@@ -5,8 +5,8 @@ import { fetchMyBookings, fetchMyCabBookings, cancelBooking, updateLocalBooking 
 import { formatPrice, formatDateShort, getStatusColor } from '../../utils/helpers'
 import EmptyState from '../../components/common/EmptyState'
 import Modal from '../../components/common/Modal'
-import { FiCalendar, FiMapPin, FiX, FiArrowRight, FiInfo } from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FiCalendar, FiMapPin, FiX, FiArrowRight, FiInfo } from 'react-icons/fi';
+
 import { motion, AnimatePresence } from 'framer-motion'
 import { getSocket } from '../../utils/socket'
 

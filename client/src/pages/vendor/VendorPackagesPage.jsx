@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { updateVendorProfile } from '../../store/slices/vendorSlice'
-import { FiPlus, FiTrash2, FiTag, FiCheck, FiLoader } from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiTag, FiCheck, FiLoader } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 
 export default function VendorPackagesPage() {

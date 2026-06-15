@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiTrendingUp, FiEye, FiUsers, FiDollarSign, FiDownload, FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi'
+import { FiTrendingUp, FiEye, FiUsers, FiDollarSign, FiDownload } from 'react-icons/fi';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import api from '../../utils/api'
 import { Link } from 'react-router-dom'

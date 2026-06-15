@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchTestimonials } from '../store/slices/featureSlice'
 import StarRating from '../components/common/StarRating'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiSearch, FiMapPin, FiMessageCircle, FiHeart, FiCamera, FiCheckCircle } from 'react-icons/fi'
+import { FiSearch, FiMapPin, FiMessageCircle, FiHeart, FiCamera, FiCheckCircle } from 'react-icons/fi';
 
 const DEMO_COUPLES = [
   {

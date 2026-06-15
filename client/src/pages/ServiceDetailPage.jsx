@@ -6,7 +6,7 @@ import { formatPrice, getInitials, formatDate } from '../utils/helpers'
 import StarRating from '../components/common/StarRating'
 import ReviewModal from '../components/common/ReviewModal'
 import { toast } from 'react-hot-toast'
-import { FiMapPin, FiArrowLeft, FiClock, FiCheck, FiShare2, FiHeart } from 'react-icons/fi'
+import { FiMapPin, FiArrowLeft, FiClock, FiCheck, FiShare2, FiHeart } from 'react-icons/fi';
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'

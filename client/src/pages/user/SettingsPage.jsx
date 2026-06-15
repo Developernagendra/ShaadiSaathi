@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { FiLock, FiBell, FiShield, FiSmartphone, FiCreditCard } from 'react-icons/fi'
+import { FiLock, FiBell, FiShield, FiSmartphone, FiCreditCard } from 'react-icons/fi';
 import { changePassword } from '../../store/slices/authSlice'
 import toast from 'react-hot-toast'
 

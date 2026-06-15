@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMapPin, FiClock, FiUser, FiNavigation, FiCheckCircle, FiPlay } from 'react-icons/fi'
+import { FiMapPin, FiClock, FiNavigation, FiPlay } from 'react-icons/fi';
 import { toast } from 'react-hot-toast'
 import api from '../../utils/api'
 import { getSocket } from '../../utils/socket'

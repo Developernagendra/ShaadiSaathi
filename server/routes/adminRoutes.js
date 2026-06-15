@@ -94,4 +94,7 @@ router.route('/config')
   .get(getConfigAdmin)
   .patch(updateConfigAdmin);
 
+const adminAstrologyController = require('../controllers/adminAstrologyController');
+router.get('/astrology', adminAstrologyController.getAstrologyAnalytics);
+
 module.exports = router;

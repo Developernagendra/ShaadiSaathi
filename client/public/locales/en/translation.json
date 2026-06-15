@@ -52,5 +52,95 @@
     "why_choose": "Why Choose",
     "ready_to_plan": "Ready To Plan Your",
     "dream_wedding": "Dream Wedding?"
+  },
+  "astrology": {
+    "manglikNone": "No Manglik Dosha detected.",
+    "manglikBothCancelled": "Both are Manglik. Dosha is cancelled. Excellent match.",
+    "manglikBrideOnly": "Bride has Anshik (partial) Manglik Dosha. Puja recommended before marriage.",
+    "manglikGroomOnly": "Groom has Anshik (partial) Manglik Dosha. Puja recommended before marriage.",
+    "rashi": {
+      "aries": "Mesha (Aries)",
+      "taurus": "Vrishabha (Taurus)",
+      "gemini": "Mithuna (Gemini)",
+      "cancer": "Karka (Cancer)",
+      "leo": "Simha (Leo)",
+      "virgo": "Kanya (Virgo)",
+      "libra": "Tula (Libra)",
+      "scorpio": "Vrischika (Scorpio)",
+      "sagittarius": "Dhanu (Sagittarius)",
+      "capricorn": "Makara (Capricorn)",
+      "aquarius": "Kumbha (Aquarius)",
+      "pisces": "Meena (Pisces)"
+    },
+    "koota": {
+      "varna": "Varna (Work)",
+      "vashya": "Vashya (Dominance)",
+      "tara": "Tara (Destiny)",
+      "yoni": "Yoni (Mentality)",
+      "grahaMaitri": "Graha Maitri (Compatibility)",
+      "gana": "Gana (Temperament)",
+      "bhakoot": "Bhakoot (Love)",
+      "nadi": "Nadi (Health)"
+    },
+    "conclusionExcellent": "The match is highly recommended. You share good celestial compatibility.",
+    "conclusionBelowAverage": "The match has below average compatibility. Astrological remedies are suggested.",
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "nakshatra": {
+      "rohini": "Rohini",
+      "mrigashira": "Mrigashira",
+      "magha": "Magha",
+      "uttara_phalguni": "Uttara Phalguni",
+      "hasta": "Hasta",
+      "swati": "Swati",
+      "anuradha": "Anuradha",
+      "moola": "Moola",
+      "uttara_ashadha": "Uttara Ashadha",
+      "uttara_bhadrapada": "Uttara Bhadrapada",
+      "revati": "Revati"
+    },
+    "lagna": {
+      "taurus": "Vrishabh Lagna",
+      "gemini": "Mithun Lagna",
+      "virgo": "Kanya Lagna",
+      "libra": "Tula Lagna",
+      "sagittarius": "Dhanu Lagna"
+    },
+    "tithi": {
+      "shukla_panchami": "Shukla Paksha Panchami",
+      "shukla_ekadashi": "Shukla Paksha Ekadashi",
+      "krishna_ekadashi": "Krishna Paksha Ekadashi",
+      "shukla_purnima": "Shukla Paksha Purnima",
+      "shukla_navami": "Shukla Paksha Navami"
+    },
+    "significanceExcellent": "Excellent for Panigrahana and Saptapadi.",
+    "labels": {
+      "totalGun": "Total Gun Milan",
+      "compatibility": "Match",
+      "manglikAnalysis": "Manglik Analysis",
+      "rashiDetails": "Rashi Details",
+      "ashtaKoota": "Ashta Koota Breakdown",
+      "downloadPdf": "Download PDF",
+      "saveToProfile": "Save to Profile",
+      "shareWhatsapp": "Share via WhatsApp",
+      "print": "Print Report",
+      "searchParams": "Search Parameters",
+      "found": "Found",
+      "auspiciousDates": "Auspicious Dates",
+      "auspiciousTiming": "Auspicious Timing",
+      "nakshatra": "Nakshatra",
+      "lagna": "Lagna",
+      "tithi": "Tithi",
+      "rahuKaal": "Rahu Kaal",
+      "abhijitMuhurat": "Abhijit Muhurat",
+      "auspiciousRating": "Auspicious Rating"
+    }
   }
 }

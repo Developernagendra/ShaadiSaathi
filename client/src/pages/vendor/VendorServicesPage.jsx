@@ -7,30 +7,7 @@ import toast from 'react-hot-toast'
 import Modal from '../../components/common/Modal'
 import EmptyState from '../../components/common/EmptyState'
 import { formatPrice } from '../../utils/helpers'
-import {
-  FiPlus,
-  FiEdit,
-  FiTrash2,
-  FiUpload,
-  FiX,
-  FiCheck,
-  FiInfo,
-  FiAlertTriangle,
-  FiCamera,
-  FiVideo,
-  FiChevronLeft,
-  FiChevronRight,
-  FiRefreshCw,
-  FiSearch,
-  FiFilter,
-  FiStar,
-  FiMapPin,
-  FiClock,
-  FiLayers,
-  FiEye,
-  FiCheckCircle,
-  FiActivity
-} from 'react-icons/fi'
+import { FiPlus, FiEdit, FiTrash2, FiX, FiInfo, FiAlertTriangle, FiCamera, FiVideo, FiChevronLeft, FiChevronRight, FiRefreshCw, FiSearch, FiStar, FiMapPin, FiClock, FiLayers, FiEye, FiCheckCircle, FiActivity } from 'react-icons/fi';
 
 // --- Helpers ---
 const optimizeImage = (url, width = 400) => {

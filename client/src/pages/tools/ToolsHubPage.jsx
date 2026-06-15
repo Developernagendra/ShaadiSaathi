@@ -1,12 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  LuSparkles, LuWallet, LuUsers, 
-  LuMapPin, LuPackage, LuMail, LuScale, 
-  LuCar, LuTrendingUp 
-} from 'react-icons/lu';
-import { FiCheckSquare } from 'react-icons/fi';
+import { LuSparkles, LuWallet, LuUsers, LuMapPin, LuPackage, LuMail, LuScale, LuCar, LuTrendingUp } from 'react-icons/lu';
+import { FiCheckSquare, FiStar, FiCalendar } from 'react-icons/fi';
 import api from '../../utils/api';
 
 const tools = [
@@ -109,6 +105,26 @@ const tools = [
     color: 'from-green-500 to-emerald-600',
     bg: 'bg-green-50',
     text: 'text-green-600'
+  },
+  {
+    id: 'kundli-matching',
+    title: 'Kundli Matching',
+    description: 'Check celestial compatibility with Vedic Ashta Koota Gun Milan.',
+    icon: <FiStar />,
+    path: '/tools/kundli-matching',
+    color: 'from-[#1a1a1a] to-[#2d2d2d]',
+    bg: 'bg-gray-900',
+    text: 'text-[#D4AF37]'
+  },
+  {
+    id: 'muhurat-finder',
+    title: 'Shubh Muhurat Finder',
+    description: 'Discover the most auspicious dates and timings for your wedding ceremonies.',
+    icon: <FiCalendar />,
+    path: '/tools/muhurat-finder',
+    color: 'from-amber-400 to-orange-400',
+    bg: 'bg-orange-50',
+    text: 'text-orange-500'
   }
 ];
 

@@ -6,8 +6,8 @@ import VendorCard from '../components/vendor/VendorCard'
 import { SkeletonCard } from '../components/common/Skeleton'
 import EmptyState from '../components/common/EmptyState'
 import { INDIAN_CITIES, formatPrice } from '../utils/helpers'
-import { FiSearch, FiFilter, FiX, FiMapPin, FiChevronDown, FiClock, FiStar, FiPhoneCall, FiCheckCircle } from 'react-icons/fi'
-import { FaWhatsapp } from 'react-icons/fa'
+import { FiSearch, FiFilter, FiX, FiMapPin, FiChevronDown, FiStar } from 'react-icons/fi';
+
 import { motion, AnimatePresence } from 'framer-motion'
 import { getSocket } from '../utils/socket'
 

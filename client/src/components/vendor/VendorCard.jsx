@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toggleWishlist } from '../../store/slices/authSlice'
 import StarRating from '../common/StarRating'
 import { formatPrice, getWhatsAppLink } from '../../utils/helpers'
-import { FiHeart, FiMapPin, FiCheckCircle, FiPhoneCall, FiTrendingUp } from 'react-icons/fi'
-import { FaWhatsapp } from 'react-icons/fa'
+import { FiHeart, FiMapPin, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { toast } from 'react-hot-toast'
 
 export default function VendorCard({ vendor }) {

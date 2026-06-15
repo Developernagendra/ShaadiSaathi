@@ -99,6 +99,8 @@ const VendorAvailabilityCheckerPage = lazy(() => import('./pages/tools/VendorAva
 const VendorComparePage = lazy(() => import('./pages/tools/VendorComparePage'))
 const BaraatCalculatorPage = lazy(() => import('./pages/tools/BaraatCalculatorPage'))
 const CostPredictorPage = lazy(() => import('./pages/tools/CostPredictorPage'))
+const KundliMatchingPage = lazy(() => import('./pages/tools/KundliMatchingPage'))
+const MuhuratFinderPage = lazy(() => import('./pages/tools/MuhuratFinderPage'))
 const GuestManagementPage = lazy(() => import('./pages/GuestManagementPage'))
 const ChecklistPage = lazy(() => import('./pages/ChecklistPage'))
 const MyInvitationsPage = lazy(() => import('./pages/invitation/MyInvitationsPage'))
@@ -114,6 +116,7 @@ const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout')
 // User Sub-Pages
 const NotificationsPage = lazy(() => import('./pages/user/NotificationsPage'))
 const SettingsPage = lazy(() => import('./pages/user/SettingsPage'))
+const MyAstrologyReportsPage = lazy(() => import('./pages/user/MyAstrologyReportsPage'))
 
 // Vendor Sub-Pages
 const VendorPackagesPage = lazy(() => import('./pages/vendor/VendorPackagesPage'))
@@ -122,7 +125,6 @@ const VendorCalendarPage = lazy(() => import('./pages/vendor/VendorCalendarPage'
 const VendorReviewsPage = lazy(() => import('./pages/vendor/VendorReviewsPage'))
 const VendorNotificationsPage = lazy(() => import('./pages/vendor/VendorNotificationsPage'))
 const VendorSettingsPage = lazy(() => import('./pages/vendor/VendorSettingsPage'))
-
 
 // Admin Sub-Pages
 // Deleted duplicate AdminApprovalsPage
@@ -135,6 +137,7 @@ const AdminSubscriptionsPage = lazy(() => import('./pages/admin/AdminSubscriptio
 const AdminNewsletterPage = lazy(() => import('./pages/admin/AdminNewsletterPage'))
 const AdminPackagesPage = lazy(() => import('./pages/admin/AdminPackagesPage'))
 const AdminPackageInquiriesPage = lazy(() => import('./pages/admin/AdminPackageInquiriesPage'))
+const AdminAstrologyPage = lazy(() => import('./pages/admin/AdminAstrologyPage'))
 
 export default function App() {
   const dispatch = useDispatch()
@@ -233,6 +236,8 @@ export default function App() {
                 <Route path="/tools/vendor-compare" element={<VendorComparePage />} />
                 <Route path="/tools/baraat-calculator" element={<BaraatCalculatorPage />} />
                 <Route path="/tools/cost-predictor" element={<CostPredictorPage />} />
+                <Route path="/tools/kundli-matching" element={<KundliMatchingPage />} />
+                <Route path="/tools/muhurat-finder" element={<MuhuratFinderPage />} />
                 {/* Baraat Cabs Routes — use skeleton fallback, NOT global LoadingScreen */}
                 <Route path="/baraat-cabs" element={
                   <Suspense fallback={<BaraatCabsSkeleton />}>
@@ -293,8 +298,7 @@ export default function App() {
                 {/* Public Invitation Route */}
                 <Route path="/invitation/:id" element={<PublicInvitationPage />} />
 
-
-                {/* Auth Routes */}
+{/* Auth Routes */}
                 <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                 <Route path="/register" element={!user ? <RegisterSelectionPage /> : <Navigate to="/" />} />
                 <Route path="/register/user" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
@@ -322,6 +326,7 @@ export default function App() {
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/chat" element={<ChatPage />} />
                   <Route path="/leads" element={<LeadMarketplacePage />} />
+                  <Route path="/astrology-reports" element={<MyAstrologyReportsPage />} />
                 </Route>
 
                 <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
@@ -377,6 +382,7 @@ export default function App() {
                   <Route path="/admin/newsletter" element={<AdminNewsletterPage />} />
                   <Route path="/admin/packages" element={<AdminPackagesPage />} />
                   <Route path="/admin/package-inquiries" element={<AdminPackageInquiriesPage />} />
+                  <Route path="/admin/astrology" element={<AdminAstrologyPage />} />
                 </Route>
 
                 {/* 404 */}

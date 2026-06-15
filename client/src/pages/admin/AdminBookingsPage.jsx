@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchAdminBookings, updateBookingStatus, updateCabBookingStatus, updateLocalBooking, deleteBooking } from '../../store/slices/bookingSlice'
 import { formatPrice, formatDateShort, getStatusColor } from '../../utils/helpers'
-import { FiSearch, FiCalendar, FiArrowRight, FiTrash2, FiClock, FiActivity } from 'react-icons/fi'
+import { FiSearch, FiArrowRight, FiTrash2, FiActivity } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion'
 import { getSocket } from '../../utils/socket'
 import Modal from '../../components/common/Modal'

@@ -4,8 +4,8 @@ import { fetchVendorBookings, fetchVendorCabBookings, updateBookingStatus, updat
 import { formatPrice, formatDateShort, getStatusColor } from '../../utils/helpers'
 import EmptyState from '../../components/common/EmptyState'
 import Modal from '../../components/common/Modal'
-import { FiCalendar, FiUser, FiPhone, FiMapPin, FiArrowRight, FiCheckCircle, FiXCircle, FiPlay, FiStar } from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FiCalendar, FiUser, FiPhone, FiArrowRight, FiCheckCircle, FiXCircle, FiStar } from 'react-icons/fi';
+import { FaTruck } from 'react-icons/fa';
 import { useSearchParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getSocket } from '../../utils/socket'

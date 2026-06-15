@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiTag, FiCalendar, FiPercent, FiPlus, FiMoreHorizontal, FiCheckCircle, FiTrash2, FiEdit2, FiPauseCircle, FiPlayCircle, FiX, FiTrendingUp, FiDollarSign, FiCopy } from 'react-icons/fi'
+import { FiTag, FiCalendar, FiPercent, FiPlus, FiCheckCircle, FiTrash2, FiEdit2, FiPauseCircle, FiPlayCircle, FiX, FiTrendingUp, FiDollarSign, FiCopy } from 'react-icons/fi';
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDateShort } from '../../utils/helpers'

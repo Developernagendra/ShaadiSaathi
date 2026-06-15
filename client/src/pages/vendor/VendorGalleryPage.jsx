@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { uploadVendorImages, updateVendorProfile } from '../../store/slices/vendorSlice'
-import { FiImage, FiPlus, FiX, FiUpload, FiCheck } from 'react-icons/fi'
+import { FiPlus, FiX, FiUpload, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 import api from '../../utils/api'
 

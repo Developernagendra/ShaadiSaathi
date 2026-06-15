@@ -66,7 +66,7 @@ exports.getInquiries = catchAsync(async (req, res, next) => {
   const inquiries = await PackageInquiry.find()
     .populate('packageSelected', 'name price')
     .sort('-createdAt');
-    
+
   res.status(200).json({
     success: true,
     count: inquiries.length,
@@ -79,18 +79,18 @@ exports.getInquiries = catchAsync(async (req, res, next) => {
 // @access  Private/Admin
 exports.updateInquiry = catchAsync(async (req, res, next) => {
   const { status, note, budget, assignedVendor } = req.body;
-  
+
   const updateData = {};
   if (status) updateData.status = status;
   if (budget) updateData.budget = budget;
   if (assignedVendor) updateData.assignedVendor = assignedVendor;
-  
+
   if (note) {
     updateData.$push = { notes: { text: note } };
   }
 
   const inquiry = await PackageInquiry.findByIdAndUpdate(
-    req.params.id, 
+    req.params.id,
     updateData,
     { new: true, runValidators: true }
   ).populate('packageSelected', 'name price');

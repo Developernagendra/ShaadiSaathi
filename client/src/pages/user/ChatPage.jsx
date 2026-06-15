@@ -6,7 +6,7 @@ import {
 } from '../../store/slices/chatSlice'
 import { getSocket } from '../../utils/socket'
 import { getInitials, timeAgo } from '../../utils/helpers'
-import { FiSend, FiMessageCircle, FiCheck } from 'react-icons/fi'
+import { FiSend, FiMessageCircle, FiCheck } from 'react-icons/fi';
 
 export default function ChatPage() {
   const dispatch = useDispatch()

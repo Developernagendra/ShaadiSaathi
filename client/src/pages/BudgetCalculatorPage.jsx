@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { LuWallet as Wallet, LuUsers as Users, LuDownload as Download, LuTrendingDown as TrendingDown } from 'react-icons/lu';
@@ -6,7 +6,6 @@ import { FiCheckCircle, FiPieChart as PieChartIcon } from 'react-icons/fi';
 import { jsPDF } from 'jspdf';
 import { formatPrice } from '../utils/helpers';
 import api from '../utils/api';
-import React, { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const COLORS = ['#C2185B', '#D4AF37', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
@@ -18,8 +17,8 @@ const BudgetCalculatorPage = () => {
   const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
-    api.post('/tools/track', { toolName: 'Budget Planner', action: 'viewed_tool' }).catch(() => {});
-    
+    api.post('/tools/track', { toolName: 'Budget Planner', action: 'viewed_tool' }).catch(() => { });
+
     // Fetch saved budget
     api.get('/tools/budget')
       .then(res => {
@@ -62,59 +61,59 @@ const BudgetCalculatorPage = () => {
   ], [budget]);
 
   const handleDownloadPDF = () => {
-    api.post('/tools/track', { toolName: 'Budget Planner', action: 'saved_budget', metadata: { budget, guestCount } }).catch(() => {});
-    
+    api.post('/tools/track', { toolName: 'Budget Planner', action: 'saved_budget', metadata: { budget, guestCount } }).catch(() => { });
+
     const doc = new jsPDF();
-    
+
     // Header
     doc.setFontSize(22);
     doc.setTextColor(194, 24, 91); // #C2185B
     doc.text('ShaadiSaathi Premium Budget Report', 20, 20);
-    
+
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
-    
+
     // Summary Box
     doc.setDrawColor(230);
     doc.setFillColor(250);
     doc.roundedRect(20, 40, 170, 40, 5, 5, 'FD');
-    
+
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.text('Summary Overview', 30, 50);
-    
+
     doc.setFontSize(11);
     doc.text(`Total Budget: Rs. ${budget.toLocaleString()}`, 30, 60);
     doc.text(`Guest Count: ${guestCount}`, 30, 68);
     doc.text(`Cost Per Guest: Rs. ${costPerGuest.toLocaleString()}`, 30, 76);
-    
+
     // Breakdown Table
     doc.setFontSize(16);
     doc.setTextColor(194, 24, 91);
     doc.text('Category Breakdown', 20, 100);
-    
+
     let yPos = 115;
     doc.setFontSize(11);
     doc.setTextColor(100);
     doc.text('Category', 25, 110);
     doc.text('Allocation (%)', 90, 110);
     doc.text('Estimated Cost', 150, 110);
-    
+
     doc.setDrawColor(200);
     doc.line(20, 112, 190, 112);
-    
+
     distribution.forEach((item, index) => {
       doc.setTextColor(0);
       doc.text(item.name, 25, yPos);
       doc.text(`${Math.round((item.value / budget) * 100)}%`, 95, yPos);
       doc.text(`Rs. ${item.value.toLocaleString()}`, 150, yPos);
-      
+
       doc.setDrawColor(240);
       doc.line(20, yPos + 5, 190, yPos + 5);
       yPos += 15;
     });
-    
+
     doc.setFontSize(10);
     doc.setTextColor(150);
     doc.text('Plan your dream wedding with ShaadiSaathi AI', 20, 280);
@@ -124,7 +123,7 @@ const BudgetCalculatorPage = () => {
   return (
     <div className="min-h-screen bg-[#FFF8F0]/50 pt-24 pb-20 font-sans">
       <div className="max-w-7xl mx-auto px-4">
-        
+
         {/* 🤖 HERO SECTION */}
         <div className="text-center mb-16 relative">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] rounded-3xl mb-6 shadow-xl border border-gray-800">
@@ -139,7 +138,7 @@ const BudgetCalculatorPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* Left Column: Inputs & AI Insights */}
           <div className="lg:col-span-4 space-y-8">
             <div className="bg-white p-8 rounded-[2.5rem] shadow-premium border border-gray-100 relative overflow-hidden">
@@ -147,7 +146,7 @@ const BudgetCalculatorPage = () => {
               <h3 className="text-2xl font-display font-black mb-8 text-gray-900 flex items-center gap-3">
                 <PieChartIcon className="text-[#C2185B]" /> Configure Budget
               </h3>
-              
+
               <div className="space-y-8">
                 <div>
                   <div className="flex justify-between items-end mb-3">
@@ -179,14 +178,14 @@ const BudgetCalculatorPage = () => {
                 </div>
 
                 <div className="pt-4 border-t border-gray-50 flex flex-col gap-3">
-                  <button 
+                  <button
                     onClick={handleSaveBudget}
                     disabled={isSaving}
                     className="w-full bg-[#C2185B] text-white py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
                     {isSaving ? 'Saving...' : (hasSaved ? <><FiCheckCircle size={16} /> Saved to Profile</> : 'Save to Profile')}
                   </button>
-                  <button 
+                  <button
                     onClick={handleDownloadPDF}
                     className="w-full bg-[#1a1a1a] text-white py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
                   >
@@ -222,7 +221,7 @@ const BudgetCalculatorPage = () => {
           {/* Right Column: Visualization & Breakdown */}
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-premium border border-gray-100 grid grid-cols-1 md:grid-cols-12 gap-10">
-              
+
               {/* Chart */}
               <div className="md:col-span-7 h-64 md:h-[350px] relative">
                 <ResponsiveContainer width="100%" height="100%">
@@ -248,8 +247,8 @@ const BudgetCalculatorPage = () => {
                 </ResponsiveContainer>
                 {/* Center text for chart */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</p>
-                   <p className="text-2xl font-display font-black text-gray-900">{formatPrice(budget)}</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</p>
+                  <p className="text-2xl font-display font-black text-gray-900">{formatPrice(budget)}</p>
                 </div>
               </div>
 
@@ -289,11 +288,11 @@ const BudgetCalculatorPage = () => {
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{Math.round((item.value / budget) * 100)}% Allocation</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-end justify-between">
                     <p className="font-display font-black text-2xl text-gray-900">{formatPrice(item.value)}</p>
                   </div>
-                  
+
                   {/* Progress bar inside card */}
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-5">
                     <div className="h-full rounded-full" style={{ width: `${Math.round((item.value / budget) * 100)}%`, backgroundColor: item.color }}></div>
@@ -302,7 +301,7 @@ const BudgetCalculatorPage = () => {
               ))}
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>

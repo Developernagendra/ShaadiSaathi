@@ -3,12 +3,7 @@ import api from '../../utils/api'
 import { getSocket } from '../../utils/socket'
 import toast from 'react-hot-toast'
 import { formatDateShort, formatPrice } from '../../utils/helpers'
-import { 
-  FiCheck, FiX, FiSearch, FiFilter, FiAlertCircle, FiEye, 
-  FiShield, FiFileText, FiUser, FiCalendar, FiChevronRight,
-  FiImage, FiInfo, FiCheckCircle, FiAlertTriangle,
-  FiList, FiPhone, FiMail, FiMapPin, FiLayers, FiTag, FiClock
-} from 'react-icons/fi'
+import { FiCheck, FiX, FiSearch, FiAlertCircle, FiEye, FiShield, FiFileText, FiImage, FiCheckCircle, FiAlertTriangle, FiMapPin, FiLayers } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function AdminServicesApprovalPage() {

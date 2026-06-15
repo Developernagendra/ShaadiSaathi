@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiMapPin, FiStar, FiUsers, FiClock, FiCheck, 
-  FiInfo, FiDollarSign, FiCalendar, FiShield, FiHeart,
-  FiZap, FiArrowLeft, FiMessageCircle, FiCheckCircle, FiArrowRight,
-  FiChevronLeft, FiChevronRight
-} from 'react-icons/fi'
+import { FiMapPin, FiStar, FiUsers, FiCheck, FiDollarSign, FiShield, FiArrowLeft, FiArrowRight, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import api from '../utils/api'
 import { formatPrice, optimizeImage, getInitials, formatDate } from '../utils/helpers'
 import LoadingScreen from '../components/common/LoadingScreen'

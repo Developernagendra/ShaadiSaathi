@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { FiRefreshCw, FiHome, FiAlertTriangle } from 'react-icons/fi'
+import { FiRefreshCw, FiHome, FiAlertTriangle } from 'react-icons/fi';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

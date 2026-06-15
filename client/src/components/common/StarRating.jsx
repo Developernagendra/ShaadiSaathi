@@ -1,5 +1,5 @@
-import { FiStar } from 'react-icons/fi'
-import { FaStar, FaStarHalfAlt } from 'react-icons/fa'
+import { FiStar } from 'react-icons/fi';
+import { FaStar, FaStarHalfAlt } from 'react-icons/fa';
 
 export default function StarRating({ rating = 0, count, size = 'sm', showCount = true }) {
   const sizes = { sm: 14, md: 18, lg: 22 }

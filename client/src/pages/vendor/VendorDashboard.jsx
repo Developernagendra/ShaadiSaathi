@@ -7,8 +7,8 @@ import { fetchVendorBookings } from '../../store/slices/bookingSlice'
 import { fetchUnreadChatCount } from '../../store/slices/chatSlice'
 import { formatPrice, formatDateShort, getStatusColor } from '../../utils/helpers'
 import StarRating from '../../components/common/StarRating'
-import { FiArrowRight, FiCalendar, FiDollarSign, FiUsers, FiEye, FiMessageCircle, FiPlus, FiImage, FiTag, FiCheckCircle, FiActivity } from 'react-icons/fi'
-import { FaTruck } from 'react-icons/fa'
+import { FiArrowRight, FiCalendar, FiDollarSign, FiEye, FiPlus, FiImage, FiTag, FiCheckCircle, FiActivity } from 'react-icons/fi';
+import { FaTruck } from 'react-icons/fa';
 
 export default function VendorDashboard() {
   const dispatch = useDispatch()

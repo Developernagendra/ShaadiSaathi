@@ -18,6 +18,14 @@ const toolAnalyticsSchema = new mongoose.Schema({
   metadata: { 
     type: Object,
     default: {}
+  },
+  language: {
+    type: String,
+    default: 'en'
+  },
+  state: {
+    type: String,
+    default: ''
   }
 }, { timestamps: true });
 

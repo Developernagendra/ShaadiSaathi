@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Formik, Form, Field } from 'formik'
 import { fetchMyVendorProfile, updateVendorProfile, uploadVendorCoverImage } from '../../store/slices/vendorSlice'
 import { INDIAN_CITIES } from '../../utils/helpers'
-import { FiCamera, FiUpload, FiCheck, FiMapPin, FiPhone, FiMail, FiGlobe, FiInstagram, FiFacebook, FiTrendingUp, FiAward } from 'react-icons/fi'
+import { FiCamera, FiUpload, FiCheck, FiMapPin, FiPhone, FiGlobe, FiInstagram, FiFacebook, FiTrendingUp } from 'react-icons/fi';
 import toast from 'react-hot-toast'
 
 export default function VendorProfilePage() {

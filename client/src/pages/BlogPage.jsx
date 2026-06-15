@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { FiCalendar, FiTag, FiChevronRight, FiSearch, FiClock, FiUser, FiArrowRight, FiHeart } from 'react-icons/fi'
+import { FiCalendar, FiSearch, FiClock, FiArrowRight, FiHeart } from 'react-icons/fi';
 import api from '../utils/api'
 import { optimizeImage } from '../utils/helpers'
 

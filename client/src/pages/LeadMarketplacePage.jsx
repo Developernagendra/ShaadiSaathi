@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchLeads, fetchNearbyLeads, createLead, submitQuotation } from '../store/slices/featureSlice';
 import { fetchCategories } from '../store/slices/vendorSlice';
-import { LuMessageSquare as MessageSquare, LuMapPin as MapPin, LuCalendar as Calendar, LuWallet as Wallet, LuSend as Send, LuX as X, LuPlus as Plus } from 'react-icons/lu';
+import { LuMessageSquare as MessageSquare, LuMapPin as MapPin, LuCalendar as Calendar, LuWallet as Wallet, LuSend as Send, LuPlus as Plus } from 'react-icons/lu';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import toast from 'react-hot-toast';

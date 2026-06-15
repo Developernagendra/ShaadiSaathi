@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import Sidebar from './Sidebar'
-import { FiMenu, FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX, FiUser } from 'react-icons/fi'
+import { FiMenu, FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX } from 'react-icons/fi';
 import ErrorBoundary from '../common/ErrorBoundary'
 import { useNotificationSound } from '../../context/NotificationSoundContext'
 import { getInitials } from '../../utils/helpers'
@@ -53,20 +53,30 @@ export default function DashboardLayout() {
     user: 'Couple'
   }
 
+  // Body scroll lock on mobile when sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.classList.add('mobile-drawer-open');
+    } else {
+      document.body.classList.remove('mobile-drawer-open');
+    }
+    return () => document.body.classList.remove('mobile-drawer-open');
+  }, [isSidebarOpen]);
+
   return (
     <div className="flex bg-[#FAFAFA] min-h-screen font-sans overflow-hidden h-screen">
       {/* Overlay for mobile */}
       {isSidebarOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-md z-30 transition-opacity"
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar - Desktop & Mobile */}
       <div className={`
-        fixed inset-y-0 left-0 z-40 bg-gray-950/95 backdrop-blur-3xl border-r border-white/10 shadow-[20px_0_60px_rgba(0,0,0,0.5)] transition-all duration-400 ease-[cubic-bezier(0.2,0.8,0.2,1)] transform pt-20 md:pt-0
-        w-[85%] max-w-[320px] md:max-w-none
+        fixed inset-y-0 left-0 z-[120] bg-gray-950/95 backdrop-blur-3xl border-r border-white/10 shadow-[20px_0_60px_rgba(0,0,0,0.5)] transition-all duration-400 ease-[cubic-bezier(0.2,0.8,0.2,1)] transform pt-safe pb-safe md:pt-0 md:pb-0
+        w-[85vw] max-w-[320px] md:max-w-none
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         ${isCollapsed ? 'md:w-24' : 'md:w-72'}
       `}>
@@ -85,17 +95,17 @@ export default function DashboardLayout() {
       <div className={`flex-grow flex flex-col h-screen overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${isCollapsed ? 'md:ml-24' : 'md:ml-72'}`}>
 
         {/* Sticky Top Navbar */}
-        <header className="sticky top-0 z-30 h-20 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 md:px-10 flex-shrink-0">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-30 h-16 md:h-20 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-3 md:px-10 flex-shrink-0 pt-safe">
+          <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
             {/* Mobile Hamburger Trigger */}
             <button
               onClick={() => setSidebarOpen(!isSidebarOpen)}
-              className="md:hidden p-2.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl active:scale-95 transition-all"
+              className="md:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl active:scale-95 transition-all flex-shrink-0"
             >
-              <FiMenu size={22} />
+              <FiMenu size={24} />
             </button>
-            <div className="md:hidden">
-              <BrandLogo className="scale-[0.6] origin-left -ml-2" showTagline={false} asLink={false} />
+            <div className="md:hidden flex-shrink-0 origin-left transform scale-[0.7]">
+              <BrandLogo showTagline={false} asLink={false} />
             </div>
             <div className="hidden md:block">
               <h2 className="font-display text-xl md:text-2xl font-black text-gray-900 tracking-tight leading-none">

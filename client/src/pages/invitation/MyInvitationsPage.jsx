@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInvitations, deleteInvitation } from '../../store/slices/invitationSlice';
-import { FiPlus, FiEdit3, FiEye, FiShare2, FiTrash2, FiDownload, FiCheckCircle } from 'react-icons/fi';
+import { FiPlus, FiEdit3, FiEye, FiShare2, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function MyInvitationsPage() {

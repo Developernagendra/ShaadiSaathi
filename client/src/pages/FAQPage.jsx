@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FiChevronDown } from 'react-icons/fi'
+import { FiChevronDown } from 'react-icons/fi';
 const faqs = [
   { q: 'How do I book a vendor on ShaadiSaathi?', a: 'Browse vendors, view their profiles, select a package, and click "Book Now". Fill in your event details and confirm the booking. You\'ll receive a confirmation email.' },
   { q: 'Are all vendors on ShaadiSaathi verified?', a: 'Yes! Every vendor goes through a manual verification process by our team before being listed. We check business credentials and reviews.' },

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, animate } from 'framer-motion';
-import { FiArrowRight, FiShield, FiHeart, FiStar, FiCheck, FiMapPin, FiGrid, FiCalendar, FiAward, FiCheckCircle } from 'react-icons/fi';
+import { FiArrowRight, FiShield, FiHeart, FiStar, FiMapPin, FiGrid, FiCalendar, FiAward, FiCheckCircle } from 'react-icons/fi';
 
 function AnimatedCounter({ value }) {
   const ref = useRef(null);

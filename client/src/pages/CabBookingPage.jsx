@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { FiCheck, FiMapPin, FiCalendar, FiClock, FiUsers, FiArrowRight, FiArrowLeft, FiZap, FiUser, FiPhone, FiMessageSquare, FiShield } from 'react-icons/fi'
-import { FaTruck, FaCrown } from 'react-icons/fa'
+import { FiCheck, FiMapPin, FiCalendar, FiClock, FiUsers, FiArrowRight, FiArrowLeft, FiZap, FiUser, FiPhone, FiShield } from 'react-icons/fi';
+import { FaCrown } from 'react-icons/fa';
 import { formatPrice } from '../utils/helpers'
 import api from '../utils/api'
 import { toast } from 'react-hot-toast'
@@ -35,8 +35,7 @@ export default function CabBookingPage() {
   const isFleetBuilder = stateData.bookingType === 'baraat-fleet'
   const fleetSelection = stateData.fleetSelection || []
 
-
-  const [form, setForm] = useState({
+const [form, setForm] = useState({
     city: stateData.city || searchParams.get('city') || '',
     pickupLocation: searchParams.get('pickup') || '',
     dropLocation: searchParams.get('drop') || '',
@@ -102,8 +101,7 @@ export default function CabBookingPage() {
       return
     }
 
-
-    // Validation
+// Validation
     if (!form.city?.trim()) { toast.error('Please enter the city'); return; }
     if (!form.pickupLocation?.trim()) { toast.error('Please enter the pickup location'); return; }
     if (!form.dropLocation?.trim()) { toast.error('Please enter the drop location'); return; }
@@ -596,8 +594,6 @@ export default function CabBookingPage() {
         </form>
       </div>
 
-
-
-    </div>
+</div>
   )
 }

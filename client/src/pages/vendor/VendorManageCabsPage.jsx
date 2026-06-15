@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import {
-  FiPlus, FiTrash2, FiEdit2, FiInfo, FiImage,
-  FiSettings, FiStar, FiDollarSign, FiUpload, FiX, FiCheck,
-  FiChevronRight, FiChevronLeft, FiMapPin, FiClock, FiCalendar, FiShield, FiUser
-} from 'react-icons/fi'
+import { FiPlus, FiTrash2, FiEdit2, FiUpload, FiX, FiMapPin, FiShield, FiUser } from 'react-icons/fi';
 import { FaTruck } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'

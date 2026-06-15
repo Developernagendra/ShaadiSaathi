@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { loginUser } from '../../store/slices/authSlice'
-import { FiMail, FiLock, FiEye, FiEyeOff, FiShield } from 'react-icons/fi'
+import { FiMail, FiLock, FiEye, FiEyeOff, FiShield } from 'react-icons/fi';
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiX, FiStar } from 'react-icons/fi'
+import { FiX } from 'react-icons/fi';
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 

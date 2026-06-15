@@ -27,7 +27,8 @@ files.forEach(file => {
             content = content.replace(/FiTruck,\s*/g, '');
             content = content.replace(/,\s*FiTruck\b/g, '');
             
-            if (!content.includes("import { FaTruck } from 'react-icons/fa'")) {
+            if (!content.includes("import { FaTruck } from 'react-icons/fa';
+import { FiTruck } from 'react-icons/fi';")) {
                 const importMatch = content.match(/(import\s*\{[^}]*\}\s*from\s*['"]react-icons\/fi['"];?\n)/);
                 if (importMatch) {
                     content = content.replace(importMatch[1], importMatch[1] + "import { FaTruck } from 'react-icons/fa';\n");

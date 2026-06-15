@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchGuests, importGuests, exportGuests } from '../store/slices/featureSlice';
 import api from '../utils/api';
-import { LuUsers as Users, LuUserPlus as UserPlus, LuMail as Mail, LuPhone as Phone, LuTag as Tag, LuSearch as Search, LuDownload as Download, LuUpload as Upload, LuPlus, LuX, LuPencil, LuTrash2, LuUtensils, LuHouse } from 'react-icons/lu';
+import { LuUsers as Users, LuUserPlus as UserPlus, LuMail as Mail, LuPhone as Phone, LuSearch as Search, LuDownload as Download, LuUpload as Upload, LuPencil, LuTrash2, LuUtensils, LuHouse } from 'react-icons/lu';
 import { FiCheckCircle as CheckCircle, FiXCircle as XCircle, FiLoader } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import Modal from '../components/common/Modal';

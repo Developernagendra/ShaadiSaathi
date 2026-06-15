@@ -58,7 +58,7 @@ const LanguageSwitcher = ({ isMobile = false }) => {
               }`}
             >
               <span>{lang.flag}</span>
-              <span>{lang.name}</span>
+              <span className="truncate text-xs font-bold">{lang.name}</span>
             </button>
           ))}
         </div>

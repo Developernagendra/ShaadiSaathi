@@ -33,4 +33,16 @@ router.post('/ai-planner', protect, userOnly, toolController.saveWeddingPlan);
 router.get('/ai-planner', protect, userOnly, toolController.getWeddingPlans);
 router.delete('/ai-planner/:id', protect, userOnly, toolController.deleteWeddingPlan);
 
+// Kundli Matching
+router.post('/kundli', toolController.calculateKundli);
+router.post('/kundli/save', protect, userOnly, toolController.saveKundli);
+router.get('/kundli/saved', protect, userOnly, toolController.getSavedKundlis);
+router.delete('/kundli/saved/:id', protect, userOnly, toolController.deleteSavedKundli);
+
+// Shubh Muhurat Finder
+router.post('/muhurat', toolController.calculateMuhurat);
+router.post('/muhurat/save', protect, userOnly, toolController.saveMuhurat);
+router.get('/muhurat/saved', protect, userOnly, toolController.getSavedMuhurats);
+router.delete('/muhurat/saved/:id', protect, userOnly, toolController.deleteSavedMuhurat);
+
 module.exports = router;

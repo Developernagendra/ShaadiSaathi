@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { FiSearch, FiMoreVertical, FiPaperclip, FiSend, FiImage, FiClock, FiMessageSquare } from 'react-icons/fi'
+import { FiSearch, FiMoreVertical, FiPaperclip, FiSend, FiImage, FiClock, FiMessageSquare } from 'react-icons/fi';
 import { formatTime } from '../../utils/helpers'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'

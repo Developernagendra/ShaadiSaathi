@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { removeFromCart, clearCart } from '../../store/slices/uiSlice'
 import { formatPrice } from '../../utils/helpers'
 import EmptyState from '../../components/common/EmptyState'
-import { FiTrash2 } from 'react-icons/fi'
+import { FiTrash2 } from 'react-icons/fi';
 
 export default function CartPage() {
   const dispatch = useDispatch()

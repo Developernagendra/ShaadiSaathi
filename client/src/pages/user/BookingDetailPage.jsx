@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchBookingById } from '../../store/slices/bookingSlice'
 import { formatPrice, formatDate, formatDateShort, getStatusColor } from '../../utils/helpers'
-import { FiPhone, FiMapPin, FiCalendar, FiArrowLeft, FiClock, FiCheck, FiInfo, FiCreditCard, FiGlobe, FiInstagram, FiFacebook, FiYoutube, FiMessageCircle, FiMail } from 'react-icons/fi'
+import { FiMapPin, FiCalendar, FiArrowLeft, FiClock, FiCheck, FiInfo, FiCreditCard, FiGlobe, FiInstagram, FiFacebook, FiYoutube, FiMessageCircle, FiMail } from 'react-icons/fi';
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 

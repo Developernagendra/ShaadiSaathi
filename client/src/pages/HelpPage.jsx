@@ -1,4 +1,4 @@
-import { FiSearch, FiMessageCircle, FiPhone, FiMail, FiChevronRight } from 'react-icons/fi';
+import { FiSearch, FiMessageCircle, FiPhone, FiChevronRight } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 

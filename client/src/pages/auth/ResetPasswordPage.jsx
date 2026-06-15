@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { resetPassword } from '../../store/slices/authSlice'
-import { FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function ResetPasswordPage() {
   const { token } = useParams()

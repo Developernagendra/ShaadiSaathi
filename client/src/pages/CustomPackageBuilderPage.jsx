@@ -2,10 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { 
-  FiMapPin, FiCalendar, FiArrowRight, 
-  FiCheck, FiStar, FiPackage, FiTrash2, FiShoppingBag
-} from 'react-icons/fi'
+import { FiMapPin, FiCalendar, FiCheck, FiStar, FiPackage, FiTrash2, FiShoppingBag } from 'react-icons/fi';
 import { formatPrice } from '../utils/helpers'
 import api from '../utils/api'
 import { toast } from 'react-hot-toast'

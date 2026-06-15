@@ -1,13 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useState } from 'react'
-import {
-  FiHome, FiUser, FiCalendar, FiHeart, FiUsers, FiMail,
-  FiBell, FiSettings, FiBriefcase, FiGrid, FiDollarSign,
-  FiImage, FiStar, FiMessageSquare, FiPieChart, FiTag, FiBookOpen, FiActivity, FiCheckSquare,
-  FiChevronDown, FiChevronRight, FiPlus, FiLayout, FiEye
-} from 'react-icons/fi'
-import { FaTruck, FaMapMarkerAlt } from 'react-icons/fa'
+import { FiHome, FiUser, FiCalendar, FiHeart, FiUsers, FiMail, FiBell, FiSettings, FiBriefcase, FiGrid, FiDollarSign, FiImage, FiStar, FiMessageSquare, FiPieChart, FiTag, FiBookOpen, FiActivity, FiCheckSquare, FiChevronDown, FiPlus } from 'react-icons/fi';
+import { FaTruck, FaMapMarkerAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next'
 import BrandLogo from '../common/BrandLogo'
 import LanguageSwitcher from '../common/LanguageSwitcher'
@@ -94,6 +89,7 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
     { to: '/admin/imperial-fleet', label: 'Fleet Registry', icon: <FaTruck /> },
     { to: '/admin/reviews', label: 'Reviews', icon: <FiStar /> },
     { to: '/admin/newsletter', label: 'Newsletter', icon: <FiMail /> },
+    { to: '/admin/astrology', label: 'Astrology Tools', icon: <FiStar /> },
     { to: '/admin/settings', label: 'Settings', icon: <FiSettings /> },
   ]
 
@@ -140,7 +136,7 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
                       setInvitationOpen(!isExpanded)
                     }
                   }}
-                  className={`w-full group flex items-center ${isCollapsed ? 'justify-center' : 'gap-4 px-6'} py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 relative ${isActive
+                  className={`w-full group flex items-center ${isCollapsed ? 'justify-center' : 'gap-4 px-6'} min-h-[48px] py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 relative active:scale-[0.98] ${isActive
                     ? 'bg-gradient-to-r from-[#D4AF37]/20 to-transparent text-[#D4AF37] border-l-2 border-[#D4AF37]'
                     : 'text-white/60 hover:bg-white/10 hover:text-white'
                     }`}
@@ -171,7 +167,7 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
                           key={sub.to}
                           to={sub.to}
                           onClick={closeSidebar}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${subActive
+                          className={`flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98] ${subActive
                             ? 'text-[#D4AF37] bg-white/5'
                             : 'text-white/50 hover:text-white hover:bg-white/10'
                             }`}
@@ -192,7 +188,7 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
               key={link.to}
               to={link.to}
               onClick={closeSidebar}
-              className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-4 px-6'} py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 relative ${isActive
+              className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-4 px-6'} py-4 min-h-[48px] rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 relative active:scale-[0.98] ${isActive
                 ? 'bg-gradient-to-r from-[#D4AF37]/20 to-transparent text-[#D4AF37] border-l-2 border-[#D4AF37]'
                 : 'text-white/60 hover:bg-white/10 hover:text-white'
                 }`}

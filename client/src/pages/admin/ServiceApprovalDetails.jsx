@@ -3,10 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import api from '../../utils/api'
 import toast from 'react-hot-toast'
 import { formatDateShort, formatPrice } from '../../utils/helpers'
-import { 
-  FiCheck, FiX, FiShield, FiFileText, FiLayers, FiImage, 
-  FiArrowLeft, FiAlertTriangle 
-} from 'react-icons/fi'
+import { FiCheck, FiX, FiShield, FiFileText, FiLayers, FiImage, FiArrowLeft, FiAlertTriangle } from 'react-icons/fi';
 import { motion } from 'framer-motion'
 
 export default function ServiceApprovalDetails() {

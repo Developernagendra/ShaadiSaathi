@@ -112,10 +112,6 @@ export const createCabBooking = createAsyncThunk('booking/createCab', async (dat
   }
 })
 
-
-
-
-
 export const fetchMyCabBookings = createAsyncThunk('booking/fetchMyCabs', async (params, { rejectWithValue }) => {
   try {
     const res = await api.get('/cab-booking/my-bookings', { params })
@@ -363,11 +359,7 @@ const bookingSlice = createSlice({
         toast.error(action.payload, { id: 'cab-error' })
       })
 
-
-
-
-
-      .addCase(fetchAdminBookings.pending, (state) => { state.loading = true })
+.addCase(fetchAdminBookings.pending, (state) => { state.loading = true })
       .addCase(fetchAdminBookings.fulfilled, (state, action) => {
         state.loading = false
         state.adminBookings = action.payload.bookings || []

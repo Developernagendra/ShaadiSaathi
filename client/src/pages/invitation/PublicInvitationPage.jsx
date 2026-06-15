@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import BrandLogo from '../../components/common/BrandLogo';
 import api from '../../services/api';
-import { FiCalendar, FiMapPin, FiClock } from 'react-icons/fi';
+import { FiCalendar, FiMapPin } from 'react-icons/fi';
 
 export default function PublicInvitationPage() {
   const { id } = useParams();
