@@ -1,5 +1,5 @@
 const { Notification, User } = require('../models');
-const { sendEmail, emailTemplates } = require('../config/email');
+const { sendEmail, emailTemplates } = require('./emailService');
 const { getSocket } = require('../utils/socket');
 
 /**
@@ -8,7 +8,7 @@ const { getSocket } = require('../utils/socket');
 const sendNotification = async ({ recipient, sender, type, title, message, link, data }) => {
   try {
     const { Notification } = require('../models/index');
-    
+
     // Save to database
     const notification = await Notification.create({
       recipient,
@@ -28,7 +28,7 @@ const sendNotification = async ({ recipient, sender, type, title, message, link,
       // Emit to recipient's room
       io.to(`user_${recipient}`).emit('newNotification', notification);
       io.to(`user_${recipient}`).emit('new_notification', notification);
-      
+
       // Emit to raw recipient string room
       io.to(recipient.toString()).emit('newNotification', notification);
       io.to(recipient.toString()).emit('new_notification', notification);
@@ -96,7 +96,7 @@ const sendBookingNotification = async ({ user, userId: passedUserId, booking: pa
     // 1. Create In-App Notification and Emit via Socket.io
     const title = getNotificationTitle(type, status, booking);
     const message = getNotificationMessage(type, status, booking);
-    
+
     const notification = await sendNotification({
       recipient: userId,
       sender: booking.userId,
@@ -144,17 +144,24 @@ const getNotificationMessage = (type, status, booking) => {
 
 const sendEmailNotification = async (user, booking, type, status) => {
   const serviceName = booking.serviceName || (booking.vehicles ? `Baraat Cab (${booking.vehicles[0].vehicleType})` : 'Wedding Service');
-  const templateData = {
-    bookingId: booking.bookingId,
-    serviceName,
-    status,
-    date: new Date(booking.eventDate).toLocaleDateString(),
-    amount: booking.totalPrice || booking.amount,
+  
+  const bookingPayload = {
+    bookingId: booking.bookingId || "N/A",
+    customerName: user.name || "Customer",
+    customerEmail: user.email || "Not Provided",
+    customerPhone: user.phone || "Not Provided",
     vendorName: booking.vendorProfileId?.businessName || booking.vendor?.businessName || 'ShaadiSaathi Vendor',
-    contactInfo: booking.vendorProfileId?.phone || booking.vendor?.phone || 'Support'
+    serviceName: serviceName || "Wedding Service",
+    eventDate: booking.eventDate ? new Date(booking.eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
+    eventTime: booking.eventTime || "TBD",
+    eventLocation: booking.eventVenue || booking.eventCity || booking.pickupLocation?.city || "TBD",
+    bookingAmount: booking.totalPrice || booking.amount || 0,
+    bookingStatus: status || "updated"
   };
 
-  const template = emailTemplates.bookingStatusUpdate(user.name, templateData);
+  console.log("[EMAIL PAYLOAD] sendEmailNotification:", bookingPayload);
+
+  const template = emailTemplates.bookingStatusUpdate(user.name, bookingPayload);
   return sendEmail({
     to: user.email,
     ...template
@@ -163,9 +170,9 @@ const sendEmailNotification = async (user, booking, type, status) => {
 
 const sendSMSNotification = async (user, booking, type, status) => {
   if (!user.phone) return;
-  
+
   const message = `ShaadiSaathi: Your booking #${booking.bookingId} for ${type === 'cab' ? 'Baraat Cab' : 'Service'} is now ${status.toUpperCase()}. Check dashboard for details.`;
-  
+
   // Production: Integration with Twilio/Gupshup here
   console.log(`📱 SMS Sent to ${user.phone}: ${message}`);
 };

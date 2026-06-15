@@ -17,6 +17,7 @@ const socketUtil = require('./utils/socket');
 const { initSocketHandlers } = require('./utils/socketHandlers');
 const { cloudinary } = require('./config/cloudinary');
 const { errorHandler } = require('./middleware/errorMiddleware');
+const { verifySMTP } = require('./services/emailService');
 
 // Activate keep-alive mechanism
 require("./keepAlive");
@@ -217,6 +218,21 @@ app.use("/api/package-inquiries", require("./routes/packageInquiryRoutes"));
 app.use("/api/invitations", require("./routes/invitationRoutes"));
 app.use("/api/tools", require("./routes/toolRoutes"));
 
+/* ---------------- HEALTH CHECKS ---------------- */
+app.get("/api/health/email", async (req, res) => {
+  try {
+    const { verifySMTP } = require('./services/emailService');
+    const isOk = await verifySMTP();
+    if (isOk) {
+      res.json({ smtp: "connected" });
+    } else {
+      res.status(503).json({ smtp: "failed", reason: "Transporter verification failed. Check logs." });
+    }
+  } catch (error) {
+    res.status(500).json({ smtp: "error", reason: error.message });
+  }
+});
+
 /* ---------------- 404 ---------------- */
 app.use("*", (req, res) => {
   res.status(404).json({
@@ -364,7 +380,7 @@ const startServer = async () => {
 
     // Run self-healing category repair migration
     await repairCategories();
-    
+
     // Seed packages
     const { seedPackagesIfEmpty } = require('./controllers/packageController');
     await seedPackagesIfEmpty();
@@ -380,17 +396,17 @@ const startServer = async () => {
         if (!adminPass) {
           console.error('❌ ADMIN_PASS env var is required in production. Skipping admin seed.');
         } else {
-        console.log('⏳ Default admin not found. Seeding admin user...');
-        await User.create({
-          name: 'System Admin',
-          email: adminEmail,
-          password: adminPass,
-          role: 'admin',
-          isVerified: true,
-          isEmailVerified: true,
-          isActive: true
-        });
-        console.log(`✅ Default admin seeded successfully. Use ADMIN_PASS env var to set password.`);
+          console.log('⏳ Default admin not found. Seeding admin user...');
+          await User.create({
+            name: 'System Admin',
+            email: adminEmail,
+            password: adminPass,
+            role: 'admin',
+            isVerified: true,
+            isEmailVerified: true,
+            isActive: true
+          });
+          console.log(`✅ Default admin seeded successfully. Use ADMIN_PASS env var to set password.`);
         }
       } else {
         let needsUpdate = false;
@@ -461,7 +477,7 @@ const startServer = async () => {
         const User = require('./models/User');
         const adminUser = await User.findOne({ role: 'admin' }) || await User.findOne();
         const authorId = adminUser ? adminUser._id : new mongoose.Types.ObjectId();
-        
+
         await Blog.insertMany([
           {
             title: 'The Ultimate Guide to Planning a Royal Palace Wedding in Rajasthan',
@@ -516,6 +532,16 @@ const startServer = async () => {
       }
     } catch (blogErr) {
       console.error('⚠️ Error seeding blogs:', blogErr.message);
+    }
+
+    // Verify SMTP configuration on startup
+    try {
+      const smtpOk = await verifySMTP();
+      if (!smtpOk) {
+        console.warn('⚠️  SMTP verification failed — emails may not be delivered. Check EMAIL_USER and EMAIL_PASS in .env');
+      }
+    } catch (smtpErr) {
+      console.error('⚠️  SMTP verification error:', smtpErr.message);
     }
 
     const PORT = process.env.PORT || 5000;

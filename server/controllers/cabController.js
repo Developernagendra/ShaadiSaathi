@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Booking, Cab, Vendor, User, Notification } = require('../models/index');
-const { sendEmail } = require('../config/email');
+const { sendEmail } = require('../services/emailService');
 const { sendBookingNotification } = require('../services/notificationService');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -187,8 +187,8 @@ exports.getCabs = catchAsync(async (req, res, next) => {
 
   // Use requested date, or default to today's snapshot for base context
   const queryDate = targetDate ? new Date(targetDate) : new Date();
-  const startOfDay = new Date(queryDate.setHours(0,0,0,0));
-  const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+  const startOfDay = new Date(queryDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(queryDate.setHours(23, 59, 59, 999));
 
   // Find overlapping bookings
   const activeBookings = await Booking.find({
@@ -287,8 +287,8 @@ exports.getAdminFleet = catchAsync(async (req, res, next) => {
 
   // Dynamic Inventory calculation for today
   const queryDate = new Date();
-  const startOfDay = new Date(queryDate.setHours(0,0,0,0));
-  const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+  const startOfDay = new Date(queryDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(queryDate.setHours(23, 59, 59, 999));
 
   const activeBookings = await Booking.find({
     eventDate: { $gte: startOfDay, $lte: endOfDay },
@@ -406,8 +406,8 @@ exports.getVendorCabs = catchAsync(async (req, res, next) => {
 
   // Dynamic Inventory calculation for today
   const queryDate = new Date();
-  const startOfDay = new Date(queryDate.setHours(0,0,0,0));
-  const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+  const startOfDay = new Date(queryDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(queryDate.setHours(23, 59, 59, 999));
 
   const activeBookings = await Booking.find({
     vendorId: req.user._id,

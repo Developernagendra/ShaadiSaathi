@@ -140,8 +140,8 @@ exports.getAdminStats = catchAsync(async (req, res, next) => {
   const allCabs = await CabModel.find().lean();
   const totalVehiclesCount = allCabs.reduce((acc, curr) => acc + (curr.totalFleet || curr.quantityAvailable || 1), 0);
 
-  const startOfToday = new Date(new Date().setHours(0,0,0,0));
-  const endOfToday = new Date(new Date().setHours(23,59,59,999));
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  const endOfToday = new Date(new Date().setHours(23, 59, 59, 999));
   const activeBookingsToday = await Booking.find({
     eventDate: { $gte: startOfToday, $lte: endOfToday },
     status: { $in: ['confirmed', 'in_progress', 'on_the_way'] },
@@ -372,7 +372,7 @@ exports.updateVendorStatus = catchAsync(async (req, res, next) => {
 
   // Send email notification (Fail-safe)
   try {
-    const { sendEmail, emailTemplates } = require('../config/email');
+    const { sendEmail, emailTemplates } = require('../services/emailService');
     if (emailTemplates && emailTemplates.vendorApproval) {
       const template = emailTemplates.vendorApproval(vendor.user.name, approvalStatus || vendor.approvalStatus);
       await sendEmail({ to: vendor.user.email, ...template });
@@ -445,7 +445,7 @@ exports.getAllVendorsAdmin = catchAsync(async (req, res, next) => {
 exports.getAllLeadsAdmin = catchAsync(async (req, res, next) => {
   const { Lead } = require('../models/FeatureModels');
   const VendorLead = require('../models/VendorLead');
-  
+
   const [marketplaceLeads, vendorLeads] = await Promise.all([
     Lead.find()
       .populate('user', 'name email phone')
@@ -761,7 +761,7 @@ exports.approveServiceAdmin = catchAsync(async (req, res, next) => {
 
     // Service Approval Email — uses correct config/email path
     try {
-      const { sendEmail, emailTemplates } = require('../config/email');
+      const { sendEmail, emailTemplates } = require('../services/emailService');
       const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
       const template = emailTemplates.serviceApproved
         ? emailTemplates.serviceApproved(service.vendor.user.name, service.title, clientUrl)
@@ -842,7 +842,7 @@ exports.rejectServiceAdmin = catchAsync(async (req, res, next) => {
 
     // Service Rejection Email
     try {
-      const { sendEmail } = require('../config/email');
+      const { sendEmail } = require('../services/emailService');
       const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
       await sendEmail({
         to: service.vendor.user.email,
@@ -923,109 +923,109 @@ exports.updateConfigAdmin = catchAsync(async (req, res, next) => {
   });
 
   await config.save();
- 
-   res.status(200).json({
-     status: 'success',
-     message: 'System configuration updated successfully',
-     data: config
-   });
- });
- 
- // @desc    Get all vendor subscriptions (Admin)
- // @route   GET /api/admin/subscriptions
- // @access  Private (Admin)
- exports.getSubscriptionsAdmin = catchAsync(async (req, res, next) => {
-   const vendors = await Vendor.find()
-     .select('businessName email approvalStatus subscription')
-     .populate('user', 'name email')
-     .lean();
- 
-   res.status(200).json({
-     status: 'success',
-     data: vendors
-   });
- });
- 
- // @desc    Update / Manage Vendor Subscription (Admin)
- // @route   PATCH /api/admin/vendors/:id/subscription
- // @access  Private (Admin)
- exports.updateVendorSubscriptionAdmin = catchAsync(async (req, res, next) => {
-   const { plan, action } = req.body;
-   const vendor = await Vendor.findById(req.params.id);
- 
-   if (!vendor) {
-     return next(new AppError('No vendor found with that ID', 404));
-   }
- 
-   // Handle actions
-   if (action === 'suspend') {
-     vendor.subscription.status = 'suspended';
-     vendor.subscription.isActive = false;
-   } else if (action === 'renew' || action === 'upgrade') {
-     if (!plan || !['free', 'premium', 'elite', 'silver', 'gold', 'platinum'].includes(plan.toLowerCase())) {
-       return next(new AppError('Invalid subscription plan specified', 400));
-     }
-     const normalizedPlan = plan.toLowerCase();
-     const days = normalizedPlan === 'elite' || normalizedPlan === 'platinum' ? 365 : normalizedPlan === 'free' ? 36500 : 30;
-     
-     vendor.subscription.plan = normalizedPlan;
-     vendor.subscription.status = 'active';
-     vendor.subscription.startDate = new Date();
-     vendor.subscription.endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-     vendor.subscription.paymentStatus = 'paid';
-     vendor.subscription.isActive = true;
-   } else {
-     return next(new AppError('Invalid action specified', 400));
-   }
- 
-   await vendor.save();
- 
-    res.status(200).json({
-     status: 'success',
-     message: `Subscription successfully updated to ${vendor.subscription.plan} (${vendor.subscription.status})`,
-     data: vendor
-   });
- });
- 
+
+  res.status(200).json({
+    status: 'success',
+    message: 'System configuration updated successfully',
+    data: config
+  });
+});
+
+// @desc    Get all vendor subscriptions (Admin)
+// @route   GET /api/admin/subscriptions
+// @access  Private (Admin)
+exports.getSubscriptionsAdmin = catchAsync(async (req, res, next) => {
+  const vendors = await Vendor.find()
+    .select('businessName email approvalStatus subscription')
+    .populate('user', 'name email')
+    .lean();
+
+  res.status(200).json({
+    status: 'success',
+    data: vendors
+  });
+});
+
+// @desc    Update / Manage Vendor Subscription (Admin)
+// @route   PATCH /api/admin/vendors/:id/subscription
+// @access  Private (Admin)
+exports.updateVendorSubscriptionAdmin = catchAsync(async (req, res, next) => {
+  const { plan, action } = req.body;
+  const vendor = await Vendor.findById(req.params.id);
+
+  if (!vendor) {
+    return next(new AppError('No vendor found with that ID', 404));
+  }
+
+  // Handle actions
+  if (action === 'suspend') {
+    vendor.subscription.status = 'suspended';
+    vendor.subscription.isActive = false;
+  } else if (action === 'renew' || action === 'upgrade') {
+    if (!plan || !['free', 'premium', 'elite', 'silver', 'gold', 'platinum'].includes(plan.toLowerCase())) {
+      return next(new AppError('Invalid subscription plan specified', 400));
+    }
+    const normalizedPlan = plan.toLowerCase();
+    const days = normalizedPlan === 'elite' || normalizedPlan === 'platinum' ? 365 : normalizedPlan === 'free' ? 36500 : 30;
+
+    vendor.subscription.plan = normalizedPlan;
+    vendor.subscription.status = 'active';
+    vendor.subscription.startDate = new Date();
+    vendor.subscription.endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    vendor.subscription.paymentStatus = 'paid';
+    vendor.subscription.isActive = true;
+  } else {
+    return next(new AppError('Invalid action specified', 400));
+  }
+
+  await vendor.save();
+
+  res.status(200).json({
+    status: 'success',
+    message: `Subscription successfully updated to ${vendor.subscription.plan} (${vendor.subscription.status})`,
+    data: vendor
+  });
+});
+
 // @desc    Get Vendor Availability Monitor Data
 // @route   GET /api/admin/availability-monitor
 // @access  Private (Admin)
 exports.getAvailabilityMonitor = catchAsync(async (req, res, next) => {
   const { Vendor } = require('../models/index');
-  
+
   const vendors = await Vendor.find({ approvalStatus: 'approved' })
     .populate('category', 'name')
     .select('businessName category location unavailableDates bookings availabilityStatus');
 
   const now = new Date();
-  now.setHours(0,0,0,0);
-  
+  now.setHours(0, 0, 0, 0);
+
   let totalAvailable = 0;
   let totalUnavailable = 0;
   let inactiveAlerts = [];
-  
+
   const mappedVendors = vendors.map(v => {
     const isUnavailableToday = v.unavailableDates && v.unavailableDates.some(d => {
       const ud = new Date(d);
-      ud.setHours(0,0,0,0);
+      ud.setHours(0, 0, 0, 0);
       return ud.getTime() === now.getTime();
     });
-    
+
     if (isUnavailableToday || v.availabilityStatus === 'unavailable') {
       totalUnavailable++;
     } else {
       totalAvailable++;
     }
-    
+
     let futureBlocks = 0;
     if (v.unavailableDates) {
       futureBlocks = v.unavailableDates.filter(d => {
         const ud = new Date(d);
-        ud.setHours(0,0,0,0);
+        ud.setHours(0, 0, 0, 0);
         return ud.getTime() >= now.getTime();
       }).length;
     }
-    
+
     if (futureBlocks >= 30) {
       inactiveAlerts.push({
         vendorId: v._id,
@@ -1033,7 +1033,7 @@ exports.getAvailabilityMonitor = catchAsync(async (req, res, next) => {
         message: 'Vendor inactive for long period (30+ blocked dates)'
       });
     }
-    
+
     return {
       _id: v._id,
       businessName: v.businessName,
@@ -1045,9 +1045,9 @@ exports.getAvailabilityMonitor = catchAsync(async (req, res, next) => {
       unavailableDates: v.unavailableDates || []
     };
   });
-  
+
   const mostBooked = [...mappedVendors].sort((a, b) => b.upcomingBookingsCount - a.upcomingBookingsCount).slice(0, 5);
-  
+
   res.status(200).json({
     status: 'success',
     data: {

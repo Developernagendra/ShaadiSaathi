@@ -1,7 +1,7 @@
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, ".env"), override: true });
 
-const { sendEmail, emailTemplates } = require("./config/email");
+const { sendEmail, emailTemplates } = require("./services/emailService");
 
 console.log("Starting email send test...");
 console.log("EMAIL_USER:", process.env.EMAIL_USER);

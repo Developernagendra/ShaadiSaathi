@@ -1,7 +1,7 @@
 const { NewsletterSubscriber, NewsletterCampaign } = require('../models');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const { sendEmail, getWelcomeEmailHTML, getCampaignEmailHTML, verifySMTP } = require('../utils/email');
+const { sendEmail, getWelcomeEmailHTML, getCampaignEmailHTML, verifySMTP } = require('../services/emailService');
 
 // ==================== SUBSCRIBER ENDPOINTS ====================
 

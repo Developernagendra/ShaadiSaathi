@@ -309,7 +309,7 @@ exports.getContactInfo = catchAsync(async (req, res, next) => {
   }
 });
 
-const { sendEmail } = require('../config/email');
+const { sendEmail } = require('../services/emailService');
 
 exports.submitContact = catchAsync(async (req, res, next) => {
   const { name, email, subject, message } = req.body;

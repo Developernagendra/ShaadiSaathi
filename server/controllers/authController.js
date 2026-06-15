@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const User = require('../models/User');
-const { sendEmail, emailTemplates } = require('../config/email');
+const { sendEmail, emailTemplates } = require('../services/emailService');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -414,13 +414,12 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     ...template,
   }).then(() => {
     console.log('[FORGOT_PASSWORD] ✅ Reset Email Success');
-  }).catch(async (err) => {
+  }).catch((err) => {
+    // Do NOT clear the reset token here — the user should be able to retry
+    // or use the resend flow. Clearing it means the link in any delayed email
+    // becomes permanently invalid.
     console.error('[FORGOT_PASSWORD] ❌ Reset Email Failed:', err.message);
-
-    // Clean up token if background task fails
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save({ validateBeforeSave: false });
+    console.error('[FORGOT_PASSWORD]    → Token preserved so user can request another email');
   });
 
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
@@ -477,6 +476,17 @@ const resetPassword = catchAsync(async (req, res, next) => {
   user.resetPasswordExpire = undefined;
 
   await user.save();
+
+  console.log(`[RESET_PASSWORD] ✅ Password reset successful for: ${user.email}`);
+
+  // Send password-changed confirmation email (fire-and-forget)
+  const confirmTemplate = emailTemplates.passwordChanged(user.name);
+  sendEmail({
+    to: user.email,
+    ...confirmTemplate,
+  })
+    .then(() => console.log('[RESET_PASSWORD] ✅ Password changed confirmation email sent'))
+    .catch((err) => console.error('[RESET_PASSWORD] ❌ Password changed email failed:', err.message));
 
   const jwtToken = generateToken(
     user._id,
@@ -688,13 +698,19 @@ const logout = catchAsync(async (req, res, next) => {
 const testEmail = catchAsync(async (req, res, next) => {
   try {
     const to = process.env.EMAIL_USER; // Send to self
+    if (!to) {
+      return next(new AppError('EMAIL_USER environment variable is not configured.', 500));
+    }
+
     const subject = 'ShaadiSaathi SMTP Diagnostic Test';
     const html = `
       <div style="font-family:sans-serif;padding:20px;border:1px solid #ddd;border-radius:8px;">
         <h2 style="color:#22c55e;">SMTP Test Successful! ✅</h2>
-        <p>If you are reading this email, the Nodemailer configuration in <b>ShaadiSaathi</b> is fully functional.</p>
+        <p>If you are reading this email, the Gmail SMTP configuration in <b>ShaadiSaathi</b> is fully functional.</p>
         <p><b>Time:</b> ${new Date().toISOString()}</p>
         <p><b>Environment:</b> ${process.env.NODE_ENV}</p>
+        <p><b>SMTP Host:</b> ${process.env.EMAIL_HOST || 'smtp.gmail.com'}</p>
+        <p><b>SMTP Port:</b> ${process.env.EMAIL_PORT || '587'}</p>
         <p>Your authentication gating and verification flow will now work smoothly.</p>
       </div>
     `;
@@ -707,7 +723,9 @@ const testEmail = catchAsync(async (req, res, next) => {
       message: 'Test email sent successfully',
       data: {
         messageId: info.messageId,
-        recipient: to
+        recipient: to,
+        smtpHost: process.env.EMAIL_HOST || 'smtp.gmail.com',
+        smtpPort: process.env.EMAIL_PORT || '587',
       }
     });
   } catch (error) {

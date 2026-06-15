@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { NewsletterCampaign, NewsletterSubscriber } = require('../models');
-const { sendEmail, getCampaignEmailHTML, verifySMTP } = require('./email');
+const { sendEmail, getCampaignEmailHTML, verifySMTP } = require('../services/emailService');
 
 // Run every minute to check for scheduled campaigns
 const initCampaignScheduler = () => {

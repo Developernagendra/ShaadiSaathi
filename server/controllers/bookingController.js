@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Booking, Notification, Availability, Cab } = require('../models/index');
 const Vendor = require('../models/Vendor');
 const User = require('../models/User');
-const { sendEmail, emailTemplates } = require('../config/email');
+const { sendEmail, emailTemplates } = require('../services/emailService');
 const { sendBookingNotification, sendNotification } = require('../services/notificationService');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -292,15 +292,31 @@ exports.createBooking = catchAsync(async (req, res, next) => {
       }
     }
 
+    const bookingPayload = {
+      bookingId: bookingWithDetails.bookingId || "N/A",
+      customerName: req.user.name || "Customer",
+      customerEmail: req.user.email || "Not Provided",
+      customerPhone: contactPhone || req.user?.phone || "Not Provided",
+      vendorName: vendor ? (vendor.businessName || "Vendor") : "Wedding Service Vendor",
+      serviceName: bookedServiceName || "Wedding Service",
+      eventDate: eventDate ? new Date(eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
+      eventTime: eventTime || "TBD",
+      eventLocation: eventVenue || eventCity || "TBD",
+      bookingAmount: amount || bookingWithDetails.amount || 0,
+      bookingStatus: bookingWithDetails.status || "pending"
+    };
+
+    console.log("[EMAIL PAYLOAD] createBooking:", bookingPayload);
+
     // 1. Send User Confirmation Email
-    console.log(`[EMAIL] Sending booking confirmation to user: ${req.user.email}`);
-    const template = emailTemplates.bookingConfirmation(req.user.name, {
-      bookingId: bookingWithDetails.bookingId,
-      serviceName: bookedServiceName,
-      date: new Date(eventDate).toLocaleDateString('en-IN'),
-      amount,
-    });
-    await sendEmail({ to: req.user.email, ...template });
+    try {
+      console.log(`[EMAIL] Sending booking confirmation to user: ${req.user.email}`);
+      const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
+      await sendEmail({ to: req.user.email, ...template });
+    } catch (emailErr) {
+      console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for booking ${bookingPayload.bookingId}:`, emailErr.message);
+      // Do not throw; we must not cancel the booking over an email failure
+    }
 
     // 2. Send Vendor Alert Email (if vendor email exists)
     if (vendor && vendor.email) {
@@ -308,13 +324,7 @@ exports.createBooking = catchAsync(async (req, res, next) => {
         console.log(`[EMAIL] Sending booking alert to vendor: ${vendor.email}`);
         const vendorTemplate = emailTemplates.vendorBookingAlert(
           vendor.businessName || 'Vendor Partner',
-          req.user.name,
-          {
-            bookingId: bookingWithDetails.bookingId,
-            serviceName: bookedServiceName,
-            date: new Date(eventDate).toLocaleDateString('en-IN'),
-            amount,
-          }
+          bookingPayload
         );
         await sendEmail({ to: vendor.email, ...vendorTemplate });
       } catch (err) {
@@ -332,14 +342,7 @@ exports.createBooking = catchAsync(async (req, res, next) => {
           console.log(`[EMAIL] Sending booking alert to admin: ${adm.email}`);
           const adminTemplate = emailTemplates.adminBookingAlert(
             adm.name || 'Administrator',
-            req.user.name,
-            vendor ? vendor.businessName : 'Wedding Service Vendor',
-            {
-              bookingId: bookingWithDetails.bookingId,
-              serviceName: bookedServiceName,
-              date: new Date(eventDate).toLocaleDateString('en-IN'),
-              amount,
-            }
+            bookingPayload
           );
           await sendEmail({ to: adm.email, ...adminTemplate });
         }
@@ -428,8 +431,8 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
 
       // Date-Specific Conflict Detection Algorithm
       const queryDate = new Date(eventDate);
-      const startOfDay = new Date(queryDate.setHours(0,0,0,0));
-      const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+      const startOfDay = new Date(queryDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(queryDate.setHours(23, 59, 59, 999));
 
       const overlappingBookings = await Booking.find({
         eventDate: { $gte: startOfDay, $lte: endOfDay },
@@ -477,7 +480,7 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
         const ownerVendor = await Vendor.findOne({ user: cabDoc.createdBy });
         if (ownerVendor) vId = ownerVendor._id;
       }
-      
+
       if (vId) {
         const vData = await Vendor.findById(vId);
         if (vData) {
@@ -511,8 +514,8 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
     const maxFleetSize = Number(cab.totalFleet || cab.quantityAvailable || 1);
 
     const queryDate = new Date(eventDate);
-    const startOfDay = new Date(queryDate.setHours(0,0,0,0));
-    const endOfDay = new Date(queryDate.setHours(23,59,59,999));
+    const startOfDay = new Date(queryDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(queryDate.setHours(23, 59, 59, 999));
 
     const overlappingBookings = await Booking.find({
       eventDate: { $gte: startOfDay, $lte: endOfDay },
@@ -565,7 +568,7 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
       }
     }
     finalPrice = cabPrice;
-    
+
     let vId = cab.vendor;
     if (!vId) {
       const ownerVendor = await Vendor.findOne({ user: cab.createdBy });
@@ -729,14 +732,30 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
       }
     }
 
+    const bookingPayload = {
+      bookingId: bookingWithDetails.bookingId || "N/A",
+      customerName: req.user.name || "Customer",
+      customerEmail: req.user.email || "Not Provided",
+      customerPhone: phone || req.user?.phone || "Not Provided",
+      vendorName: "Cab Vendor Partner(s)",
+      serviceName: bookedServiceName || "Wedding Service",
+      eventDate: eventDate ? new Date(eventDate).toLocaleDateString('en-IN') : "To Be Confirmed",
+      eventTime: "TBD",
+      eventLocation: typeof pickupLocation === 'object' ? pickupLocation.address : (pickupLocation || city || "TBD"),
+      bookingAmount: finalPrice || bookingWithDetails.amount || 0,
+      bookingStatus: bookingWithDetails.status || "confirmed"
+    };
+
+    console.log("[EMAIL PAYLOAD] createCabBooking:", bookingPayload);
+
     // 1. Send User Confirmation Email
-    const template = emailTemplates.bookingConfirmation(req.user.name, {
-      bookingId: bookingWithDetails.bookingId,
-      serviceName: bookedServiceName,
-      date: new Date(eventDate).toLocaleDateString('en-IN'),
-      amount: finalPrice,
-    });
-    await sendEmail({ to: req.user.email, ...template });
+    try {
+      console.log(`[EMAIL] Sending cab booking confirmation to user: ${req.user.email}`);
+      const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
+      await sendEmail({ to: req.user.email, ...template });
+    } catch (emailErr) {
+      console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for cab booking ${bookingPayload.bookingId}:`, emailErr.message);
+    }
 
     // 2. Send Vendor Alert Email(s)
     for (const vId of vendorsSet) {
@@ -744,15 +763,10 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
         const vUser = await User.findById(vId);
         if (vUser && vUser.email) {
           const vProfile = await Vendor.findOne({ user: vId });
+          const vendorPayload = { ...bookingPayload, vendorName: vProfile ? vProfile.businessName : 'Cab Vendor Partner' };
           const vendorTemplate = emailTemplates.vendorBookingAlert(
-            vProfile ? vProfile.businessName : 'Cab Vendor Partner',
-            req.user.name,
-            {
-              bookingId: bookingWithDetails.bookingId,
-              serviceName: bookedServiceName,
-              date: new Date(eventDate).toLocaleDateString('en-IN'),
-              amount: finalPrice,
-            }
+            vendorPayload.vendorName,
+            vendorPayload
           );
           await sendEmail({ to: vUser.email, ...vendorTemplate });
         }
@@ -768,14 +782,7 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
         if (adm.email) {
           const adminTemplate = emailTemplates.adminBookingAlert(
             adm.name || 'Administrator',
-            req.user.name,
-            'Cab Vendor Partner(s)',
-            {
-              bookingId: bookingWithDetails.bookingId,
-              serviceName: bookedServiceName,
-              date: new Date(eventDate).toLocaleDateString('en-IN'),
-              amount: finalPrice,
-            }
+            bookingPayload
           );
           await sendEmail({ to: adm.email, ...adminTemplate });
         }
@@ -1066,24 +1073,24 @@ exports.updateBookingStatus = catchAsync(async (req, res, next) => {
     if (vendorProfile) {
       if (!vendorProfile.unavailableDates) vendorProfile.unavailableDates = [];
       if (!vendorProfile.bookings) vendorProfile.bookings = [];
-      
+
       const eDate = new Date(booking.eventDate);
       eDate.setHours(0, 0, 0, 0);
-      
+
       const alreadyBlocked = vendorProfile.unavailableDates.some(d => {
         const ud = new Date(d);
         ud.setHours(0, 0, 0, 0);
         return ud.getTime() === eDate.getTime();
       });
-      
+
       if (!alreadyBlocked) {
         vendorProfile.unavailableDates.push(eDate);
       }
-      
+
       if (!vendorProfile.bookings.includes(booking._id)) {
         vendorProfile.bookings.push(booking._id);
       }
-      
+
       await vendorProfile.save();
     }
   }

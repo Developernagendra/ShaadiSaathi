@@ -1,7 +1,7 @@
 const { PackageInquiry, Package } = require('../models/index');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { sendEmail, getPackageUserEmailHTML, getPackageAdminEmailHTML } = require('../utils/email');
+const { sendEmail, getPackageUserEmailHTML, getPackageAdminEmailHTML } = require('../services/emailService');
 
 // @desc    Submit new package inquiry
 // @route   POST /api/package-inquiries

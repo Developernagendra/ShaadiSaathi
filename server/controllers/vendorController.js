@@ -3,7 +3,7 @@ const Vendor = require('../models/Vendor');
 const User = require('../models/User');
 const { Notification, Booking, Review } = require('../models/index');
 const { deleteFromCloudinary } = require('../config/cloudinary');
-const { sendEmail, emailTemplates } = require('../config/email');
+const { sendEmail, emailTemplates } = require('../services/emailService');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -354,7 +354,7 @@ const getAllVendors = catchAsync(async (req, res, next) => {
     const requestedDate = new Date(date);
     const startOfDay = new Date(requestedDate.setHours(0, 0, 0, 0));
     const endOfDay = new Date(requestedDate.setHours(23, 59, 59, 999));
-    
+
     query.unavailableDates = {
       $not: {
         $elemMatch: {
@@ -932,13 +932,13 @@ const updateAvailability = catchAsync(async (req, res, next) => {
   if (action === 'block') {
     const newDates = dates.map((d) => ({ date: new Date(d), isBooked: true }));
     vendor.availability.push(...newDates);
-    
+
     dates.forEach(d => {
       const eDate = new Date(d);
-      eDate.setHours(0,0,0,0);
+      eDate.setHours(0, 0, 0, 0);
       const exists = vendor.unavailableDates.some(ud => {
         const dObj = new Date(ud);
-        dObj.setHours(0,0,0,0);
+        dObj.setHours(0, 0, 0, 0);
         return dObj.getTime() === eDate.getTime();
       });
       if (!exists) vendor.unavailableDates.push(eDate);
@@ -947,10 +947,10 @@ const updateAvailability = catchAsync(async (req, res, next) => {
     vendor.availability = vendor.availability.filter(
       (a) => !dates.includes(a.date.toISOString().split('T')[0])
     );
-    
+
     vendor.unavailableDates = vendor.unavailableDates.filter(ud => {
       const dObj = new Date(ud);
-      dObj.setHours(0,0,0,0);
+      dObj.setHours(0, 0, 0, 0);
       const dateStr = dObj.toISOString().split('T')[0];
       return !dates.includes(dateStr);
     });
