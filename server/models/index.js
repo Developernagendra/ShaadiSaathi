@@ -208,7 +208,7 @@ const bookingSchema = new mongoose.Schema({
     totalFare: Number
   }],
   cabIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Cab' }],
-  
+
   // Live Tracking Feature 4
   tripStatus: {
     type: String,

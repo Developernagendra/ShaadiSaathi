@@ -3,33 +3,54 @@
     "home": "होम",
     "services": "सेवाएं",
     "vendors": "वेंडर",
-    "booking": "बुकिंग",
+    "tools": "टूल्स",
+    "about": "हमारे बारे में",
     "contact": "संपर्क करें",
-    "login": "लॉगिन करें",
+    "blog": "ब्लॉग",
+    "userDashboard": "डैशबोर्ड",
+    "vendorDashboard": "वेंडर डैशबोर्ड",
+    "booking": "बुकिंग"
+  },
+  "auth": {
+    "login": "लॉग इन करें",
     "register": "रजिस्टर करें",
-    "vendorDashboard": "वेंडर पैनल",
-    "userDashboard": "मेरा डैशबोर्ड"
+    "logout": "लॉग आउट",
+    "forgot_password": "पासवर्ड भूल गए?",
+    "reset_password": "पासवर्ड रीसेट करें",
+    "email": "ईमेल पता",
+    "password": "पासवर्ड",
+    "submit": "जमा करें"
+  },
+  "common": {
+    "book_now": "अभी बुक करें",
+    "view_details": "विवरण देखें",
+    "dashboard": "डैशबोर्ड",
+    "profile": "प्रोफ़ाइल",
+    "settings": "सेटिंग्स",
+    "language": "भाषा",
+    "save": "सेव करें",
+    "cancel": "रद्द करें",
+    "edit": "संपादित करें",
+    "delete": "हटाएं"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "bho": "भोजपुरी (Bhojpuri)",
+    "mai": "मैथिली (Maithili)"
   },
   "home": {
-    "title": "अपनी शादी के लिए भरोसेमंद सेवाएं खोजें",
-    "subtitle": "आपकी सपनों की शादी की शुरुआत यहीं से होती है",
-    "bookNow": "अभी बुक करें",
-    "exploreServices": "सेवाएं देखें"
-  },
-  "vendorDashboard": {
-    "myServices": "मेरी सेवाएं",
-    "addService": "सेवा जोड़ें",
-    "bookings": "बुकिंग",
-    "earnings": "कमाई"
-  },
-  "userDashboard": {
-    "bookingStatus": "बुकिंग स्थिति",
-    "notifications": "सूचनाएं",
-    "profile": "प्रोफ़ाइल",
-    "wishlist": "विशलिस्ट",
-    "myBookings": "मेरी बुकिंग"
-  },
-  "contact": {
-    "contactVendor": "वेंडर से संपर्क करें"
+    "title": "अपने खास दिन के लिए भरोसेमंद वेडिंग सर्विस खोजें",
+    "premium_marketplace": "प्रीमियम वेडिंग मार्केटप्लेस",
+    "subtitle": "भरोसेमंद वेंडर्स, स्मार्ट टूल्स और आसान बुकिंग के साथ अपनी शादी की तैयारी को आसान बनाएं।",
+    "explore": "खोजें",
+    "wedding_services": "वेडिंग सेवाएं",
+    "featured": "चुनिंदा",
+    "vendors": "वेंडर्स",
+    "luxury": "लग्ज़री",
+    "baraat_cabs": "बारात कैब्स",
+    "why_choose": "क्यों चुनें",
+    "ready_to_plan": "क्या आप अपनी",
+    "dream_wedding": "ड्रीम वेडिंग प्लान करने के लिए तैयार हैं?"
   }
 }

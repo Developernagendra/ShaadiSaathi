@@ -165,20 +165,62 @@ const getBaseTemplate = (title, content, preheader = '') => {
 // ─── Email Templates ─────────────────────────────────────────────────
 const emailTemplates = {
   // ── Verification Email ──────────────────────────────────────────────
-  verification: (name, url) => {
+  verification: (name, url, lang = 'en') => {
+    const isHi = lang === 'hi';
+    const isBho = lang === 'bho';
+    const isMai = lang === 'mai';
+    
+    let subject = 'Verify your email - ShaadiSaathi';
+    let title = 'Verify Your Email Address';
+    let greeting = `Hi ${name},`;
+    let msg1 = 'Welcome to ShaadiSaathi! Please verify your email address to get started.';
+    let btnText = 'Verify Email Address';
+    let msg2 = "If the button doesn't work, copy and paste this link into your browser:";
+    let msg3 = 'This link will expire in 24 hours.';
+    let preheader = 'Please verify your email to complete your ShaadiSaathi registration';
+
+    if (isHi) {
+        subject = 'अपना ईमेल वेरीफाई करें - ShaadiSaathi';
+        title = 'अपना ईमेल पता वेरीफाई करें';
+        greeting = `नमस्ते ${name},`;
+        msg1 = 'ShaadiSaathi में आपका स्वागत है! शुरू करने के लिए कृपया अपना ईमेल पता वेरीफाई करें।';
+        btnText = 'ईमेल वेरीफाई करें';
+        msg2 = 'यदि बटन काम नहीं करता है, तो इस लिंक को कॉपी करें और अपने ब्राउज़र में पेस्ट करें:';
+        msg3 = 'यह लिंक 24 घंटे में समाप्त हो जाएगा।';
+        preheader = 'अपने ShaadiSaathi पंजीकरण को पूरा करने के लिए कृपया अपना ईमेल वेरीफाई करें';
+    } else if (isBho) {
+        subject = 'आपन ईमेल वेरीफाई करीं - ShaadiSaathi';
+        title = 'आपन ईमेल पता वेरीफाई करीं';
+        greeting = `रउवा के गोर लागत बानी ${name},`;
+        msg1 = 'ShaadiSaathi में राउर स्वागत बा! शुरू करे खातिर निहोरा बा कि आपन ईमेल पता वेरीफाई करीं।';
+        btnText = 'ईमेल वेरीफाई करीं';
+        msg2 = 'जदी बटन काम नईखे करत, त ए लिंक के कॉपी करीं आउर आपन ब्राउज़र में पेस्ट करीं:';
+        msg3 = 'ए लिंक के समय 24 घंटा में खतम हो जाई।';
+        preheader = 'आपन ShaadiSaathi पंजीकरण के पूरा करे खातिर कृपया आपन ईमेल वेरीफाई करीं';
+    } else if (isMai) {
+        subject = 'अपन ईमेल वेरीफाई करू - ShaadiSaathi';
+        title = 'अपन ईमेल पता वेरीफाई करू';
+        greeting = `प्रणाम ${name},`;
+        msg1 = 'ShaadiSaathi मे अहाँक स्वागत अछि! शुरू करबाक लेल कृपा कय अपन ईमेल पता वेरीफाई करू।';
+        btnText = 'ईमेल वेरीफाई करू';
+        msg2 = 'जँ ई बटन काज नहि करैत अछि, तँ ई लिंक केँ कॉपी कय अपन ब्राउज़र मे पेस्ट करू:';
+        msg3 = 'ई लिंक 24 घंटा मे समाप्त भ जायत।';
+        preheader = 'अपन ShaadiSaathi पंजीकरण पूरा करबाक लेल कृपा कय अपन ईमेल वेरीफाई करू';
+    }
+
     const html = getBaseTemplate(
-      'Verify Your Email Address',
-      `<h2 style="color: ${COLORS.text}; margin-top: 0;">Hi ${name},</h2>
-       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Welcome to ShaadiSaathi! Please verify your email address to get started.</p>
+      title,
+      `<h2 style="color: ${COLORS.text}; margin-top: 0;">${greeting}</h2>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">${msg1}</p>
        <div style="text-align: center; margin: 30px 0;">
-         <a href="${url}" style="display: inline-block; background-color: ${COLORS.primary}; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold;">Verify Email Address</a>
+         <a href="${url}" style="display: inline-block; background-color: ${COLORS.primary}; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold;">${btnText}</a>
        </div>
-       <p style="color: ${COLORS.lightText}; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
+       <p style="color: ${COLORS.lightText}; font-size: 14px;">${msg2}</p>
        <p style="color: ${COLORS.primary}; font-size: 13px; word-break: break-all;">${url}</p>
-       <p style="color: ${COLORS.lightText}; font-size: 14px; margin-bottom: 0;">This link will expire in 24 hours.</p>`,
-      'Please verify your email to complete your ShaadiSaathi registration'
+       <p style="color: ${COLORS.lightText}; font-size: 14px; margin-bottom: 0;">${msg3}</p>`,
+      preheader
     );
-    return { subject: 'Verify your email - ShaadiSaathi', html };
+    return { subject, html };
   },
 
   // ── Reset Password ─────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import { FiUser, FiBriefcase, FiArrowRight } from 'react-icons/fi'
 import BrandLogo from '../../components/common/BrandLogo'
 
 export default function RegisterSelectionPage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation?.() || { t: (key) => key };
 
   return (
     <div className="min-h-screen bg-[#FFF8F0] flex items-center justify-center p-6 relative overflow-hidden">

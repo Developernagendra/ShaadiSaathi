@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "home": "घर",
+    "services": "सेवा सभे",
+    "vendors": "बिक्रेता",
+    "tools": "औजार",
+    "about": "हमनी के बारे में",
+    "contact": "संपर्क करीं",
+    "blog": "ब्लॉग",
+    "userDashboard": "डैशबोर्ड",
+    "vendorDashboard": "बिक्रेता डैशबोर्ड",
+    "booking": "बुकिंग"
+  },
+  "auth": {
+    "login": "लॉग इन करीं",
+    "register": "पंजीकरण करीं",
+    "logout": "लॉग आउट करीं",
+    "forgot_password": "पासवर्ड भुला गइल बा?",
+    "reset_password": "पासवर्ड रीसेट करीं",
+    "email": "ईमेल पता",
+    "password": "पासवर्ड",
+    "submit": "जमा करीं"
+  },
+  "common": {
+    "book_now": "अभी बुक करीं",
+    "view_details": "ब्यौरा देखीं",
+    "dashboard": "डैशबोर्ड",
+    "profile": "प्रोफ़ाइल",
+    "settings": "सेटिंग्स",
+    "language": "भाषा",
+    "save": "सेव करीं",
+    "cancel": "रद्द करीं",
+    "edit": "बदलाव करीं",
+    "delete": "हटाईं"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "bho": "भोजपुरी (Bhojpuri)",
+    "mai": "मैथिली (Maithili)"
+  },
+  "home": {
+    "title": "आपन खास दिन खातिर बढ़िया बियाह के सेवा खोजीं",
+    "premium_marketplace": "प्रीमियम बियाह मार्केटप्लेस",
+    "subtitle": "भरोसेमंद बिक्रेता, नीमन औजार आउर असान बुकिंग के साथे आपन बियाह के तइयारी असान बनाईं।",
+    "explore": "खोज करीं",
+    "wedding_services": "बियाह के सेवा सभे",
+    "featured": "चुनिंदा",
+    "vendors": "बिक्रेता",
+    "luxury": "लग्ज़री",
+    "baraat_cabs": "बारात कैब्स",
+    "why_choose": "काहे चुनीं",
+    "ready_to_plan": "का रउवा आपन",
+    "dream_wedding": "सपनवा के बियाह के तइयारी करे खातिर तइयार बानी?"
+  }
+}

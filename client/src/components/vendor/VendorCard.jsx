@@ -173,7 +173,7 @@ export default function VendorCard({ vendor }) {
         </div>
 
         {/* Content Section */}
-        <div className="p-4 flex flex-col flex-1 relative z-10">
+        <div className="p-5 flex flex-col flex-1 relative z-10">
 
           {/* Header Row: Logo & Name */}
           <div className="flex gap-4 items-start mb-4">
@@ -181,15 +181,15 @@ export default function VendorCard({ vendor }) {
               {getVendorInitials(vendor.businessName)}
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
-              <h3 className="font-display font-black text-gray-900 text-[19px] leading-tight group-hover:text-[#FF4D6D] transition-colors truncate">
+              <h3 className="font-display font-black text-gray-900 text-lg leading-tight group-hover:text-[#FF4D6D] transition-colors truncate">
                 {vendor.businessName}
               </h3>
-              <div className="flex flex-wrap items-center gap-2 mt-1">
-                <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                  <FiCheckCircle size={10} strokeWidth={3} /> Verified Vendor
+              <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.1em] text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
+                  <FiCheckCircle size={10} strokeWidth={3} /> Verified
                 </span>
                 {(vendor.badges?.includes('quickResponder') || vendor.subscription?.plan === 'premium') && (
-                  <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                  <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[0.1em] text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
                     ⚡ Fast Response
                   </span>
                 )}
@@ -198,26 +198,28 @@ export default function VendorCard({ vendor }) {
           </div>
 
           {/* Bookings / Popularity indicator */}
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 mb-5">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 bg-gray-50 px-3.5 py-2 rounded-xl border border-gray-100 mb-5">
             <span className="text-red-500">❤️</span> 10+ Bookings
             <span className="text-gray-300 mx-1">|</span>
             <span className="text-[#FF4D6D]">🔥 Popular Choice</span>
           </div>
 
           {/* Price & Actions Row */}
-          <div className="mt-auto pt-5 border-t border-gray-50/80 flex flex-wrap items-center justify-between gap-4 w-full">
-            <div>
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Starting Price</p>
-              <p className="font-display font-black text-gray-900 text-xl tracking-tight">
-                {formatPrice(vendor.basePrice || vendor.packages?.[0]?.price || 15000)}
-              </p>
+          <div className="mt-auto pt-5 border-t border-gray-50/80 flex flex-col gap-4 w-full">
+            <div className="flex items-end justify-between w-full">
+              <div>
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Starting Price</p>
+                <p className="font-display font-black text-gray-900 text-2xl tracking-tight leading-none">
+                  {formatPrice(vendor.basePrice || vendor.packages?.[0]?.price || 15000)}
+                </p>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full">
               <button
                 onClick={handleWhatsAppClick}
                 disabled={waLoading}
-                className={`w-10 h-10 rounded-[12px] flex items-center justify-center transition-all duration-300 border group/wa ${waLoading ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-green-50 text-green-600 hover:bg-green-500 hover:text-white border-green-100'}`}
+                className={`w-12 h-12 rounded-xl flex flex-shrink-0 items-center justify-center transition-all duration-300 border group/wa ${waLoading ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-green-50 text-green-600 hover:bg-green-500 hover:text-white border-green-100 shadow-sm'}`}
                 title="WhatsApp Now"
               >
                 {waLoading ? (
@@ -226,7 +228,7 @@ export default function VendorCard({ vendor }) {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                 ) : (
-                  <FaWhatsapp size={20} className="group-hover/wa:scale-110 transition-transform" />
+                  <FaWhatsapp size={22} className="group-hover/wa:scale-110 transition-transform" />
                 )}
               </button>
 
@@ -236,7 +238,7 @@ export default function VendorCard({ vendor }) {
                   e.stopPropagation()
                   navigate(`/vendors/${vendor._id}`)
                 }}
-                className="bg-gray-900 hover:bg-gradient-to-r hover:from-[#FF4D6D] hover:to-[#6A11CB] text-white px-5 py-2.5 rounded-[12px] text-xs font-black uppercase tracking-widest transition-all duration-500 shadow-md hover:shadow-[0_10px_20px_rgba(255,77,109,0.3)] hover:-translate-y-0.5"
+                className="flex-1 bg-gray-900 hover:bg-gradient-to-r hover:from-[#FF4D6D] hover:to-[#6A11CB] text-white h-12 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all duration-500 shadow-md hover:shadow-[0_10px_20px_rgba(255,77,109,0.3)] hover:-translate-y-0.5 active:scale-95 flex items-center justify-center whitespace-nowrap px-4"
               >
                 View Details
               </button>

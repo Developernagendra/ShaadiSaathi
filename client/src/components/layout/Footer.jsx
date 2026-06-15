@@ -3,13 +3,15 @@ import { Link, NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FiInstagram, FiFacebook, FiLinkedin, FiMail, FiPhone, FiMapPin,
-  FiArrowUp, FiArrowRight
+  FiArrowUp, FiArrowRight, FiHeart, FiChevronRight
 } from 'react-icons/fi'
 import { FaWhatsapp } from 'react-icons/fa'
 import api from '../../utils/api'
+import { useTranslation } from 'react-i18next'
 import BrandLogo from '../common/BrandLogo'
 
 export default function Footer() {
+  const { t } = useTranslation?.() || { t: (key) => key };
   const [contact, setContact] = useState({
     email: 'hello@shaadisaathi.com',
     phone: '+91 7903075243',
@@ -102,16 +104,16 @@ export default function Footer() {
             <div className="space-y-6">
               <BrandLogo isDark={true} showTagline={false} />
               <div>
-                <p className="text-white font-bold text-base mb-2">Your Wedding, Perfected</p>
-                <p className="text-slate-400 text-sm leading-relaxed font-medium">
-                  Helping couples discover, compare, and book trusted wedding vendors with ease.
+                <p className="text-white font-bold text-base mb-2">{t('home.title', 'Your Wedding, Perfected')}</p>
+                <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-6">
+                  {t('home.subtitle', 'Simplify your wedding journey with trusted vendors, smart tools, and seamless booking.')}
                 </p>
               </div>
             </div>
 
             {/* Column 2: Quick Links */}
             <div>
-              <h4 className="text-white font-bold text-lg mb-6 tracking-wide">Quick Links</h4>
+              <h4 className="text-white font-bold text-lg mb-6 tracking-wide">{t('footer.quickLinks', 'Quick Links')}</h4>
               <ul className="space-y-4">
                 {quickLinks.map(({ to, label }) => (
                   <li key={label}>
@@ -123,23 +125,23 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Column 3: Company */}
+            {/* Column 3: Vendors */}
             <div>
-              <h4 className="text-white font-bold text-lg mb-6 tracking-wide">Company</h4>
+              <h4 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
+                <FiHeart className="text-[#C2185B]" /> {t('nav.vendors', 'Vendors')}
+              </h4>
               <ul className="space-y-4">
-                {companyLinks.map(({ to, label }) => (
-                  <li key={label}>
-                    <NavLink to={to} className={({ isActive }) => `text-sm font-medium transition-all duration-300 hover:translate-x-2 inline-block ${isActive ? 'text-[#C2185B]' : 'text-slate-400 hover:text-[#C2185B]'}`}>
-                      {label}
-                    </NavLink>
-                  </li>
-                ))}
+                <li><Link to="/services?category=venues" className="text-gray-400 hover:text-[#C2185B] transition-colors flex items-center gap-2"><FiChevronRight size={14} /> {t('vendor.venues', 'Venues')}</Link></li>
+                <li><Link to="/services?category=photography" className="text-gray-400 hover:text-[#C2185B] transition-colors flex items-center gap-2"><FiChevronRight size={14} /> {t('vendor.photography', 'Photography')}</Link></li>
+                <li><Link to="/services?category=bridal-makeup" className="text-gray-400 hover:text-[#C2185B] transition-colors flex items-center gap-2"><FiChevronRight size={14} /> {t('vendor.makeup', 'Makeup Artists')}</Link></li>
+                <li><Link to="/services?category=catering" className="text-gray-400 hover:text-[#C2185B] transition-colors flex items-center gap-2"><FiChevronRight size={14} /> {t('vendor.catering', 'Catering')}</Link></li>
+                <li><Link to="/services?category=event-planners" className="text-gray-400 hover:text-[#C2185B] transition-colors flex items-center gap-2"><FiChevronRight size={14} /> {t('vendor.decorators', 'Decorators')}</Link></li>
               </ul>
             </div>
 
             {/* Column 4: Contact */}
             <div>
-              <h4 className="text-white font-bold text-lg mb-6 tracking-wide">Contact</h4>
+              <h4 className="text-white font-bold text-lg mb-6 tracking-wide">{t('footer.contact', 'Contact')}</h4>
               <ul className="space-y-5">
                 <li>
                   <a href={`mailto:${contact.email}`} className="flex items-center gap-4 group">
@@ -191,12 +193,18 @@ export default function Footer() {
 
         {/* ── BOTTOM BAR ── */}
         <div className="border-t border-white/10 bg-black/20 relative z-10">
-          <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-            <p className="text-slate-500 text-sm font-medium">
-              &copy; {new Date().getFullYear()} ShaadiSaathi. All Rights Reserved.
-            </p>
+          <div className="max-w-7xl mx-auto px-4 py-8 pb-28 md:pb-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <p className="text-slate-500 text-sm font-medium">&copy; {new Date().getFullYear()} {t('footer.rights', 'ShaadiSaathi. All rights reserved.')}</p>
+              <div className="flex items-center gap-4 text-slate-500 text-sm font-medium">
+                <Link to="/privacy" className="hover:text-white transition-colors">{t('nav.privacy', 'Privacy Policy')}</Link>
+                <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                <Link to="/terms" className="hover:text-white transition-colors">{t('nav.terms', 'Terms of Service')}</Link>
+              </div>
+            </div>
+            
             <p className="text-slate-500 text-sm font-medium flex items-center justify-center gap-1.5">
-              Made with <span className="text-[#C2185B] animate-pulse">❤️</span> for Indian Weddings
+              {t('footer.madeWith', 'Made with')} <span className="text-[#C2185B] animate-pulse">❤️</span> {t('footer.forIndian', 'for Indian Weddings')}
             </p>
           </div>
         </div>

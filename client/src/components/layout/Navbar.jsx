@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import api from '../../utils/api'
 import { apiCache } from '../../utils/apiCache'
 import BrandLogo from '../common/BrandLogo'
+import LanguageSwitcher from '../common/LanguageSwitcher'
 
 // Preload component chunk
 const preloadBaraatCabsChunk = () => import('../../pages/BaraatCabsPage')
@@ -35,12 +36,9 @@ export default function Navbar() {
   const userMenuRef = useRef(null)
   const notifRef = useRef(null)
   const isHome = location.pathname === '/'
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation?.() || { t: (key) => key, i18n: { language: 'en', changeLanguage: () => { } } };
 
-  const handleLanguageToggle = () => {
-    const newLang = i18n.language === 'hi' ? 'en' : 'hi'
-    i18n.changeLanguage(newLang)
-  }
+
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -70,9 +68,9 @@ export default function Navbar() {
 
   const navTransparent = isHome && !scrolled
 
-  const toolsMenu = { 
-    label: 'Tools', 
-    icon: <FiGrid />, 
+  const toolsMenu = {
+    label: 'Tools',
+    icon: <FiGrid />,
     children: [
       { to: '/tools', label: '🛠 All Tools Hub' },
       { to: '/tools/ai-planner', label: '🤖 AI Wedding Planner' },
@@ -113,7 +111,7 @@ export default function Navbar() {
         : [
           { to: '/dashboard', label: t('nav.userDashboard', 'Dashboard') },
           { to: '/bookings', label: t('nav.booking', 'Bookings') },
-          { to: '/wishlist', label: 'Wishlist' },
+          { to: '/wishlist', label: t('nav.wishlist', 'Wishlist') },
           toolsMenu,
           { to: '/baraat-cabs', label: 'Baraat Cabs' },
         ]
@@ -149,9 +147,9 @@ export default function Navbar() {
           <div className="flex items-center justify-between gap-2 md:gap-4">
             {/* ── Logo ── */}
             <div className="flex-shrink-0 min-w-0">
-              <BrandLogo 
-                isDark={navTransparent} 
-                onClick={() => setMobileOpen(false)} 
+              <BrandLogo
+                isDark={navTransparent}
+                onClick={() => setMobileOpen(false)}
               />
             </div>
 
@@ -159,14 +157,13 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => {
                 const isCabs = link.to === '/baraat-cabs';
-                
+
                 if (link.children) {
                   return (
                     <div key={link.label} className="relative group">
                       <button
-                        className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 flex items-center gap-2 ${
-                          navTransparent ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-primary-600'
-                        }`}
+                        className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-300 flex items-center gap-2 ${navTransparent ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-primary-600'
+                          }`}
                       >
                         {link.icon} {link.label} <FiChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300" />
                       </button>
@@ -223,15 +220,9 @@ export default function Navbar() {
             {/* ── Right Side Actions ── */}
             <div className="flex items-center gap-2 md:gap-4">
               {/* Language Switcher */}
-              <button
-                onClick={handleLanguageToggle}
-                className={`hidden sm:flex px-3 py-1.5 rounded-xl text-[11px] font-black tracking-widest transition-all ${navTransparent
-                  ? 'text-white border border-white/20 hover:bg-white/10'
-                  : 'text-primary-600 border border-primary-100 hover:bg-primary-50'
-                  }`}
-              >
-                {i18n.language === 'hi' ? 'EN' : 'हिन्दी'}
-              </button>
+              <div className="hidden sm:block">
+                <LanguageSwitcher />
+              </div>
 
               {isAuthenticated ? (
                 <>
@@ -349,8 +340,8 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="hidden lg:flex items-center gap-2">
-                  <Link to="/login" className={`text-[11px] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all ${navTransparent ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'}`}>Login</Link>
-                  <Link to="/register" className={`bg-primary-600 text-white text-[11px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg hover:bg-primary-700 transition-all hover:scale-105 active:scale-95`}>Join</Link>
+                  <Link to="/login" className={`text-[11px] font-black uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all ${navTransparent ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'}`}>{t('auth.login', 'Login')}</Link>
+                  <Link to="/register" className={`bg-primary-600 text-white text-[11px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg hover:bg-primary-700 transition-all hover:scale-105 active:scale-95`}>{t('auth.register', 'Join')}</Link>
                 </div>
               )}
 
@@ -382,9 +373,9 @@ export default function Navbar() {
                 {[
                   { to: '/', label: 'Home', icon: <FiHome /> },
                   { to: '/services', label: 'Vendors', icon: <FiGrid /> },
-                  { 
-                    label: 'Tools', 
-                    icon: <FiGrid />, 
+                  {
+                    label: 'Tools',
+                    icon: <FiGrid />,
                     children: [
                       { to: '/tools', label: '🛠 All Tools Hub' },
                       { to: '/tools/ai-planner', label: '🤖 AI Wedding Planner' },
@@ -446,17 +437,21 @@ export default function Navbar() {
                     Apna Business Jodein
                   </Link>
                 )}
+
+                <div className="mt-4 px-2">
+                  <LanguageSwitcher isMobile={true} />
+                </div>
               </div>
 
               <div className="p-6 border-t border-pink-50 relative z-10 bg-gray-50">
                 {!isAuthenticated ? (
                   <div className="grid grid-cols-2 gap-3">
-                    <Link to="/login" onClick={() => setMobileOpen(false)} className="py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-gray-700 bg-white border border-gray-200 shadow-sm">Login</Link>
-                    <Link to="/register" onClick={() => setMobileOpen(false)} className="py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-white bg-primary-600 shadow-lg shadow-primary-900/20">Join</Link>
+                    <Link to="/login" onClick={() => setMobileOpen(false)} className="py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-gray-700 bg-white border border-gray-200 shadow-sm">{t('auth.login', 'Login')}</Link>
+                    <Link to="/register" onClick={() => setMobileOpen(false)} className="py-3.5 rounded-xl text-xs font-black uppercase tracking-widest text-center text-white bg-primary-600 shadow-lg shadow-primary-900/20">{t('auth.register', 'Join')}</Link>
                   </div>
                 ) : (
                   <button onClick={handleLogout} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-sm font-bold text-red-600 bg-white border border-red-50 shadow-sm">
-                    <FiLogOut /> Sign Out
+                    <FiLogOut /> {t('auth.logout', 'Sign Out')}
                   </button>
                 )}
               </div>

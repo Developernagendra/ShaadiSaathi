@@ -10,7 +10,7 @@ const BASE_URL =
    "https://shaadisaathi-3.onrender.com/api";
 
 if (import.meta.env.DEV) {
-  console.log('API URL:', BASE_URL);
+   console.log('API URL:', BASE_URL);
 }
 
 
@@ -112,10 +112,10 @@ API.interceptors.response.use(
       // Extract the best error message from the backend response
       const responseData = error.response.data;
       const errorPayload = {
-        success: false,
-        message: responseData?.message || responseData?.data?.message || error.message || 'Something went wrong',
-        status: error.response.status,
-        ...(responseData || {}),
+         success: false,
+         message: responseData?.message || responseData?.data?.message || error.message || 'Something went wrong',
+         status: error.response.status,
+         ...(responseData || {}),
       };
 
       return Promise.reject(errorPayload);

@@ -50,6 +50,11 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'vendor', 'admin'],
     default: 'user',
   },
+  preferredLanguage: {
+    type: String,
+    enum: ['en', 'hi', 'bho', 'mai'],
+    default: 'en',
+  },
   vendorProfile: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Vendor'

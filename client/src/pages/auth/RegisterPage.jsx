@@ -13,7 +13,7 @@ export default function RegisterPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((s) => s.auth);
-  const { t } = useTranslation();
+  const { t } = useTranslation?.() || { t: (key) => key };
   const { playSound } = useNotificationSound();
 
   const [form, setForm] = useState({

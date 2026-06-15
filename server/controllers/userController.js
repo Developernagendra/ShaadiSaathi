@@ -21,7 +21,7 @@ const getProfile = catchAsync(async (req, res, next) => {
 // @route   PUT /api/users/profile
 // @access  Private
 const updateProfile = catchAsync(async (req, res, next) => {
-  const { name, phone, weddingDate, weddingCity, notifications } = req.body;
+  const { name, phone, weddingDate, weddingCity, notifications, preferredLanguage } = req.body;
 
   const updateFields = {};
   if (name) updateFields.name = name;
@@ -29,6 +29,7 @@ const updateProfile = catchAsync(async (req, res, next) => {
   if (weddingDate) updateFields.weddingDate = weddingDate;
   if (weddingCity) updateFields.weddingCity = weddingCity;
   if (notifications) updateFields.notifications = notifications;
+  if (preferredLanguage) updateFields.preferredLanguage = preferredLanguage;
 
   const user = await User.findByIdAndUpdate(
     req.user._id,

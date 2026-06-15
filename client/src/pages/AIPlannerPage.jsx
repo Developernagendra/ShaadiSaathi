@@ -10,11 +10,14 @@ import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
+import { useTranslation } from 'react-i18next';
+
 const SERVICES_OPTIONS = [
   'Venue', 'Photography', 'Catering', 'Decoration', 'Mehndi', 'Makeup Artist', 'Pandit', 'Cab Service', 'DJ'
 ];
 
 export default function AIPlannerPage() {
+  const { i18n } = useTranslation();
   const [step, setStep] = useState(1); // 1: Form, 2: Loading, 3: Results
   const [formData, setFormData] = useState({
     brideName: '',
@@ -58,7 +61,7 @@ export default function AIPlannerPage() {
     setStep(2); // Show Loading State
     
     // Pass the resetCircuit flag if user manually clicks "Retry AI Connection"
-    const payload = forceReset ? { ...formData, resetCircuit: true } : formData;
+    const payload = forceReset ? { ...formData, resetCircuit: true, language: i18n.language } : { ...formData, language: i18n.language };
 
     const result = await dispatch(generateOpenAIWeddingPlan(payload));
     if (result.error) {

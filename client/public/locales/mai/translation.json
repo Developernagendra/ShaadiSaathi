@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "home": "मुख्य पृष्ठ",
+    "services": "सेवा सब",
+    "vendors": "विक्रेता",
+    "tools": "उपकरण",
+    "about": "हमरा सभक विषयमे",
+    "contact": "संपर्क करू",
+    "blog": "ब्लॉग",
+    "userDashboard": "डैशबोर्ड",
+    "vendorDashboard": "विक्रेता डैशबोर्ड",
+    "booking": "बुकिंग"
+  },
+  "auth": {
+    "login": "लॉग इन करू",
+    "register": "पंजीकरण करू",
+    "logout": "लॉग आउट करू",
+    "forgot_password": "पासवर्ड बिसैर गेलहुँ?",
+    "reset_password": "पासवर्ड रिसेट करू",
+    "email": "ईमेल पता",
+    "password": "पासवर्ड",
+    "submit": "जमा करू"
+  },
+  "common": {
+    "book_now": "अखन बुक करू",
+    "view_details": "विवरण देखू",
+    "dashboard": "डैशबोर्ड",
+    "profile": "प्रोफाइल",
+    "settings": "सेटिंग्स",
+    "language": "भाषा",
+    "save": "सेव करू",
+    "cancel": "रद्द करू",
+    "edit": "संपादित करू",
+    "delete": "हटाउ"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "bho": "भोजपुरी (Bhojpuri)",
+    "mai": "मैथिली (Maithili)"
+  },
+  "home": {
+    "title": "अपन खास दिनक लेल नीक विवाह सेवा खोजू",
+    "premium_marketplace": "प्रीमियम विवाह मार्केटप्लेस",
+    "subtitle": "भरोसेमंद विक्रेता, स्मार्ट उपकरण आ आसान बुकिंगक सङ्ग अपन विवाहक तैयारी आसान बनाउ।",
+    "explore": "खोजू",
+    "wedding_services": "विवाह सेवा सब",
+    "featured": "चुनिंदा",
+    "vendors": "विक्रेता सब",
+    "luxury": "लग्ज़री",
+    "baraat_cabs": "बरात कैब्स",
+    "why_choose": "कियैक चुनी",
+    "ready_to_plan": "की अहाँ अपन",
+    "dream_wedding": "सपनाक विवाहक योजना बनेबाक लेल तैयार छी?"
+  }
+}

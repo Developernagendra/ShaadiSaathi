@@ -55,7 +55,7 @@ const register = catchAsync(async (req, res, next) => {
         const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
         // Fire-and-forget: don't block the HTTP response
-        const template = emailTemplates.verification(existingUser.name, verificationUrl);
+        const template = emailTemplates.verification(existingUser.name, verificationUrl, existingUser.preferredLanguage);
         sendEmail({ to: existingUser.email, subject: template.subject, html: template.html, text: template.text })
           .then(() => console.log(`[AUTH] Resent verification email to unverified account: ${existingUser.email}`))
           .catch((err) => console.error('[AUTH] Failed to resend verification email:', err.message));
@@ -148,7 +148,7 @@ const register = catchAsync(async (req, res, next) => {
 
   // Only send verification emails if they are not already verified (e.g. vendors)
   if (!user.isVerified) {
-    const template = emailTemplates.verification(user.name, verificationUrl);
+    const template = emailTemplates.verification(user.name, verificationUrl, user.preferredLanguage);
     sendEmail({
       to: user.email,
       subject: template.subject,
@@ -639,7 +639,8 @@ const resendVerification = catchAsync(async (req, res, next) => {
   const template =
     emailTemplates.verification(
       user.name,
-      verificationUrl
+      verificationUrl,
+      user.preferredLanguage
     );
 
   console.log('[VERIFY_EMAIL] 📨 Resend Attempt Started (Background)');

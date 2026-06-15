@@ -10,12 +10,13 @@ import {
 import { FaTruck, FaMapMarkerAlt } from 'react-icons/fa'
 import { useTranslation } from 'react-i18next'
 import BrandLogo from '../common/BrandLogo'
+import LanguageSwitcher from '../common/LanguageSwitcher'
 
 export default function Sidebar({ closeSidebar, isCollapsed }) {
   const location = useLocation()
   const { user } = useSelector(s => s.auth || {})
   const role = user?.role
-  const { t } = useTranslation()
+  const { t } = useTranslation?.() || { t: (key) => key };
   const [invitationOpen, setInvitationOpen] = useState(location.pathname.startsWith('/invitation-creator'))
 
   const userLinks = [
@@ -106,6 +107,9 @@ export default function Sidebar({ closeSidebar, isCollapsed }) {
             <div className="flex flex-col gap-4">
               <BrandLogo isDark={true} className="scale-90 origin-left" />
               <p className="text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.4em] drop-shadow-md">{role} Workspace</p>
+              <div className="mt-2">
+                 <LanguageSwitcher />
+              </div>
             </div>
           ) : (
             <div className="flex justify-center -ml-2">

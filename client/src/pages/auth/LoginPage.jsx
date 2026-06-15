@@ -23,7 +23,7 @@ export default function LoginPage() {
   const location = useLocation()
   const { loading } = useSelector((s) => s.auth)
   const [showPass, setShowPass] = useState(false)
-  const { t } = useTranslation()
+  const { t } = useTranslation?.() || { t: (key) => key };
   const { playSound } = useNotificationSound()
 
   const from = location.state?.from?.pathname || '/'

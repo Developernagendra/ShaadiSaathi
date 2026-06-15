@@ -8,6 +8,7 @@ import { SkeletonCard } from '../components/common/Skeleton'
 import PackageSection from '../components/packages/PackageSection'
 import { INDIAN_CITIES } from '../utils/helpers'
 import { FiSearch, FiMapPin, FiArrowRight } from 'react-icons/fi'
+import { FaCrown, FaStar, FaMapMarkerAlt, FaUsers, FaCheckCircle, FaWhatsapp, FaShieldAlt, FaCarSide, FaHeadset } from 'react-icons/fa'
 import api from '../utils/api'
 import { getSocket } from '../utils/socket'
 import { useTranslation } from 'react-i18next'
@@ -39,7 +40,7 @@ const WHY_US_CARDS = [
 ]
 
 export default function HomePage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation?.() || { t: (key) => key };
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { categories = [] } = useSelector((s) => s.vendor || {})
@@ -151,7 +152,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 text-white text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.3em] px-4 sm:px-6 py-2.5 rounded-full mb-6 shadow-xl"
           >
             <span className="text-gold">✨</span>
-            <span>Premium Wedding Marketplace</span>
+            <span>{t('home.premium_marketplace', 'Premium Wedding Marketplace')}</span>
           </motion.div>
 
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight mb-4 text-shadow drop-shadow-2xl">
@@ -160,7 +161,7 @@ export default function HomePage() {
 
           <div className="mb-10">
             <p className="text-white/90 text-sm sm:text-base md:text-xl font-medium max-w-2xl mx-auto text-shadow leading-relaxed italic">
-              Trusted vendors, smart planning tools aur seamless booking ke saath apni wedding journey ko simple banayein.
+              {t('home.subtitle', 'Trusted vendors, smart planning tools aur seamless booking ke saath apni wedding journey ko simple banayein.')}
             </p>
           </div>
 
@@ -219,7 +220,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-8 md:mb-12">
             <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="font-display text-2xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-2 md:mb-4">
-              Explore <span className="text-[#D4AF37] italic">Wedding Services</span>
+              {t('home.explore', 'Explore')} <span className="text-[#D4AF37] italic">{t('home.wedding_services', 'Wedding Services')}</span>
             </motion.h2>
           </div>
 
@@ -252,7 +253,7 @@ export default function HomePage() {
                 <span className="text-[#C2185B] font-black text-[10px] uppercase tracking-[0.25em]">🌟 Top Picks</span>
               </motion.div>
               <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="font-display text-2xl md:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-tight">
-                Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">Vendors</span>
+                {t('home.featured', 'Featured')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">{t('home.vendors', 'Vendors')}</span>
               </motion.h2>
             </div>
             <Link to="/services" className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-gray-900 px-6 py-3 rounded-full hover:bg-[#C2185B] transition-all shadow-md active:scale-95">
@@ -297,51 +298,122 @@ export default function HomePage() {
       <PackageSection />
 
       {/* ── 4. Baraat Cabs (USP Section) ── */}
-      <section className="py-10 md:py-16 lg:py-24 px-4 relative overflow-hidden bg-gradient-to-br from-[#1a1a1a] via-[#2d2d2d] to-[#111111]">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#C2185B]/20 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
+      <section className="py-16 md:py-32 px-4 relative overflow-hidden bg-gradient-to-br from-[#050505] via-[#111111] to-[#050505]">
+        {/* Luxury Background Effects */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 mix-blend-overlay" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#D4AF37]/10 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#C2185B]/10 rounded-full blur-[150px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-            <div className="inline-flex items-center gap-2 bg-white/10 text-white text-[10px] font-black uppercase tracking-[0.3em] px-4 py-2 rounded-full mb-6 border border-white/20">
-              <span className="text-[#D4AF37]">✨</span> Premium Transport
-            </div>
-            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 tracking-tighter leading-tight">
-              Luxury <span className="text-[#D4AF37] italic">Baraat Cabs</span>
-            </h2>
-            <p className="text-white/80 text-base md:text-lg font-medium italic mb-8 max-w-lg">
-              Experience seamless wedding transport. From decorated sedans to luxury buses, perfectly coordinated for your grand celebration.
-            </p>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
+            {/* LEFT SIDE: Content */}
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }} 
+              whileInView={{ opacity: 1, x: 0 }} 
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="w-full lg:w-1/2 flex flex-col items-center text-center lg:items-start lg:text-left order-2 lg:order-1"
+            >
+              <div className="inline-flex items-center gap-2 bg-white/5 border border-[#D4AF37]/30 text-[#D4AF37] px-6 py-2 rounded-full mb-8 backdrop-blur-md shadow-lg shadow-[#D4AF37]/5">
+                <FaCrown className="text-xl" />
+                <span className="text-[11px] font-black uppercase tracking-[0.3em]">👑 Luxury Baraat Cabs</span>
+              </div>
+              
+              <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-lg leading-tight">
+                Make Your Baraat <br className="hidden lg:block"/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic">Grand & Royal</span>
+              </h2>
+              
+              <p className="text-gray-300 text-lg md:text-xl font-medium mb-12 leading-relaxed max-w-xl">
+                Book premium wedding vehicles for your special day. From decorated luxury SUVs to vintage cars and complete baraat fleets.
+              </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="https://wa.me/919876543210?text=Hi%2C%20I%20want%20to%20book%20Baraat%20Cabs" target="_blank" rel="noreferrer" className="bg-[#25D366] text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-full shadow-[0_0_20px_rgba(37,211,102,0.3)] hover:scale-105 transition-all text-center flex items-center justify-center gap-2">
-                WhatsApp Booking
-              </a>
-              <Link to="/baraat-cabs" className="bg-white/10 text-white border border-white/20 font-black text-xs uppercase tracking-widest py-4 px-8 rounded-full hover:bg-white/20 transition-all text-center">
-                Explore Fleet
-              </Link>
-            </div>
-          </motion.div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6 mb-12 w-full max-w-lg">
+                {[
+                  { icon: <FaCheckCircle />, text: 'Verified Drivers' },
+                  { icon: <FaCheckCircle />, text: 'Luxury Fleet' },
+                  { icon: <FaCheckCircle />, text: 'Live Availability' },
+                  { icon: <FaCheckCircle />, text: 'WhatsApp Updates' },
+                  { icon: <FaCheckCircle />, text: 'Wedding Decor Options' }
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3 text-gray-200 text-sm md:text-base font-bold bg-white/5 border border-white/10 px-4 py-3 rounded-2xl backdrop-blur-sm hover:bg-white/10 transition-colors shadow-sm">
+                    <span className="text-[#D4AF37] text-xl drop-shadow-md">{feature.icon}</span>
+                    <span>{feature.text}</span>
+                  </div>
+                ))}
+              </div>
 
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="bg-white/5 border border-white/10 rounded-[2.5rem] p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-            {/* Simple fleet mock display */}
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10 hover:bg-white/20 transition">
-              <div className="text-4xl mb-2">🚗</div>
-              <h4 className="text-white font-bold text-sm">Luxury Sedans</h4>
-            </div>
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10 hover:bg-white/20 transition">
-              <div className="text-4xl mb-2">🚙</div>
-              <h4 className="text-white font-bold text-sm">Premium SUVs</h4>
-            </div>
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10 hover:bg-white/20 transition">
-              <div className="text-4xl mb-2">🚌</div>
-              <h4 className="text-white font-bold text-sm">AC Buses</h4>
-            </div>
-            <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10 hover:bg-white/20 transition">
-              <div className="text-4xl mb-2">🏎️</div>
-              <h4 className="text-white font-bold text-sm">Vintage Cars</h4>
-            </div>
-          </motion.div>
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <Link to="/baraat-cabs" className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 md:px-10 md:py-5 bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-[#1a1a1a] font-black uppercase tracking-widest text-xs md:text-sm rounded-full overflow-hidden shadow-[0_0_40px_rgba(212,175,55,0.3)] hover:shadow-[0_0_60px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto">
+                  <span className="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                  🚘 Explore Luxury Baraat Cabs <FiArrowRight className="text-lg group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link to="/contact" className="group inline-flex items-center justify-center gap-3 px-8 py-4 md:px-10 md:py-5 bg-white/5 border border-white/20 text-white font-black uppercase tracking-widest text-xs md:text-sm rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-300 w-full sm:w-auto backdrop-blur-md">
+                  📞 Get Instant Quote
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* RIGHT SIDE: Image Showcase */}
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }} 
+              whileInView={{ opacity: 1, x: 0 }} 
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="w-full lg:w-1/2 relative order-1 lg:order-2"
+            >
+              <div className="relative rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                  className="w-full h-full"
+                >
+                  <img 
+                    src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80" 
+                    alt="Decorated Luxury Baraat SUV" 
+                    className="w-full h-[400px] md:h-[500px] lg:h-[650px] object-cover object-[center_30%]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                </motion.div>
+
+                {/* Floating Badges */}
+                <motion.div 
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-6 left-6 md:top-10 md:left-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-[#1a1a1a] shadow-xl border border-white/50 flex items-center gap-2 pointer-events-none"
+                >
+                  🔥 Most Booked
+                </motion.div>
+
+                <motion.div 
+                  animate={{ y: [0, 15, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  className="absolute top-24 right-[-10px] md:right-[-20px] lg:right-[-30px] bg-[#1a1a1a]/90 backdrop-blur-md px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-[#D4AF37] shadow-2xl border border-[#D4AF37]/30 flex items-center gap-2 pointer-events-none"
+                >
+                  ⭐ Premium Fleet
+                </motion.div>
+
+                <motion.div 
+                  animate={{ y: [0, -15, 0] }}
+                  transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  className="absolute bottom-32 left-[-10px] md:left-[-20px] bg-gradient-to-r from-[#D4AF37] to-[#B38D22] px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-black shadow-2xl flex items-center gap-2 pointer-events-none"
+                >
+                  👑 Royal Choice
+                </motion.div>
+
+                <motion.div 
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                  className="absolute bottom-6 right-6 md:bottom-10 md:right-10 bg-black/60 backdrop-blur-xl px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl border border-white/20 flex items-center gap-2 pointer-events-none"
+                >
+                  💎 Luxury Wedding Service
+                </motion.div>
+              </div>
+              
+              {/* Decorative Glow Behind Image */}
+              <div className="absolute inset-0 bg-[#D4AF37]/20 blur-[100px] -z-10 rounded-full" />
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -350,7 +422,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-8 md:mb-12">
             <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-black text-gray-900 mb-2 md:mb-4 tracking-tight">
-              Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">ShaadiSaathi?</span>
+              {t('home.why_choose', 'Why Choose')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D6D] to-[#6A11CB] italic">ShaadiSaathi?</span>
             </h2>
           </div>
 
@@ -373,7 +445,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]" />
         <div className="max-w-3xl mx-auto relative z-10">
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 md:mb-6 tracking-tight drop-shadow-md">
-            Ready To Plan Your <span className="italic text-[#D4AF37]">Dream Wedding?</span>
+            {t('home.ready_to_plan', 'Ready To Plan Your')} <span className="italic text-[#D4AF37]">{t('home.dream_wedding', 'Dream Wedding?')}</span>
           </h2>
           <p className="text-white/80 text-base md:text-lg mb-8 md:mb-10 font-medium">
             Join thousands of happy couples who found their perfect vendors on ShaadiSaathi.

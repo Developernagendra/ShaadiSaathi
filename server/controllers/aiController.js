@@ -22,7 +22,7 @@ const providerHealth = {
 exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
   const isDev = process.env.NODE_ENV === 'development';
   if (isDev) console.time("AI_REQUEST_TOTAL");
-  const { brideName, groomName, weddingDate, city, budget, guestCount, weddingType, servicesRequired, resetCircuit } = req.body;
+  const { brideName, groomName, weddingDate, city, budget, guestCount, weddingType, servicesRequired, resetCircuit, language } = req.body;
 
   // Manual reset of the circuit breaker from the frontend
   if (resetCircuit) {
@@ -71,6 +71,9 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
   };
   const dynamicTimeline = generateDynamicTimeline(weddingDate);
 
+  // Map language code to full language name
+  const langName = language === 'hi' ? 'Hindi' : language === 'bho' ? 'Bhojpuri' : language === 'mai' ? 'Maithili' : 'English';
+
   // --- AI GENERATION ---
   const prompt = `
     You are an expert Indian wedding planner named "ShaadiSaathi AI".
@@ -83,12 +86,14 @@ exports.generateWeddingPlan = catchAsync(async (req, res, next) => {
     - Guest Count: ${guestCount}
     - Wedding Type/Vibe: ${weddingType || 'Traditional'}
     - Key Services Required: ${servicesRequired ? servicesRequired.join(', ') : 'All standard services'}
+    - Preferred Output Language: ${langName}
 
     You MUST output valid, structured JSON exactly matching the following schema.
+    Ensure ALL text values (summaries, items, ideas, tips) are beautifully written in ${langName}.
     Do NOT include Markdown formatting like \`\`\`json. Return raw JSON only.
 
     {
-      "summary": "Short inspiring summary of the wedding plan",
+      "summary": "Short inspiring summary of the wedding plan in ${langName}",
       "checklist": [
         { "phase": "Pre-Wedding", "items": ["Finalize Guest List"] }
       ],

@@ -260,24 +260,33 @@ export default function BaraatCabsPage() {
   return (
     <div className="min-h-screen bg-[#FDFCF8] font-sans selection:bg-[#D4AF37]/20 selection:text-[#D4AF37]">
       {/* ── HERO SECTION ── */}
-      <div className="relative bg-black pt-32 pb-40 overflow-hidden">
+      <div className="relative bg-[#1A1C23] pt-32 pb-48 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1546297374-fb211f4cc09a?w=2000" alt="Wedding Fleet" className="w-full h-full object-cover opacity-50 mix-blend-overlay" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#FDFCF8] via-black/60 to-black/80" />
+          <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=2000" alt="Wedding Fleet" className="w-full h-full object-cover opacity-60 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#FDFCF8] via-[#1A1C23]/80 to-[#1A1C23]/90" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 shadow-xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-[#D4AF37]/10 backdrop-blur-md border border-[#D4AF37]/30 mb-8 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
             <FaCrown className="text-[#D4AF37] text-lg" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Luxury Wedding Transportation</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Premium Wedding Transportation</span>
           </motion.div>
 
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white mb-6 tracking-tighter drop-shadow-2xl">
-            Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic font-serif">Baraat Ride</span>
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl lg:text-8xl font-serif font-black text-white mb-6 tracking-tight drop-shadow-2xl">
+            Arrive in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic">Royal Elegance</span>
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-gray-300 font-medium text-lg md:text-2xl italic max-w-3xl mx-auto drop-shadow-md">
-            Arrive in style. Build your custom fleet from our handpicked selection of premium vehicles.
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-gray-300 font-medium text-lg md:text-2xl italic max-w-3xl mx-auto drop-shadow-md mb-10">
+            Make your grand entrance unforgettable. Curate your custom fleet from our handpicked selection of luxury vintage cars, premium SUVs, and luxury coaches.
           </motion.p>
+          
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button onClick={() => window.scrollTo({ top: 600, behavior: 'smooth' })} className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white rounded-full font-black uppercase tracking-widest text-xs hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
+              View Fleet <FiArrowRight size={16} />
+            </button>
+            <button className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase tracking-widest text-xs hover:bg-white/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
+              Get Instant Quote
+            </button>
+          </motion.div>
         </div>
       </div>
 
@@ -507,114 +516,121 @@ export default function BaraatCabsPage() {
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      className={`bg-white rounded-[2rem] overflow-hidden flex flex-col md:flex-row shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-gray-100 transition-all ${isSelected ? 'ring-2 ring-[#D4AF37] scale-[1.01]' : 'hover:shadow-xl'}`}
+                      className={`w-full max-w-full bg-white rounded-[2rem] overflow-hidden flex flex-col xl:flex-row shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 group ${isSelected ? 'ring-2 ring-[#D4AF37] shadow-[0_10px_40px_rgba(212,175,55,0.15)] scale-[1.01]' : ''}`}
                     >
                       {/* Left: Image Section */}
-                      <div className="w-full md:w-[35%] lg:w-[40%] xl:w-[320px] h-64 md:h-auto relative overflow-hidden shrink-0">
+                      <div className="w-full xl:w-[45%] h-72 xl:h-auto relative overflow-hidden shrink-0">
                         <LazyLoadImage
                           src={cab.images?.[0]?.url || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=800'}
                           alt={cab.name}
                           effect="blur"
                           wrapperProps={{ style: { display: "block", width: "100%", height: "100%" } }}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1A1C23]/90 via-transparent to-[#1A1C23]/20" />
 
                         {/* Top Left Badge */}
-                        <div className="absolute top-4 left-4">
-                          <div className="bg-gray-900/80 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white">
+                        <div className="absolute top-5 left-5">
+                          <div className="bg-[#1A1C23]/80 backdrop-blur-md px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37] border border-[#D4AF37]/30">
                             {cab.type?.replace('_', ' ')}
                           </div>
                         </div>
 
                         {/* Bottom Overlay: Vendor & Rating */}
-                        <div className="absolute bottom-4 left-4 right-4 bg-[#4A4A3A]/80 backdrop-blur-md p-3 rounded-2xl flex items-center justify-between border border-white/10 shadow-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-[#4A4A3A] text-sm overflow-hidden shrink-0">
+                        <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+                          <div className="flex items-center gap-3 bg-[#1A1C23]/80 backdrop-blur-md p-2.5 rounded-2xl border border-white/10">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#B38D22] flex items-center justify-center font-bold text-white text-sm overflow-hidden shrink-0 shadow-inner">
                               {cab.vendor?.businessName?.substring(0, 2).toUpperCase() || 'CB'}
                             </div>
-                            <div>
-                              <p className="text-[8px] font-black uppercase tracking-widest text-white/70 leading-none mb-1">Provided by</p>
-                              <p className="font-bold text-xs text-white leading-none truncate max-w-[100px]">
-                                {cab.vendor?.businessName || cab.vendorName || 'cab booking'}
+                            <div className="pr-2">
+                              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#D4AF37] leading-none mb-1">Premium Partner</p>
+                              <p className="font-bold text-xs text-white leading-none truncate max-w-[120px]">
+                                {cab.vendor?.businessName || cab.vendorName || 'Luxury Fleet'}
                               </p>
                             </div>
                           </div>
-                          <div className="bg-white/20 px-2 py-1 rounded-lg flex items-center gap-1">
-                            ⭐ <span className="text-white text-[10px] font-bold">{rating.toFixed(1)}</span>
+                          <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-lg">
+                            <FiStar className="text-[#D4AF37] fill-[#D4AF37]" size={14} /> 
+                            <span className="text-[#1A1C23] text-xs font-black">{rating.toFixed(1)}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Right: Content Section */}
-                      <div className="p-6 md:p-8 flex-1 flex flex-col justify-center">
+                      <div className="p-6 md:p-8 flex-1 flex flex-col justify-center bg-white relative">
+                        {isSelected && (
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-bl-full pointer-events-none" />
+                        )}
                         <div className="mb-4">
-                          <h3 className="font-serif font-bold text-4xl text-[#D4AF37] mb-3">
+                          <h3 className="font-serif font-bold text-3xl xl:text-4xl text-[#1A1C23] mb-3 group-hover:text-[#D4AF37] transition-colors">
                             {cab.name || cab.vehicleName || `${cab.brand} ${cab.model}`}
                           </h3>
                           <div className="flex flex-wrap items-center gap-4 text-gray-500 font-bold text-sm">
-                            <span className="flex items-center gap-1.5"><FiUsers className="text-[#D4AF37]" size={16} /> Up to {cab.seatingCapacity} Guests</span>
-                            <span className="flex items-center gap-1.5"><FiMapPin className="text-[#D4AF37]" size={16} /> Base City: {cityLabel}</span>
+                            <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100"><FiUsers className="text-[#D4AF37]" size={16} /> Up to {cab.seatingCapacity} Guests</span>
+                            <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100"><FiMapPin className="text-[#D4AF37]" size={16} /> Base City: {cityLabel}</span>
                           </div>
                         </div>
 
                         {/* Badges */}
-                        <div className="flex flex-col gap-3 mb-6">
+                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
                           <div>
                             {available === 0 ? (
-                              <span className="inline-flex items-center gap-2 border border-rose-200 text-rose-700 bg-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                🔴 FULLY BOOKED
+                              <span className="inline-flex items-center gap-2 border border-rose-200 text-rose-700 bg-rose-50 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> FULLY BOOKED
                               </span>
                             ) : available <= 3 ? (
-                              <span className="inline-flex items-center gap-2 border border-amber-200 text-amber-600 bg-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-                                🟡 LIMITED AVAILABILITY
+                              <span className="inline-flex items-center gap-2 border border-amber-200 text-amber-700 bg-amber-50 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> LIMITED AVAILABILITY
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-2 border border-emerald-200 text-emerald-600 bg-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                🟢 AVAILABLE
+                              <span className="inline-flex items-center gap-2 border border-emerald-200 text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span> AVAILABLE
                               </span>
                             )}
                           </div>
                           <div>
-                            <span className="inline-flex bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-[10px] font-black">
-                              Total: {total} vehicles | Left: {available} available
+                            <span className="inline-flex items-center gap-2 bg-gray-50 border border-gray-100 text-gray-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                              Total: {total} | Left: {available}
                             </span>
                           </div>
                         </div>
 
                         <div className="space-y-3 mb-8">
-                          <div className="flex items-center gap-3 text-sm text-gray-500 font-medium"><FiShield className="text-emerald-500" /> Fully Insured & Sanitized</div>
-                          <div className="flex items-center gap-3 text-sm text-gray-500 font-medium"><FiThumbsUp className="text-blue-500" /> Highly rated professional chauffeur</div>
+                          <div className="flex items-center gap-3 text-sm text-gray-600 font-medium"><FiShield className="text-[#D4AF37]" size={18} /> Fully Insured & Sanitized</div>
+                          <div className="flex items-center gap-3 text-sm text-gray-600 font-medium"><FaCrown className="text-[#D4AF37]" size={18} /> Highly rated professional chauffeur</div>
                         </div>
 
-                        <div className="border-t border-gray-100 pt-6 mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Price Per Vehicle</p>
-                            <p className="font-serif font-black text-4xl text-gray-900 tracking-tighter">
+                        <div className="border-t border-gray-100 pt-6 mt-auto flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 w-full max-w-full overflow-hidden shrink-0">
+                          <div className="shrink-0 w-full xl:w-auto">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Starting Price</p>
+                            <p className="font-serif font-black text-4xl text-[#1A1C23] tracking-tight">
                               {formatPrice(cab.price || cab.pricing?.baseFare || 0)}
                             </p>
                           </div>
 
-                          <div className="flex flex-col items-end w-full sm:w-auto">
-                            {available > 0 && <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Step 3: Quantity</p>}
+                          <div className="flex justify-end items-center gap-[16px] flex-wrap flex-col sm:flex-row w-full xl:w-auto shrink">
+                            <button onClick={() => navigate(`/baraat-cabs/details/${cab._id}`)} className="h-[48px] bg-white border border-gray-200 text-[#1A1C23] rounded-[16px] flex items-center justify-center font-black uppercase tracking-widest text-[11px] sm:text-xs transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-[#1A1C23] px-6 w-full sm:w-auto sm:min-w-[180px] sm:flex-1 xl:flex-none">
+                              View Details
+                            </button>
+                            
                             {available <= 0 ? (
-                              <div className="bg-gray-100 text-gray-400 border border-gray-200 px-6 py-4 rounded-full text-xs font-black uppercase tracking-wider text-center select-none w-full">
-                                Sold Out
+                              <div className="h-[48px] bg-gray-100 border border-gray-200 text-gray-400 rounded-[16px] flex items-center justify-center text-[11px] sm:text-xs font-black uppercase tracking-widest select-none px-6 w-full sm:w-auto sm:min-w-[180px] sm:flex-1 xl:flex-none">
+                                Currently Unavailable
                               </div>
                             ) : count === 0 ? (
                               <button
                                 onClick={() => handleUpdateCart(cab, 'add')}
-                                className="h-14 px-8 rounded-full flex items-center justify-center transition-all shadow-lg font-black uppercase tracking-widest text-xs gap-2 bg-[#1A1C23] text-white hover:bg-black hover:-translate-y-0.5 w-full sm:w-auto"
+                                className="h-[48px] bg-gradient-to-r from-[#D4AF37] to-[#B38D22] text-white rounded-[16px] flex items-center justify-center gap-2 font-black uppercase tracking-widest text-[11px] sm:text-xs transition-all duration-300 shadow-[0_4px_14px_rgba(212,175,55,0.3)] hover:shadow-[0_6px_20px_rgba(212,175,55,0.4)] hover:-translate-y-0.5 active:scale-95 px-6 w-full sm:w-auto sm:min-w-[180px] sm:flex-1 xl:flex-none"
                               >
-                                Book Now <FiPlus size={16} />
+                                Quick Book <FiPlus size={16} />
                               </button>
                             ) : (
-                              <div className="flex items-center bg-[#1A1C23] rounded-full p-1.5 shadow-lg w-full sm:w-auto justify-between sm:justify-start">
-                                <button onClick={() => handleUpdateCart(cab, 'remove')} className="w-11 h-11 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                              <div className="h-[48px] bg-[#1A1C23] rounded-[16px] p-1.5 shadow-lg flex items-center justify-between gap-2 transition-all w-full sm:w-auto sm:min-w-[180px] sm:flex-1 xl:flex-none">
+                                <button onClick={() => handleUpdateCart(cab, 'remove')} className="w-9 h-9 bg-white/10 rounded-[12px] flex items-center justify-center text-white hover:bg-white/20 transition-colors shrink-0 active:scale-95">
                                   <FiMinus size={16} />
                                 </button>
-                                <span className="w-12 text-center font-bold text-white text-lg">{count}</span>
-                                <button onClick={() => handleUpdateCart(cab, 'add')} disabled={count >= available} className="w-11 h-11 bg-[#D4AF37] rounded-full flex items-center justify-center text-white hover:bg-[#B38D22] transition-colors shadow-inner disabled:opacity-50">
+                                <span className="flex-1 text-center font-bold text-white text-base">{count}</span>
+                                <button onClick={() => handleUpdateCart(cab, 'add')} disabled={count >= available} className="w-9 h-9 bg-gradient-to-br from-[#D4AF37] to-[#B38D22] rounded-[12px] flex items-center justify-center text-white hover:brightness-110 transition-all shadow-inner disabled:opacity-50 shrink-0 active:scale-95">
                                   <FiPlus size={16} />
                                 </button>
                               </div>

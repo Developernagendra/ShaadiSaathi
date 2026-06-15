@@ -145,6 +145,17 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = i18n.language || 'en'
     document.documentElement.dir = i18n.dir(i18n.language) || 'ltr'
+
+    // Dynamically update hreflang tag for SEO
+    let link = document.querySelector('link[rel="alternate"][hreflang]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'alternate';
+      document.head.appendChild(link);
+    }
+    link.hreflang = i18n.language;
+    link.href = window.location.href;
+
   }, [i18n, i18n.language])
 
   // Listen for unauthorized events from api.js to dispatch logout cleanly
@@ -278,7 +289,7 @@ export default function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/our-story" element={<Navigate to="/about" replace />} />
                 <Route path="/reviews" element={<Navigate to="/testimonials" replace />} />
-                
+
                 {/* Public Invitation Route */}
                 <Route path="/invitation/:id" element={<PublicInvitationPage />} />
 
