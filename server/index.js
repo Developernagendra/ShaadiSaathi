@@ -106,7 +106,24 @@ app.use((req, res, next) => {
 /* ---------------- SECURITY ---------------- */
 app.set("trust proxy", 1);
 app.use(helmet({
-  crossOriginResourcePolicy: false
+  crossOriginResourcePolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://res.cloudinary.com", "https://images.unsplash.com"],
+      mediaSrc: ["'self'", "https://res.cloudinary.com"],
+      connectSrc: ["'self'", "https://shaadi-saathi.vercel.app", "https://*.vercel.app", "wss://*.onrender.com", "https://*.onrender.com", "http://localhost:*", "ws://localhost:*"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
 }));
 app.use(compression());
 app.use(morgan("dev"));

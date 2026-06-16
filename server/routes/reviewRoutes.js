@@ -8,9 +8,14 @@ router.get('/dashboard', protect, restrictTo('vendor'), getVendorDashboardReview
 router.get('/vendor/:vendorId', optionalAuth, getVendorReviews);
 router.get('/cab/:cabId', optionalAuth, getCabReviews);
 
+// Only the review author can update their own review (ownership checked in controller)
 router.put('/:id', protect, verified, updateReview);
-router.patch('/:id/status', protect, updateReviewStatus);
-router.delete('/:id', protect, deleteReview);
+
+// Only admins can moderate review status (approve/reject/flag)
+router.patch('/:id/status', protect, restrictTo('admin'), updateReviewStatus);
+
+// Only the review author or an admin can delete a review (ownership checked in controller)
+router.delete('/:id', protect, restrictTo('user', 'admin'), deleteReview);
 
 router.post('/:id/reply', protect, restrictTo('vendor'), verified, replyToReview);
 

@@ -41,9 +41,15 @@ const profileStorage = new CloudinaryStorage({
 // Service/vendor media storage (Images & Videos)
 const serviceStorage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder: 'shaadisaathi/services',
-    resource_type: 'auto',
+  params: async (req, file) => {
+    const isVideo = file.mimetype.startsWith('video/');
+    return {
+      folder: 'shaadisaathi/services',
+      resource_type: isVideo ? 'video' : 'image',
+      allowed_formats: isVideo
+        ? ['mp4', 'mov', 'webm']
+        : ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    };
   },
 });
 
