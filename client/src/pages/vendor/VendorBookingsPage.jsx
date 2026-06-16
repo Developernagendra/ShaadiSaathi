@@ -245,16 +245,16 @@ export default function VendorBookingsPage() {
                     </div>
 
                     {/* Financials & Logic */}
-                    <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between gap-6 lg:w-56 flex-shrink-0">
-                      <div className="text-right">
+                    <div className="flex flex-col lg:flex-col items-center lg:items-end justify-between gap-6 lg:w-56 flex-shrink-0 mt-6 lg:mt-0 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-100">
+                      <div className="text-center lg:text-right w-full">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Reservation Value</p>
                         <p className="font-display font-black text-4xl text-[#D4AF37] tracking-tighter leading-none drop-shadow-sm">{formatPrice(b.amount)}</p>
                       </div>
 
                       {/* Workflow Buttons */}
-                      <div className="flex flex-wrap lg:flex-col gap-3 w-full">
+                      <div className="flex flex-col lg:flex-col gap-3 w-full">
                         {b.status === 'pending' && (
-                          <div className="flex gap-3 w-full">
+                          <div className="flex flex-col sm:flex-row gap-3 w-full">
                             <button onClick={() => handleUpdateStatus(b._id, 'confirmed')} className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-[1.2rem] py-4 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(34,197,94,0.3)] hover:-translate-y-1 transition-all">
                               <FiCheckCircle size={14} /> Confirm
                             </button>
@@ -302,9 +302,9 @@ export default function VendorBookingsPage() {
             <textarea value={note} onChange={e => setNote(e.target.value)} rows={4} placeholder="e.g. Booking confirmed, looking forward to serving you..." className="w-full bg-gray-50 border-2 border-transparent focus:border-primary-200 focus:bg-white rounded-3xl px-8 py-6 text-sm outline-none transition-all resize-none shadow-inner" />
           </div>
 
-          <div className="flex gap-4">
-            <button onClick={() => setStatusModal(null)} className="flex-1 font-black text-[10px] uppercase tracking-[0.4em] text-gray-300 hover:text-gray-500 transition-colors">Back</button>
-            <button onClick={submitStatusUpdate} className="flex-2 bg-gray-900 text-white font-black text-[10px] uppercase tracking-widest py-6 px-10 rounded-[1.5rem] shadow-2xl hover:bg-black transition-all">Submit Update</button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button onClick={() => setStatusModal(null)} className="w-full sm:flex-1 font-black text-[10px] uppercase tracking-[0.4em] text-gray-300 hover:text-gray-500 transition-colors py-4">Back</button>
+            <button onClick={submitStatusUpdate} className="w-full sm:flex-2 bg-gray-900 text-white font-black text-[10px] uppercase tracking-widest py-6 px-10 rounded-[1.5rem] shadow-2xl hover:bg-black transition-all">Submit Update</button>
           </div>
         </div>
       </Modal>

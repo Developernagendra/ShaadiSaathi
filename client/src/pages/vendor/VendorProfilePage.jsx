@@ -59,7 +59,7 @@ export default function VendorProfilePage() {
   )
 
   return (
-    <div className="pb-20 relative">
+    <div className="pb-20 relative px-4 md:px-8 pt-6 md:pt-0">
       <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         <header className="flex items-center justify-between">
           <div>
@@ -249,7 +249,7 @@ export default function VendorProfilePage() {
                 </div>
               </div>
 
-              <div className="sticky bottom-8 z-30 flex justify-center mt-12">
+              <div className="sticky bottom-20 md:bottom-8 z-30 flex justify-center mt-12 px-4 md:px-0">
                 <button
                   type="submit"
                   disabled={actionLoading || isSubmitting}

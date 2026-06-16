@@ -170,17 +170,17 @@ export default function VendorDashboard() {
               </div>
 
               {/* Large CTA Buttons */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-8">
-                <Link to="/vendor/services" className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white font-black text-[9px] uppercase tracking-widest py-3 px-6 rounded-xl shadow-[0_5px_15px_rgba(194,24,91,0.3)] hover:shadow-[0_8px_25px_rgba(194,24,91,0.5)] hover:-translate-y-1 transition-all flex items-center gap-2 border border-pink-500/50">
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-3 mt-8">
+                <Link to="/vendor/services" className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white font-black text-[9px] uppercase tracking-widest py-3 sm:py-3 px-6 rounded-xl shadow-[0_5px_15px_rgba(194,24,91,0.3)] hover:shadow-[0_8px_25px_rgba(194,24,91,0.5)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 border border-pink-500/50 w-full sm:w-auto">
                   <FiPlus size={14} /> Add Service
                 </Link>
-                <Link to="/vendor/portfolio-builder" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[9px] uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center gap-2">
+                <Link to="/vendor/portfolio-builder" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[9px] uppercase tracking-widest py-3 sm:py-3 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
                   <FiImage size={14} /> Upload Portfolio
                 </Link>
-                <Link to="/vendor/packages" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[9px] uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center gap-2 hidden sm:flex">
+                <Link to="/vendor/packages" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[9px] uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 hidden sm:flex">
                   <FiTag size={14} /> Create Package
                 </Link>
-                <Link to="/vendor/offers" className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black font-black text-[9px] uppercase tracking-widest py-3 px-6 rounded-xl shadow-[0_5px_15px_rgba(212,175,55,0.3)] hover:shadow-[0_8px_25px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all flex items-center gap-2">
+                <Link to="/vendor/offers" className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black font-black text-[9px] uppercase tracking-widest py-3 sm:py-3 px-6 rounded-xl shadow-[0_5px_15px_rgba(212,175,55,0.3)] hover:shadow-[0_8px_25px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
                   <FiActivity size={14} /> Promote Business
                 </Link>
               </div>
@@ -258,7 +258,7 @@ export default function VendorDashboard() {
         {/* Business Metrics & Profile Completion */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12 mb-12">
           {/* Metrics */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {stats.map((s, i) => (
               <Link key={s.label} to={s.link} className="bg-white/80 backdrop-blur-xl rounded-2xl md:rounded-[2rem] p-6 md:p-8 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white transition-all duration-500 group relative overflow-hidden flex flex-col justify-between hover:-translate-y-2">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full opacity-60 group-hover:scale-150 transition-transform duration-700" />
@@ -299,7 +299,7 @@ export default function VendorDashboard() {
         </div>
 
         {/* Booking Summary */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
           {bookingStatsGrid.map(s => (
             <div key={s.label} className="bg-white/60 backdrop-blur-xl rounded-2xl md:rounded-[2rem] p-4 md:p-8 border border-white shadow-sm hover:shadow-[0_15px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 flex flex-col items-center justify-center text-center transition-all duration-500 group">
               <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:rotate-[10deg] transition-all border border-gray-100">{s.icon}</div>
@@ -440,7 +440,7 @@ export default function VendorDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mt-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mt-12">
           {[
             { to: '/vendor/services', icon: '🛍️', label: 'My Services' },
             { to: '/vendor/gallery', icon: '📸', label: 'Photo Gallery' },

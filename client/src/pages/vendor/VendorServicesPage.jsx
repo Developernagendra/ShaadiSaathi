@@ -124,7 +124,7 @@ const ServiceCard = memo(({ service, onEdit, onDelete, onView }) => {
       </div>
 
       {/* Action panel */}
-      <div className="px-4 pb-4 pt-0 grid grid-cols-4 gap-3 flex-shrink-0 relative z-10">
+      <div className="px-4 pb-4 pt-0 grid grid-cols-2 sm:grid-cols-4 gap-3 flex-shrink-0 relative z-10">
         <button
           onClick={() => onView(service._id)}
           title="View Live Page"
@@ -941,9 +941,9 @@ export default function VendorServicesPage() {
             </div>
           )}
 
-          <div className="flex gap-4 pt-8 sticky bottom-0 bg-white pb-4 border-t border-gray-100/50 mt-8">
-            <button type="button" onClick={() => setModal(false)} disabled={submitting} className="flex-1 py-5 bg-white border border-gray-100 hover:border-gray-200 hover:bg-gray-50 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] text-gray-500 transition-all shadow-sm">Cancel</button>
-            <button type="submit" disabled={submitting} className="flex-[2] py-5 bg-gradient-to-r from-[#C2185B] via-[#8E244D] to-[#C2185B] bg-[length:200%_auto] hover:bg-[100%_auto] text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(194,24,91,0.3)] hover:shadow-[0_15px_40px_rgba(194,24,91,0.5)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">
+          <div className="flex flex-col sm:flex-row gap-4 pt-8 sticky bottom-0 bg-white pb-4 border-t border-gray-100/50 mt-8 z-20">
+            <button type="button" onClick={() => setModal(false)} disabled={submitting} className="w-full sm:flex-1 py-5 bg-white border border-gray-100 hover:border-gray-200 hover:bg-gray-50 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] text-gray-500 transition-all shadow-sm">Cancel</button>
+            <button type="submit" disabled={submitting} className="w-full sm:flex-[2] py-5 bg-gradient-to-r from-[#C2185B] via-[#8E244D] to-[#C2185B] bg-[length:200%_auto] hover:bg-[100%_auto] text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(194,24,91,0.3)] hover:shadow-[0_15px_40px_rgba(194,24,91,0.5)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50">
               {submitting ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing ({uploadProgress}%)...</> : editing ? 'Update Details' : 'Publish Service'}
             </button>
           </div>
