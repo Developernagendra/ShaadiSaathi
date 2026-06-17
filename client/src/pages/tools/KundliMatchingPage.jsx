@@ -40,12 +40,12 @@ export default function KundliMatchingPage() {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/tools/kundli', { 
+      const { data } = await api.post('/astrology/kundli/match', { 
         bride, 
         groom,
         language: i18n.language 
       });
-      setReport(data.data);
+      setReport(data.data.matchResults || data.data);
       toast.success('Kundli Matched Successfully!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error matching Kundli');
@@ -106,14 +106,7 @@ export default function KundliMatchingPage() {
 
   const saveToProfile = async () => {
     try {
-      await api.post('/tools/kundli/save', {
-        brideName: bride.name,
-        groomName: groom.name,
-        totalScore: report.totalScore,
-        percentage: report.percentage,
-        reportData: report,
-        language: i18n.language
-      });
+      // Auto-saved by backend during generation if logged in
       toast.success(t('astrology.labels.saveToProfile') + ' Success!');
     } catch (err) {
       toast.error('You need to be logged in to save reports.');

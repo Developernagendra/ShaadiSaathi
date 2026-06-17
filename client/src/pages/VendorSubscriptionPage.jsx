@@ -86,8 +86,8 @@ const VendorSubscriptionPage = () => {
       {/* ── ⭐ CURRENT PLAN CARD (Glassmorphic Luxury Card) ── */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0B1530] via-[#1E3A8A] to-slate-900 border border-white/10 shadow-[0_30px_80px_rgba(30,58,138,0.25)] p-8 md:p-12 mb-16 text-white">
         <div className="absolute inset-0 floral-pattern opacity-[0.03]" />
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-[#D4AF37]/10 to-transparent rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-[300px] h-[300px] bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 md:w-[400px] h-[400px] bg-gradient-to-bl from-[#D4AF37]/10 to-transparent rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-72 md:w-[300px] h-[300px] bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-[80px] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-stretch justify-between gap-8 md:gap-12">
           {/* Left Side: Current Plan Details */}

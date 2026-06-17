@@ -103,7 +103,7 @@ export default function AdminPackageInquiriesPage() {
       {/* Main Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
         <div className="overflow-x-auto">
-          <table className="table-responsive w-full text-left border-collapse min-w-[900px] lg:min-w-0">
+          <table className="table-responsive w-full text-left border-collapse w-full sm:min-w-[900px] lg:min-w-0">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100 text-[10px] uppercase text-gray-500 font-black tracking-widest">
                 <th className="p-5">Inquiry Details</th>

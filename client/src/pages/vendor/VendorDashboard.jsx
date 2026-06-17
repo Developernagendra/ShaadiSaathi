@@ -171,17 +171,17 @@ export default function VendorDashboard() {
 
               {/* Large CTA Buttons */}
               <div className="flex flex-col sm:flex-row flex-wrap justify-center md:justify-start gap-3 mt-8">
-                <Link to="/vendor/services" className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white font-black text-[9px] uppercase tracking-widest py-3 sm:py-3 px-6 rounded-xl shadow-[0_5px_15px_rgba(194,24,91,0.3)] hover:shadow-[0_8px_25px_rgba(194,24,91,0.5)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 border border-pink-500/50 w-full sm:w-auto">
-                  <FiPlus size={14} /> Add Service
+                <Link to="/vendor/services" className="bg-gradient-to-r from-[#C2185B] to-[#8E244D] text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl shadow-[0_5px_15px_rgba(194,24,91,0.3)] hover:shadow-[0_8px_25px_rgba(194,24,91,0.5)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 border border-pink-500/50 w-full sm:w-auto">
+                  <FiPlus size={16} /> Add Service
                 </Link>
-                <Link to="/vendor/portfolio-builder" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[9px] uppercase tracking-widest py-3 sm:py-3 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-                  <FiImage size={14} /> Upload Portfolio
+                <Link to="/vendor/portfolio-builder" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+                  <FiImage size={16} /> Upload Portfolio
                 </Link>
-                <Link to="/vendor/packages" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[9px] uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 hidden sm:flex">
-                  <FiTag size={14} /> Create Package
+                <Link to="/vendor/packages" className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl hover:bg-white/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+                  <FiTag size={16} /> Create Package
                 </Link>
-                <Link to="/vendor/offers" className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black font-black text-[9px] uppercase tracking-widest py-3 sm:py-3 px-6 rounded-xl shadow-[0_5px_15px_rgba(212,175,55,0.3)] hover:shadow-[0_8px_25px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-                  <FiActivity size={14} /> Promote Business
+                <Link to="/vendor/offers" className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] text-black font-black text-[10px] uppercase tracking-widest py-4 px-6 rounded-xl shadow-[0_5px_15px_rgba(212,175,55,0.3)] hover:shadow-[0_8px_25px_rgba(212,175,55,0.5)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+                  <FiActivity size={16} /> Promote Business
                 </Link>
               </div>
             </div>
@@ -277,9 +277,9 @@ export default function VendorDashboard() {
           <div className="bg-white rounded-2xl md:rounded-[3rem] p-6 md:p-12 border border-pink-50 shadow-premium relative overflow-hidden group flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-48 h-48 bg-pink-50/20 rounded-bl-full" />
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="font-display text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none">Profile Completion</h3>
-                <span className="font-display text-3xl md:text-4xl font-black text-[#C2185B] bg-[#FFF8F0] px-4 md:px-5 py-1.5 md:py-2 rounded-2xl">{completion}%</span>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                <h3 className="font-display text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none text-center sm:text-left">Profile Completion</h3>
+                <span className="font-display text-3xl md:text-4xl font-black text-[#C2185B] bg-[#FFF8F0] px-6 py-2 rounded-2xl w-full sm:w-auto text-center">{completion}%</span>
               </div>
               <div className="w-full bg-pink-50 rounded-full h-3 mb-8 overflow-hidden border border-white">
                 <div className="bg-gradient-to-r from-[#C2185B] via-[#D4AF37] to-[#C2185B] bg-[length:200%_auto] h-full rounded-full transition-all duration-[2s] animate-shimmer" style={{ width: `${completion}%` }} />
@@ -378,7 +378,7 @@ export default function VendorDashboard() {
                           ) : (b.userId?.name?.charAt(0) || b.user?.name?.charAt(0) || '?')}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-2 italic">#{b.bookingId || b._id.slice(-6)}</p>
+                          <p className="text-[9px] font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-2 italic truncate">#{b.bookingId || b._id.slice(-6)}</p>
                           <p className="font-display text-xl sm:text-2xl font-black text-gray-900 truncate group-hover:text-[#C2185B] transition-colors leading-none mb-2">{b.userId?.name || b.user?.name || 'Guest User'}</p>
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-3 italic">
                             <FiCalendar className="text-[#C2185B]" /> {formatDateShort(b.eventDate)}

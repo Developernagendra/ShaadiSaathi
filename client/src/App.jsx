@@ -31,6 +31,7 @@ const CustomPackageBuilderPage = lazy(() => import('./pages/CustomPackageBuilder
 // Lazy Load Pages
 const HomePage = lazy(() => import('./pages/HomePage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
+const AboutUsPage = lazy(() => import('./pages/AboutUsPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const ServicesPage = lazy(() => import('./pages/ServicesPage'))
 const ServiceDetailPage = lazy(() => import('./pages/ServiceDetailPage'))
@@ -43,6 +44,8 @@ const VendorSupportPage = lazy(() => import('./pages/VendorSupportPage'))
 const BookingHelpPage = lazy(() => import('./pages/BookingHelpPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
+const RefundPolicyPage = lazy(() => import('./pages/RefundPolicyPage'))
+const CancellationPolicyPage = lazy(() => import('./pages/CancellationPolicyPage'))
 const TestimonialsPage = lazy(() => import('./pages/TestimonialsPage'))
 
 // Auth Pages
@@ -290,9 +293,12 @@ export default function App() {
                 <Route path="/booking-help" element={<BookingHelpPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/refund-policy" element={<RefundPolicyPage />} />
+                <Route path="/cancellation-policy" element={<CancellationPolicyPage />} />
                 <Route path="/testimonials" element={<TestimonialsPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/our-story" element={<Navigate to="/about" replace />} />
+                <Route path="/about-us" element={<AboutUsPage />} />
+                <Route path="/about" element={<Navigate to="/about-us" replace />} />
+                <Route path="/our-story" element={<Navigate to="/about-us" replace />} />
                 <Route path="/reviews" element={<Navigate to="/testimonials" replace />} />
 
                 {/* Public Invitation Route */}
@@ -309,7 +315,7 @@ export default function App() {
                 <Route path="/resend-verification" element={<ResendVerificationPage />} />
 
                 {/* User Dashboard Routes */}
-                <Route element={<ProtectedRoute roles={['user', 'vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
+                <Route element={<ProtectedRoute roles={['user']}><DashboardLayout /></ProtectedRoute>}>
                   <Route path="/dashboard" element={<UserDashboard />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/bookings" element={<BookingsPage />} />
@@ -335,7 +341,7 @@ export default function App() {
                 <Route path="/book-cab/:id" element={<ProtectedRoute><BookCab /></ProtectedRoute>} />
 
                 {/* Vendor Dashboard Routes */}
-                <Route element={<ProtectedRoute roles={['vendor', 'admin']}><DashboardLayout /></ProtectedRoute>}>
+                <Route element={<ProtectedRoute roles={['vendor']}><DashboardLayout /></ProtectedRoute>}>
                   <Route path="/vendor/dashboard" element={<VendorDashboard />} />
                   <Route path="/vendor/profile" element={<VendorProfilePage />} />
                   <Route path="/vendor/services" element={<VendorServicesPage />} />

@@ -245,16 +245,16 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            <div className="w-full md:w-auto flex flex-row md:flex-col gap-4 relative z-10 justify-center">
-              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px]">
+            <div className="w-full md:w-auto flex flex-col sm:flex-row md:flex-col flex-wrap gap-4 relative z-10 justify-center">
+              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px] flex-1">
                 <p className="font-display text-3xl font-black text-gray-900">{userDashboard?.stats?.invitationsCreated || 0}</p>
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Invitations</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px]">
+              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px] flex-1">
                 <p className="font-display text-3xl font-black text-gray-900">{userDashboard?.stats?.invitationViews || 0}</p>
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Views</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px]">
+              <div className="bg-gray-50 rounded-xl p-4 text-center min-w-[120px] flex-1">
                 <p className="font-display text-3xl font-black text-emerald-600">{userDashboard?.stats?.rsvpReceived || 0}</p>
                 <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest">RSVP Responses</p>
               </div>

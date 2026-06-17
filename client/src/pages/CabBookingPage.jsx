@@ -166,8 +166,8 @@ const [form, setForm] = useState({
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center p-4 pt-32 pb-20 relative overflow-hidden">
         {/* Luxury Background for Success */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-72 md:w-[800px] h-[800px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-72 md:w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-[100px] pointer-events-none" />
         
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[4rem] p-12 md:p-16 max-w-2xl w-full text-center shadow-[0_40px_100px_rgba(0,0,0,0.08)] border border-white relative z-10">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-bl-[4rem] pointer-events-none" />

@@ -219,7 +219,7 @@ useEffect(() => {
                     }`}
                 >
                   <FiBriefcase size={14} />
-                  Apna Business Jodein
+                  Become a Partner
                 </Link>
               )}
             </div>
@@ -366,7 +366,7 @@ useEffect(() => {
         {mobileOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110]" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-[320px] bg-white/95 backdrop-blur-2xl rounded-l-[2.5rem] z-[120] shadow-[0_0_60px_rgba(194,24,91,0.15)] overflow-hidden flex flex-col border-l border-white/50 pt-safe pb-safe">
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-72 md:w-[320px] bg-white/95 backdrop-blur-2xl rounded-l-[2.5rem] z-[120] shadow-[0_0_60px_rgba(194,24,91,0.15)] overflow-hidden flex flex-col border-l border-white/50 pt-safe pb-safe">
               <div className="absolute inset-0 floral-pattern opacity-[0.03] pointer-events-none" />
 
               <div className="p-5 flex items-center justify-between border-b border-pink-50 relative z-10 pt-safe">
@@ -378,78 +378,189 @@ useEffect(() => {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-2 relative z-10 scrollbar-hide">
-                {[
-                  { to: '/', label: 'Home', icon: <FiHome /> },
-                  { to: '/services', label: 'Vendors', icon: <FiGrid /> },
-                  {
-                    label: 'Tools',
-                    icon: <FiGrid />,
-                    children: [
-                      { to: '/tools', label: '🛠 All Tools Hub' },
-                      { to: '/tools/ai-planner', label: '🤖 AI Wedding Planner' },
-                      { to: '/tools/budget-planner', label: '💰 Budget Planner' },
-                      { to: '/tools/guest-manager', label: '👥 Guest List Manager' },
-                      { to: '/tools/checklist', label: '✅ Wedding Checklist' },
-                      { to: '/tools/vendor-availability', label: '📍 Vendor Availability' },
-                      { to: '/tools/package-builder', label: '📦 Package Builder' },
-                      { to: '/tools/invitation-generator', label: '💌 Invitation Generator' },
-                      { to: '/tools/vendor-compare', label: '⚖ Vendor Comparison' },
-                      { to: '/tools/baraat-calculator', label: '🚘 Baraat Fleet Calculator' },
-                      { to: '/tools/cost-predictor', label: '📈 Wedding Cost Predictor' }
-                    ]
-                  },
-                  { to: '/packages', label: 'Packages', icon: <FiBriefcase /> },
-                  { to: '/invitation-creator/new', label: 'Create Invitation', icon: <FiMessageCircle /> },
-                  ...(isAuthenticated ? [
-                    { to: '/bookings', label: 'My Bookings', icon: <FiCalendar /> },
-                    { to: '/wishlist', label: 'Wishlist', icon: <FiHeart /> }
-                  ] : []),
-                  { to: '/contact', label: 'Contact', icon: <FiSearch /> }
-                ].map((link) => {
-                  if (link.children) {
-                    return (
-                      <div key={link.label} className="flex flex-col">
-                        <button onClick={() => setMobileToolsOpen(!mobileToolsOpen)} className="flex justify-between items-center px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all w-full active:scale-[0.98]">
-                          <div className="flex items-center gap-4">
-                            <span className="text-xl text-gray-400">{link.icon}</span>
-                            {link.label}
+              <div className="flex-1 overflow-y-auto p-4 relative z-10 scrollbar-hide flex flex-col gap-4">
+                {!isAuthenticated ? (
+                  // Public Navigation
+                  <div className="space-y-2">
+                    {[
+                      { to: '/', label: 'Home', icon: <FiHome /> },
+                      { to: '/services', label: 'Vendors', icon: <FiGrid /> },
+                      {
+                        label: 'Tools',
+                        icon: <FiGrid />,
+                        children: [
+                          { to: '/tools', label: '🛠 All Tools Hub' },
+                          { to: '/tools/ai-planner', label: '🤖 AI Wedding Planner' },
+                          { to: '/tools/budget-planner', label: '💰 Budget Planner' },
+                          { to: '/tools/guest-manager', label: '👥 Guest List Manager' },
+                          { to: '/tools/checklist', label: '✅ Wedding Checklist' },
+                          { to: '/tools/vendor-availability', label: '📍 Vendor Availability' },
+                          { to: '/tools/package-builder', label: '📦 Package Builder' },
+                          { to: '/tools/invitation-generator', label: '💌 Invitation Generator' },
+                          { to: '/tools/vendor-compare', label: '⚖ Vendor Comparison' },
+                          { to: '/tools/baraat-calculator', label: '🚘 Baraat Fleet Calculator' },
+                          { to: '/tools/cost-predictor', label: '📈 Wedding Cost Predictor' }
+                        ]
+                      },
+                      { to: '/packages', label: 'Packages', icon: <FiBriefcase /> },
+                      { to: '/contact', label: 'Contact', icon: <FiSearch /> }
+                    ].map((link) => {
+                      if (link.children) {
+                        return (
+                          <div key={link.label} className="flex flex-col">
+                            <button onClick={() => setMobileToolsOpen(!mobileToolsOpen)} className="flex justify-between items-center px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all w-full active:scale-[0.98]">
+                              <div className="flex items-center gap-4">
+                                <span className="text-xl text-gray-400">{link.icon}</span>
+                                {link.label}
+                              </div>
+                              <FiChevronDown className={`transition-transform duration-300 ${mobileToolsOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            <AnimatePresence>
+                              {mobileToolsOpen && (
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden ml-12 border-l-2 border-pink-50 pl-4 flex flex-col gap-2 mt-2">
+                                  {link.children.map(child => (
+                                    <Link key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className="text-sm font-bold text-gray-600 hover:text-[#C2185B] py-2 transition-colors">
+                                      {child.label}
+                                    </Link>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
-                          <FiChevronDown className={`transition-transform duration-300 ${mobileToolsOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        <AnimatePresence>
-                          {mobileToolsOpen && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden ml-12 border-l-2 border-pink-50 pl-4 flex flex-col gap-2 mt-2">
-                              {link.children.map(child => (
-                                <Link key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className="text-sm font-bold text-gray-600 hover:text-[#C2185B] py-2 transition-colors">
-                                  {child.label}
-                                </Link>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )
-                  }
+                        )
+                      }
+                      return (
+                        <Link key={link.label} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold transition-all active:scale-[0.98] ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
+                          <span className={`text-xl ${location.pathname === link.to ? 'text-[#C2185B]' : 'text-gray-400'}`}>{link.icon}</span>
+                          {link.label}
+                        </Link>
+                      )
+                    })}
 
-                  return (
-                    <Link key={link.label} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3 min-h-[48px] rounded-2xl text-sm font-bold transition-all active:scale-[0.98] ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
-                      <span className={`text-xl ${location.pathname === link.to ? 'text-[#C2185B]' : 'text-gray-400'}`}>{link.icon}</span>
-                      {link.label}
+                    <Link to="/register/vendor" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-5 py-4 mt-4 rounded-2xl text-sm font-bold bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] border border-[#D4AF37]/20">
+                      <span className="text-xl">🏪</span>
+                      Apna Business Jodein
                     </Link>
-                  )
-                })}
+                    <div className="mt-4 px-2">
+                      <LanguageSwitcher isMobile={true} />
+                    </div>
+                  </div>
+                ) : (
+                  // Authenticated Navigation
+                  <div className="flex flex-col gap-6">
+                    {/* Profile Header */}
+                    <div className="bg-gradient-to-br from-[#FFF8F0] to-white p-4 rounded-[2rem] border border-[#D4AF37]/20 shadow-sm flex items-center gap-4">
+                      {user?.avatar?.url ? (
+                        <img src={user.avatar.url} alt={user.name} className="w-14 h-14 rounded-[1.2rem] object-cover border-2 border-white shadow-sm" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-[1.2rem] bg-gradient-to-br from-[#C2185B] to-[#8E244D] flex items-center justify-center text-white text-lg font-black shadow-sm">
+                          {getInitials(user?.name)}
+                        </div>
+                      )}
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="font-display font-black text-[15px] text-gray-900 truncate block">{user?.name}</span>
+                        <span className="text-[10px] text-gray-500 truncate block">{user?.email}</span>
+                        <div className="mt-1">
+                          <span className="bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest">{user?.role === 'admin' ? 'System Admin' : user?.role === 'vendor' ? 'Vendor Partner' : 'Couple'}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                {!isAuthenticated && (
-                  <Link to="/register/vendor" onClick={() => setMobileOpen(false)} className="flex items-center gap-4 px-5 py-4 mt-4 rounded-2xl text-sm font-bold bg-gradient-to-r from-[#D4AF37]/10 to-transparent text-[#D4AF37] border border-[#D4AF37]/20">
-                    <span className="text-xl">🏪</span>
-                    Apna Business Jodein
-                  </Link>
+                    {/* Shortcut Cards */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {user?.role === 'user' && (
+                        <>
+                          <Link to="/bookings" onClick={() => setMobileOpen(false)} className="bg-pink-50 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#C2185B] active:scale-95 transition-transform border border-pink-100/50">
+                            <FiCalendar size={20} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Bookings</span>
+                          </Link>
+                          <Link to="/wishlist" onClick={() => setMobileOpen(false)} className="bg-pink-50 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#C2185B] active:scale-95 transition-transform border border-pink-100/50">
+                            <FiHeart size={20} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Wishlist</span>
+                          </Link>
+                        </>
+                      )}
+                      {user?.role === 'vendor' && (
+                        <>
+                          <Link to="/vendor/bookings" onClick={() => setMobileOpen(false)} className="bg-pink-50 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#C2185B] active:scale-95 transition-transform border border-pink-100/50">
+                            <FiCalendar size={20} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Bookings</span>
+                          </Link>
+                          <Link to="/vendor/earnings" onClick={() => setMobileOpen(false)} className="bg-[#FFF8F0] p-3 rounded-2xl flex flex-col items-center justify-center gap-2 text-[#D4AF37] active:scale-95 transition-transform border border-[#D4AF37]/20">
+                            <FiBriefcase size={20} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Earnings</span>
+                          </Link>
+                        </>
+                      )}
+                      {user?.role === 'admin' && (
+                        <>
+                          <Link to="/admin/vendors" onClick={() => setMobileOpen(false)} className="bg-gray-100 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-700 active:scale-95 transition-transform border border-gray-200">
+                            <FiBriefcase size={20} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Vendors</span>
+                          </Link>
+                          <Link to="/admin/users" onClick={() => setMobileOpen(false)} className="bg-gray-100 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-700 active:scale-95 transition-transform border border-gray-200">
+                            <FiUser size={20} />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Users</span>
+                          </Link>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Role Navigation List */}
+                    <div className="space-y-1">
+                      {user?.role === 'admin' ? (
+                        [
+                          { to: '/admin', label: 'Admin Dashboard', icon: <FiHome /> },
+                          { to: '/admin/users', label: 'Users', icon: <FiUser /> },
+                          { to: '/admin/vendors', label: 'Vendors', icon: <FiBriefcase /> },
+                          { to: '/admin/bookings', label: 'Bookings', icon: <FiCalendar /> },
+                          { to: '/admin/service-moderation', label: 'Services Approval', icon: <FiGrid /> },
+                          { to: '/admin/categories', label: 'Categories', icon: <FiGrid /> },
+                          { to: '/admin/reviews', label: 'Reviews', icon: <FiMessageCircle /> },
+                          { to: '/admin/leads', label: 'Leads', icon: <FiSearch /> },
+                          { to: '/admin/settings', label: 'Settings', icon: <FiUser /> },
+                        ].map((link) => (
+                          <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3 min-h-[44px] rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${location.pathname === link.to ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}>
+                            <span className={`text-[18px] ${location.pathname === link.to ? 'text-gray-900' : 'text-gray-400'}`}>{link.icon}</span>
+                            {link.label}
+                          </Link>
+                        ))
+                      ) : user?.role === 'vendor' ? (
+                        [
+                          { to: '/vendor/dashboard', label: 'Vendor Dashboard', icon: <FiHome /> },
+                          { to: '/vendor/services', label: 'My Services', icon: <FiGrid /> },
+                          { to: '/vendor/bookings', label: 'My Bookings', icon: <FiCalendar /> },
+                          { to: '/vendor/calendar', label: 'Calendar', icon: <FiCalendar /> },
+                          { to: '/vendor/earnings', label: 'Earnings', icon: <FiBriefcase /> },
+                          { to: '/vendor/reviews', label: 'Reviews', icon: <FiMessageCircle /> },
+                          { to: '/vendor/gallery', label: 'Gallery', icon: <FiGrid /> },
+                          { to: '/vendor-subscription', label: 'Subscription', icon: <FiBriefcase /> },
+                          { to: '/vendor/settings', label: 'Settings', icon: <FiUser /> },
+                        ].map((link) => (
+                          <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3 min-h-[44px] rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
+                            <span className={`text-[18px] ${location.pathname === link.to ? 'text-[#C2185B]' : 'text-gray-400'}`}>{link.icon}</span>
+                            {link.label}
+                          </Link>
+                        ))
+                      ) : (
+                        [
+                          { to: '/dashboard', label: 'Dashboard', icon: <FiHome /> },
+                          { to: '/profile', label: 'My Profile', icon: <FiUser /> },
+                          { to: '/bookings', label: 'My Bookings', icon: <FiCalendar /> },
+                          { to: '/wishlist', label: 'Wishlist', icon: <FiHeart /> },
+                          { to: '/tools/ai-planner', label: 'Wedding Planner', icon: <FiGrid /> },
+                          { to: '/invitation-creator', label: 'Invitations', icon: <FiMessageCircle /> },
+                          { to: '/settings', label: 'Settings', icon: <FiUser /> },
+                        ].map((link) => (
+                          <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-4 px-4 py-3 min-h-[44px] rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${location.pathname === link.to ? 'bg-pink-50 text-[#C2185B]' : 'text-gray-600 hover:bg-gray-50'}`}>
+                            <span className={`text-[18px] ${location.pathname === link.to ? 'text-[#C2185B]' : 'text-gray-400'}`}>{link.icon}</span>
+                            {link.label}
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 )}
-
-                <div className="mt-4 px-2">
-                  <LanguageSwitcher isMobile={true} />
-                </div>
               </div>
 
               <div className="p-4 border-t border-pink-50 relative z-10 bg-gray-50 pb-safe">

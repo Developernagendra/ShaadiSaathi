@@ -102,7 +102,7 @@ export default function VendorLeadsPage() {
         <div className="max-w-[1600px] mx-auto">
           <div className="flex gap-6 overflow-x-auto pb-8 hide-scrollbar min-h-[65vh]">
             {COLUMNS.map(column => (
-              <div key={column.id} className="min-w-[340px] max-w-[340px] w-full flex-shrink-0 flex flex-col gap-4">
+              <div key={column.id} className="w-full sm:min-w-[340px] max-w-[340px] w-full flex-shrink-0 flex flex-col gap-4">
                 
                 {/* Column Header */}
                 <div className={`px-5 py-4 rounded-2xl border-t-4 bg-white/80 backdrop-blur-md shadow-sm border border-gray-100 ${column.borderColor}`}>

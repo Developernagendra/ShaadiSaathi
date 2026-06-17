@@ -125,6 +125,43 @@
   .table-responsive {
     @apply w-full text-left min-w-[800px];
   }
+
+  /* 
+   * MOBILE CARD TABLES ENGINE 
+   * Converts horizontal data tables into stacked vertical cards on mobile screens 
+   */
+  @media (max-width: 768px) {
+    .table-responsive-wrapper {
+      @apply bg-transparent border-none shadow-none p-0 overflow-visible;
+    }
+    .table-responsive {
+      @apply min-w-0 block;
+    }
+    .table-responsive thead {
+      @apply hidden;
+    }
+    .table-responsive tbody {
+      @apply block space-y-4 divide-y-0;
+    }
+    .table-responsive tr {
+      @apply flex flex-col p-5 bg-white border border-pink-50 rounded-[1.5rem] shadow-[0_10px_30px_rgba(194,24,91,0.03)];
+    }
+    .table-responsive td {
+      @apply flex items-center justify-between py-2.5 px-0 border-b border-gray-50/50 last:border-0;
+    }
+    .table-responsive td::before {
+      content: attr(data-label);
+      @apply text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic mr-4 flex-shrink-0;
+    }
+    /* Fix internal td flex alignment if td contains nested flex rows */
+    .table-responsive td > div {
+      @apply justify-end text-right w-full;
+    }
+    .table-responsive td > div > span,
+    .table-responsive td > div > div {
+      @apply ml-auto;
+    }
+  }
 }
 
 @layer utilities {

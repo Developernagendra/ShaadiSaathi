@@ -309,9 +309,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
             {/* LEFT SIDE: Content */}
-            <motion.div 
-              initial={{ opacity: 0, x: -50 }} 
-              whileInView={{ opacity: 1, x: 0 }} 
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
               className="w-full lg:w-1/2 flex flex-col items-center text-center lg:items-start lg:text-left order-2 lg:order-1"
@@ -320,12 +320,12 @@ export default function HomePage() {
                 <FaCrown className="text-xl" />
                 <span className="text-[11px] font-black uppercase tracking-[0.3em]">👑 Luxury Baraat Cabs</span>
               </div>
-              
+
               <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-lg leading-tight">
-                Make Your Baraat <br className="hidden lg:block"/>
+                Make Your Baraat <br className="hidden lg:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic">Grand & Royal</span>
               </h2>
-              
+
               <p className="text-gray-300 text-lg md:text-xl font-medium mb-12 leading-relaxed max-w-xl">
                 Book premium wedding vehicles for your special day. From decorated luxury SUVs to vintage cars and complete baraat fleets.
               </p>
@@ -357,9 +357,9 @@ export default function HomePage() {
             </motion.div>
 
             {/* RIGHT SIDE: Image Showcase */}
-            <motion.div 
-              initial={{ opacity: 0, x: 50 }} 
-              whileInView={{ opacity: 1, x: 0 }} 
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
               className="w-full lg:w-1/2 relative order-1 lg:order-2"
@@ -370,16 +370,16 @@ export default function HomePage() {
                   transition={{ duration: 0.7, ease: "easeOut" }}
                   className="w-full h-full"
                 >
-                  <img 
-                    src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80" 
-                    alt="Decorated Luxury Baraat SUV" 
+                  <img
+                    src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80"
+                    alt="Decorated Luxury Baraat SUV"
                     className="w-full h-[400px] md:h-[500px] lg:h-[650px] object-cover object-[center_30%]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                 </motion.div>
 
                 {/* Floating Badges */}
-                <motion.div 
+                <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   className="absolute top-6 left-6 md:top-10 md:left-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-[#1a1a1a] shadow-xl border border-white/50 flex items-center gap-2 pointer-events-none"
@@ -387,7 +387,7 @@ export default function HomePage() {
                   🔥 Most Booked
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   animate={{ y: [0, 15, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                   className="absolute top-24 right-[-10px] md:right-[-20px] lg:right-[-30px] bg-[#1a1a1a]/90 backdrop-blur-md px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-[#D4AF37] shadow-2xl border border-[#D4AF37]/30 flex items-center gap-2 pointer-events-none"
@@ -395,7 +395,7 @@ export default function HomePage() {
                   ⭐ Premium Fleet
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   animate={{ y: [0, -15, 0] }}
                   transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                   className="absolute bottom-32 left-[-10px] md:left-[-20px] bg-gradient-to-r from-[#D4AF37] to-[#B38D22] px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-black shadow-2xl flex items-center gap-2 pointer-events-none"
@@ -403,7 +403,7 @@ export default function HomePage() {
                   👑 Royal Choice
                 </motion.div>
 
-                <motion.div 
+                <motion.div
                   animate={{ y: [0, 10, 0] }}
                   transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                   className="absolute bottom-6 right-6 md:bottom-10 md:right-10 bg-black/60 backdrop-blur-xl px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl border border-white/20 flex items-center gap-2 pointer-events-none"
@@ -411,7 +411,7 @@ export default function HomePage() {
                   💎 Luxury Wedding Service
                 </motion.div>
               </div>
-              
+
               {/* Decorative Glow Behind Image */}
               <div className="absolute inset-0 bg-[#D4AF37]/20 blur-[100px] -z-10 rounded-full" />
             </motion.div>

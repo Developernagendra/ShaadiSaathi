@@ -36,8 +36,8 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]/30 pt-20 relative overflow-hidden">
       {/* ── Background Elements ── */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-100 rounded-full blur-[150px] -z-10 opacity-50" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gold-50 rounded-full blur-[150px] -z-10 opacity-50" />
+      <div className="absolute top-0 right-0 w-72 md:w-[600px] h-[600px] bg-pink-100 rounded-full blur-[150px] -z-10 opacity-50" />
+      <div className="absolute bottom-0 left-0 w-72 md:w-[500px] h-[500px] bg-gold-50 rounded-full blur-[150px] -z-10 opacity-50" />
 
       {/* ── 📞 Hero Section ── */}
       <section className="relative bg-gray-900 py-32 px-4 overflow-hidden rounded-[3rem] mx-4 md:mx-8 mt-6 shadow-2xl">

@@ -234,6 +234,7 @@ app.use("/api/packages", require("./routes/packageRoutes"));
 app.use("/api/package-inquiries", require("./routes/packageInquiryRoutes"));
 app.use("/api/invitations", require("./routes/invitationRoutes"));
 app.use("/api/tools", require("./routes/toolRoutes"));
+app.use("/api/astrology", require("./routes/astrologyRoutes"));
 
 /* ---------------- HEALTH CHECKS ---------------- */
 app.get("/api/health/email", async (req, res) => {

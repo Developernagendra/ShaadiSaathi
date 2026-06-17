@@ -111,32 +111,35 @@ export default function VendorRegisterPage() {
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <h1 className="font-display text-5xl xl:text-6xl font-black mb-6 tracking-tighter leading-tight drop-shadow-2xl">
-              Grow Your <span className="text-[#D4AF37] italic">Wedding Business</span>
+              Become a <span className="text-[#D4AF37] italic">Partner</span>
             </h1>
             <p className="text-white/80 text-lg font-medium italic mb-12 max-w-md">
-              Join thousands of premium vendors reaching engaged couples across India. Register today and manage your bookings effortlessly.
+              Grow your wedding business with India's trusted wedding marketplace.
             </p>
           </motion.div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {[
-              { icon: '🚀', title: 'High Visibility', desc: 'Get discovered by thousands of couples daily.' },
-              { icon: '💸', title: 'Zero Hidden Fees', desc: 'Transparent pricing with no surprise deductions.' },
-              { icon: '📱', title: 'Smart Dashboard', desc: 'Manage bookings, leads, and earnings in one place.' },
+              { icon: '🎯', title: 'Get Verified Leads', desc: 'Connect with genuine couples planning their weddings.' },
+              { icon: '📈', title: 'Increase Bookings', desc: 'Boost your revenue with consistent client inquiries.' },
+              { icon: '🌍', title: 'Reach More Customers', desc: 'Expand your business presence nationwide.' },
+              { icon: '💻', title: 'Manage Your Business Online', desc: 'All your bookings and payments in one dashboard.' },
+              { icon: '⭐', title: 'Premium Vendor Profile', desc: 'Showcase your portfolio in a luxury format.' },
+              { icon: '🤝', title: 'Dedicated Support', desc: '24/7 priority assistance for our partners.' }
             ].map((item, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="flex items-start gap-5 group"
+                className="flex items-start gap-4 group"
               >
-                <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-xl shadow-lg border border-white/10 group-hover:scale-110 group-hover:rotate-6 transition-all flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-lg shadow-lg border border-white/10 group-hover:scale-110 group-hover:rotate-6 transition-all flex-shrink-0">
                   {item.icon}
                 </div>
                 <div>
-                  <h3 className="font-bold text-white tracking-wide">{item.title}</h3>
-                  <p className="text-sm text-white/60 mt-1">{item.desc}</p>
+                  <h3 className="font-bold text-white tracking-wide text-sm">{item.title}</h3>
+                  <p className="text-xs text-white/60 mt-0.5">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -163,8 +166,8 @@ export default function VendorRegisterPage() {
           >
             <div className="mb-10 flex flex-col items-center text-center">
               <BrandLogo className="mb-6 justify-center" />
-              <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-3">Join as a Vendor</h2>
-              <p className="text-gray-500 font-medium text-lg">Select your primary business type to get started.</p>
+              <h2 className="font-display text-4xl font-black text-gray-900 tracking-tight mb-3">Become a Partner</h2>
+              <p className="text-gray-500 font-medium text-sm">Join ShaadiSaathi and grow your wedding business with verified leads, bookings, and premium visibility.</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">

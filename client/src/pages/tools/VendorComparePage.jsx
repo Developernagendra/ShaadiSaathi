@@ -142,7 +142,7 @@ export default function VendorComparePage() {
         {/* Comparison View */}
         {comparing && compareData.length > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-[2rem] shadow-premium border border-slate-100 overflow-x-auto">
-            <div className="min-w-[800px]">
+            <div className="w-full sm:min-w-[800px]">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr>

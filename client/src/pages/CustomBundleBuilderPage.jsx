@@ -220,7 +220,7 @@ const filteredVendors = useMemo(() => {
       
       {/* Decorative Header */}
       <div className="fixed top-0 left-0 w-full h-96 bg-gradient-to-b from-gray-950 to-transparent -z-10" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-72 md:w-[800px] h-[400px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         

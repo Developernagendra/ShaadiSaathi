@@ -31,10 +31,19 @@ export default function MuhuratFinderPage() {
 
     setLoading(true);
     try {
-      const { data } = await api.post('/tools/muhurat', { 
-        city, state, year, month, brideName, groomName, language: i18n.language 
+      const location = `${city}, ${state}`;
+      const start = new Date(year, month - 1, 1).toISOString();
+      const end = new Date(year, month, 0).toISOString();
+      
+      const { data } = await api.post('/astrology/muhurat/find', { 
+        location, 
+        startDate: start, 
+        endDate: end, 
+        bride: { name: brideName }, 
+        groom: { name: groomName }, 
+        language: i18n.language 
       });
-      setMuhurats(data.data);
+      setMuhurats(data.data.muhuratResults || data.data);
       toast.success(t('astrology.labels.found') + '!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error finding muhurat');
@@ -104,9 +113,7 @@ export default function MuhuratFinderPage() {
 
   const saveToProfile = async () => {
     try {
-      await api.post('/tools/muhurat/save', {
-        city, state, year, month, muhurats, language: i18n.language
-      });
+      // Reports are auto-saved by backend during the find call if user is logged in
       toast.success(t('astrology.labels.saveToProfile') + ' Success!');
     } catch (err) {
       toast.error('You need to be logged in to save reports.');
