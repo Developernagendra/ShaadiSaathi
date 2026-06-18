@@ -88,6 +88,13 @@ const sendEmail = async (options) => {
     text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : ''),
   };
 
+  // Guard: validate recipient is a non-empty string
+  if (!mailOptions.to || typeof mailOptions.to !== 'string' || !mailOptions.to.includes('@')) {
+    const msg = `Invalid or missing email recipient: "${mailOptions.to}"`;
+    console.error(`[SMTP] ❌ ${msg}`);
+    throw new Error(msg);
+  }
+
   // Centralized Nodemailer Dispatch
   const t = getTransporter();
   if (!t) {
@@ -102,17 +109,29 @@ const sendEmail = async (options) => {
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      console.log(`[SMTP] 📨 Sending email to ${mailOptions.to} (attempt ${attempt}/${MAX_RETRIES})...`);
+      console.log(`[SMTP] 📨 Sending email (attempt ${attempt}/${MAX_RETRIES}):`);
+      console.log(`[SMTP]    → Recipient: ${mailOptions.to}`);
+      console.log(`[SMTP]    → Subject  : ${mailOptions.subject}`);
+
       const info = await t.sendMail(mailOptions);
-      console.log(`[SMTP] ✅ Email sent successfully. MessageID: ${info.messageId}`);
-      return { success: true, messageId: info.messageId };
+
+      // ── Email Delivery Tracking Log ─────────────────────────────
+      console.log(`[SMTP] ✅ EMAIL DELIVERED`);
+      console.log(`[SMTP]    → Recipient : ${mailOptions.to}`);
+      console.log(`[SMTP]    → Subject   : ${mailOptions.subject}`);
+      console.log(`[SMTP]    → MessageId : ${info.messageId}`);
+      console.log(`[SMTP]    → Response  : ${info.response || 'N/A'}`);
+      console.log(`[SMTP]    → Accepted  : ${(info.accepted || []).join(', ') || 'N/A'}`);
+      // ─────────────────────────────────────────────────────────────
+
+      return { success: true, messageId: info.messageId, response: info.response };
     } catch (err) {
       lastError = err;
       console.error(`[SMTP] ❌ Attempt ${attempt}/${MAX_RETRIES} failed:`);
-      console.error(`[SMTP]    → Host   : ${EMAIL_HOST}`);
-      console.error(`[SMTP]    → Port   : ${EMAIL_PORT}`);
-      console.error(`[SMTP]    → Code   : ${err.code || 'UNKNOWN'}`);
-      console.error(`[SMTP]    → Error  : ${err.message}`);
+      console.error(`[SMTP]    → Host      : ${EMAIL_HOST}:${EMAIL_PORT}`);
+      console.error(`[SMTP]    → Recipient : ${mailOptions.to}`);
+      console.error(`[SMTP]    → Code      : ${err.code || 'UNKNOWN'}`);
+      console.error(`[SMTP]    → Error     : ${err.message}`);
 
       if (attempt < MAX_RETRIES) {
         const delay = RETRY_DELAYS[attempt - 1] || 3000;
@@ -122,6 +141,8 @@ const sendEmail = async (options) => {
     }
   }
 
+  // Reset stale transporter singleton so the next email gets a fresh connection
+  transporter = null;
   console.error(`[SMTP] 💀 All ${MAX_RETRIES} attempts failed for email to ${mailOptions.to}`);
   throw lastError;
 };

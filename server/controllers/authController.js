@@ -711,7 +711,7 @@ const testEmail = catchAsync(async (req, res, next) => {
         <p><b>Time:</b> ${new Date().toISOString()}</p>
         <p><b>Environment:</b> ${process.env.NODE_ENV}</p>
         <p><b>SMTP Host:</b> ${process.env.EMAIL_HOST || 'smtp.gmail.com'}</p>
-        <p><b>SMTP Port:</b> ${process.env.EMAIL_PORT || '587'}</p>
+        <p><b>SMTP Port:</b> ${process.env.EMAIL_PORT || '465'}</p>
         <p>Your authentication gating and verification flow will now work smoothly.</p>
       </div>
     `;
@@ -726,7 +726,7 @@ const testEmail = catchAsync(async (req, res, next) => {
         messageId: info.messageId,
         recipient: to,
         smtpHost: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        smtpPort: process.env.EMAIL_PORT || '587',
+        smtpPort: process.env.EMAIL_PORT || '465',
       }
     });
   } catch (error) {

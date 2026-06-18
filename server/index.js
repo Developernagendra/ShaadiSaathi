@@ -431,7 +431,7 @@ const startServer = async () => {
 
       if (!admin) {
         const adminPass = process.env.ADMIN_PASS || (process.env.NODE_ENV === 'development' ? 'Admin@123' : null);
-        if (!adminPass) {
+        if (!adminPass || typeof adminPass !== 'string') {
           console.error('❌ ADMIN_PASS env var is required in production. Skipping admin seed.');
         } else {
           console.log('⏳ Default admin not found. Seeding admin user...');
@@ -444,29 +444,38 @@ const startServer = async () => {
             isEmailVerified: true,
             isActive: true
           });
-          console.log(`✅ Default admin seeded successfully. Use ADMIN_PASS env var to set password.`);
+          console.log(`✅ Default admin seeded successfully.`);
         }
       } else {
         let needsUpdate = false;
-        if (admin.role !== 'admin') {
-          admin.role = 'admin';
-          needsUpdate = true;
-        }
-        if (!admin.isActive) {
-          admin.isActive = true;
-          needsUpdate = true;
-        }
-        const adminPass = process.env.ADMIN_PASS || (process.env.NODE_ENV === 'development' ? 'Admin@123' : null);
-        const isPasswordCorrect = await admin.comparePassword(adminPass);
-        if (!isPasswordCorrect && process.env.ADMIN_PASS) {
-          // Only auto-update password if ADMIN_PASS env var is explicitly set
-          admin.password = adminPass;
-          needsUpdate = true;
+        if (admin.role !== 'admin') { admin.role = 'admin'; needsUpdate = true; }
+        if (!admin.isActive)       { admin.isActive = true;  needsUpdate = true; }
+
+        // FIX: only call comparePassword if ADMIN_PASS is a non-empty string
+        // Passing null/undefined to bcrypt.compare throws "Illegal arguments: object, string"
+        const adminPass = process.env.ADMIN_PASS;
+        if (adminPass && typeof adminPass === 'string' && adminPass.trim() !== '') {
+          try {
+            const isPasswordCorrect = await admin.comparePassword(adminPass.trim());
+            if (!isPasswordCorrect) {
+              console.log('⏳ ADMIN_PASS changed — updating admin password...');
+              admin.password = adminPass.trim();
+              needsUpdate = true;
+            }
+          } catch (bcryptErr) {
+            // Log and skip — never crash the server over a password comparison
+            console.error('⚠️  Admin password comparison failed (bcrypt):', bcryptErr.message);
+            console.error('⚠️  Hint: Ensure ADMIN_PASS is a plain string with at least one uppercase, one lowercase, and one digit.');
+          }
+        } else if (!adminPass) {
+          console.log('ℹ️  ADMIN_PASS not set — skipping admin password sync (current password preserved).');
         }
 
         if (needsUpdate) {
           await admin.save();
-          console.log('✅ Default admin credentials verified and updated.');
+          console.log('✅ Default admin account verified and updated.');
+        } else {
+          console.log('✅ Default admin account is up to date.');
         }
       }
     } catch (dbErr) {
