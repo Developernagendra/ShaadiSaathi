@@ -207,6 +207,24 @@ if (!authMid.protect || !authMid.restrictTo || !authMid.adminOnly) {
   console.log('✓ Routes Ready');
 }
 
+/* ---------------- STARTUP ENV VALIDATION ---------------- */
+const REQUIRED_ENV_VARS = ['MONGO_URI', 'JWT_SECRET'];
+const RECOMMENDED_ENV_VARS = ['EMAIL_USER', 'EMAIL_PASS', 'CLIENT_URL', 'OPENAI_API_KEY'];
+
+const missingRequired = REQUIRED_ENV_VARS.filter(v => !process.env[v] && !process.env[v.replace('MONGO_URI', 'MONGODB_URI')]);
+if (missingRequired.length > 0) {
+  console.error(`❌ FATAL: Missing required environment variables: ${missingRequired.join(', ')}`);
+  console.error('❌ Server startup aborted. Please set these variables in .env or your hosting provider.');
+  process.exit(1);
+}
+
+const missingRecommended = RECOMMENDED_ENV_VARS.filter(v => !process.env[v]);
+if (missingRecommended.length > 0) {
+  console.warn(`⚠️  Missing recommended environment variables: ${missingRecommended.join(', ')}`);
+  console.warn('⚠️  Some features (email, AI chatbot) may not work without these variables.');
+}
+console.log('✅ Environment variables validated.');
+
 /* ---------------- ROUTES ---------------- */
 const { testEmail } = require("./controllers/authController");
 app.get("/api/test-email", testEmail);
@@ -230,11 +248,13 @@ app.use("/api/ai", require("./routes/aiRoutes"));
 app.use("/api/availability", require("./routes/availabilityRoutes"));
 app.use("/api/offers", require("./routes/offerRoutes"));
 app.use("/api/newsletter", require("./routes/newsletterRoutes"));
+app.use("/api/showcase", require("./routes/showcaseRoutes"));
 app.use("/api/packages", require("./routes/packageRoutes"));
 app.use("/api/package-inquiries", require("./routes/packageInquiryRoutes"));
 app.use("/api/invitations", require("./routes/invitationRoutes"));
 app.use("/api/tools", require("./routes/toolRoutes"));
 app.use("/api/astrology", require("./routes/astrologyRoutes"));
+app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 
 /* ---------------- HEALTH CHECKS ---------------- */
 app.get("/api/health/email", async (req, res) => {

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import VendorCard from '../components/vendor/VendorCard'
 import { SkeletonCard } from '../components/common/Skeleton'
 import PackageSection from '../components/packages/PackageSection'
+import PremiumTestimonials from '../components/home/PremiumTestimonials'
 import { INDIAN_CITIES } from '../utils/helpers'
 import { FiSearch, FiMapPin, FiArrowRight } from 'react-icons/fi';
 import { FaCrown, FaCheckCircle } from 'react-icons/fa';
@@ -226,12 +227,12 @@ export default function HomePage() {
             </motion.h2>
           </div>
 
-          <div className="flex overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 snap-x snap-mandatory scrollbar-hide">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 px-0">
             {STATIC_SERVICES.map((service, i) => (
               <Link
                 key={service.slug}
                 to={`/services?category=${service.slug}`}
-                className="flex flex-col items-center gap-3 p-5 md:p-6 bg-white rounded-[1.5rem] shadow-sm hover:shadow-premium hover:-translate-y-1 hover:border-pink-200/50 transition-all duration-300 group text-center border border-gray-100 active:scale-95 relative overflow-hidden min-w-[140px] md:min-w-0 snap-start shrink-0"
+                className="flex flex-col items-center gap-3 p-4 md:p-6 bg-white rounded-[1.5rem] shadow-sm hover:shadow-premium hover:-translate-y-1 hover:border-pink-200/50 transition-all duration-300 group text-center border border-gray-100 active:scale-95 relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-[#C2185B] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-[#FFF8F0] rounded-2xl flex items-center justify-center text-2xl md:text-3xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
@@ -441,6 +442,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── 5.5 Premium Testimonials ── */}
+      <PremiumTestimonials />
 
       {/* ── 6. Final CTA Section ── */}
       <section className="py-12 md:py-16 lg:py-24 px-4 bg-gradient-to-br from-[#C2185B] to-[#8E244D] text-center relative overflow-hidden">

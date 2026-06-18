@@ -23,10 +23,10 @@ router.get('/my-bookings', verified, (req, res, next) => {
   req.query.bookingType = 'service';
   getMyBookings(req, res, next);
 });
-router.get('/vendor-bookings', restrictTo('vendor', 'admin'), verified, restrictToApproved, getVendorBookings);
-router.get('/vendor/services', restrictTo('vendor', 'admin'), verified, restrictToApproved, getVendorServicesBookings);
-router.get('/vendor/cabs', restrictTo('vendor', 'admin'), verified, restrictToApproved, getVendorCabsBookings);
-router.get('/vendor', restrictTo('vendor', 'admin'), verified, restrictToApproved, getVendorBookings);
+router.get('/vendor-bookings', restrictTo('vendor', 'admin'), restrictToApproved, getVendorBookings);
+router.get('/vendor/services', restrictTo('vendor', 'admin'), restrictToApproved, getVendorServicesBookings);
+router.get('/vendor/cabs', restrictTo('vendor', 'admin'), restrictToApproved, getVendorCabsBookings);
+router.get('/vendor', restrictTo('vendor', 'admin'), restrictToApproved, getVendorBookings);
 router.get('/admin-bookings', restrictTo('admin'), getAdminBookings);
 router.get('/admin', restrictTo('admin'), getAdminBookings);
 router.get('/:id', verified, getBookingById);

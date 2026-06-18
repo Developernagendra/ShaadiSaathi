@@ -25,7 +25,10 @@ const {
   getBookingByIdAdmin,
   getSubscriptionsAdmin,
   updateVendorSubscriptionAdmin,
-  getAvailabilityMonitor
+  getAvailabilityMonitor,
+  getAllTestimonialsAdmin,
+  saveTestimonial,
+  deleteTestimonial
 } = require('../controllers/adminController');
 const multer = require('multer');
 
@@ -89,6 +92,10 @@ router.delete('/blogs/:id', deleteBlog);
 router.post('/upload', uploadSecureImage, uploadAdminFile);
 
 router.get('/reviews', getAllReviews);
+
+router.get('/testimonials', getAllTestimonialsAdmin);
+router.post('/testimonials', saveTestimonial);
+router.delete('/testimonials/:id', deleteTestimonial);
 
 router.route('/config')
   .get(getConfigAdmin)

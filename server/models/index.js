@@ -681,6 +681,7 @@ const Offer = require('./Offer');
 const { Lead, Guest, Checklist, Blog, Testimonial, HomeStats } = require('./FeatureModels');
 const NewsletterSubscriber = require('./NewsletterSubscriber');
 const NewsletterCampaign = require('./NewsletterCampaign');
+const { RealWedding, Gallery } = require('./ShowcaseModels');
 
 const Package = require('./Package');
 const PackageInquiry = require('./PackageInquiry');
@@ -710,6 +711,8 @@ module.exports = {
   NewsletterCampaign,
   Package,
   PackageInquiry,
-  Invitation
+  Invitation,
+  RealWedding,
+  Gallery
 };
 

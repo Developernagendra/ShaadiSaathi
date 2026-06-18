@@ -1,155 +1,275 @@
-import { useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { uploadVendorImages, updateVendorProfile } from '../../store/slices/vendorSlice'
-import { FiPlus, FiX, FiUpload, FiCheck } from 'react-icons/fi';
-import toast from 'react-hot-toast'
-import api from '../../utils/api'
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { FiPlus, FiImage, FiUpload, FiX } from 'react-icons/fi';
+import toast from 'react-hot-toast';
+import api from '../../utils/api';
+
+const CATEGORIES = [
+  'Photography', 'Decoration', 'Mehndi', 'Makeup', 'Venue', 
+  'Catering', 'DJ', 'Luxury Baraat Cabs', 'Haldi', 'Sangeet', 
+  'Reception', 'Other'
+];
 
 export default function VendorGalleryPage() {
-  const dispatch = useDispatch()
-  const { myVendorProfile: vendor } = useSelector(s => s.vendor)
-  const [uploading, setUploading] = useState(false)
+  const { myVendorProfile: vendor } = useSelector(s => s.vendor);
+  const [gallery, setGallery] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '', description: '', category: 'Photography', tags: '', videos: '', images: [], status: 'pending'
+  });
+  const [previews, setPreviews] = useState({ images: [] });
+  const [editingId, setEditingId] = useState(null);
 
-  const handleFileUpload = async (e, type = 'image') => {
-    const files = Array.from(e.target.files)
-    if (!files.length) return
-    
-    const formData = new FormData()
-    if (type === 'image') {
-      files.forEach(file => formData.append('images', file))
-    } else {
-      formData.append('video', files[0])
-    }
+  useEffect(() => {
+    fetchGallery();
+  }, []);
 
-    setUploading(true)
+  const fetchGallery = async () => {
     try {
-      if (type === 'image') {
-        await dispatch(uploadVendorImages(formData)).unwrap()
-        toast.success('Images uploaded successfully!')
-      } else {
-        const res = await api.post('/vendors/video', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-        dispatch(updateVendorProfile(res.data.vendor)) // Update local profile state
-        toast.success('Video uploaded successfully!')
-      }
+      const res = await api.get('/showcase/vendor/gallery');
+      setGallery(res.data.data);
     } catch (err) {
-      toast.error(typeof err === 'string' ? err : (err?.response?.data?.message || 'Upload failed'))
+      toast.error('Failed to load gallery');
     } finally {
-      setUploading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleRemoveFile = async (id, type = 'image') => {
-    if (!confirm('Are you sure you want to delete this?')) return
-    try {
-      if (type === 'image') {
-        await api.delete(`/vendors/images/${id}`)
-        toast.success('Image removed')
-      } else {
-        await api.delete('/vendors/video')
-        toast.success('Video removed')
-      }
-      // Re-fetch profile to sync state
-      await dispatch(updateVendorProfile({})) // Trigger a state refresh or manually update
-      window.location.reload() // Quick fix for state sync
-    } catch {
-      toast.error('Failed to remove')
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    setFormData(p => ({ ...p, images: [...p.images, ...files] }));
+    setPreviews(p => ({ ...p, images: [...p.images, ...files.map(f => URL.createObjectURL(f))] }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.images.length === 0 && previews.images.length === 0) {
+      return toast.error('Please upload at least one image');
     }
-  }
+
+    setUploading(true);
+    try {
+      const submitData = new FormData();
+      submitData.append('title', formData.title);
+      submitData.append('description', formData.description);
+      submitData.append('category', formData.category);
+      submitData.append('status', 'pending');
+
+      const tagsArray = formData.tags ? formData.tags.split(',').map(t => t.trim()) : [];
+      tagsArray.forEach(t => submitData.append('tags[]', t));
+
+      const videosArray = formData.videos ? formData.videos.split(',').map(v => v.trim()) : [];
+      videosArray.forEach(v => submitData.append('videos[]', v));
+
+      formData.images.forEach(item => {
+        if (item instanceof File) {
+          submitData.append('images', item);
+        } else if (typeof item === 'string') {
+          submitData.append('existingImages[]', item);
+        }
+      });
+
+      if (editingId) {
+        await api.patch(`/showcase/vendor/gallery/${editingId}`, submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        toast.success('Gallery updated!');
+      } else {
+        await api.post('/showcase/vendor/gallery', submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        toast.success('Gallery item submitted for approval!');
+      }
+      
+      setIsModalOpen(false);
+      fetchGallery();
+      setFormData({ title: '', description: '', category: 'Photography', tags: '', videos: '', images: [], status: 'pending' });
+      setPreviews({ images: [] });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to submit');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const openEdit = (album) => {
+    setFormData({
+      ...album,
+      tags: album.tags?.join(', ') || '',
+      videos: album.videos?.join(', ') || '',
+      images: album.images || []
+    });
+    setPreviews({ images: album.images || [] });
+    setEditingId(album._id);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this album?')) return;
+    try {
+      await api.delete(`/showcase/vendor/gallery/${id}`);
+      toast.success('Deleted successfully');
+      fetchGallery();
+    } catch {
+      toast.error('Failed to delete');
+    }
+  };
 
   return (
     <div className="pb-24 animate-fade-in relative max-w-7xl mx-auto px-4 md:px-8 pt-8">
-      <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
-      
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 relative z-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8 md:mb-12 relative z-10">
         <div>
-          <div className="divider-luxe !justify-start mb-3 !gap-3">
-            <div className="divider-line !bg-[#C2185B]/30 !w-8" />
-            <span className="text-[#C2185B] text-[10px] font-black uppercase tracking-[0.4em] italic">Visual Identity</span>
-          </div>
-          <h1 className="font-display text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Portfolio & Media</h1>
-          <p className="text-gray-500 font-medium italic mt-2">Manage your visual showcase to attract high-end clients.</p>
+          <h1 className="font-display text-3xl md:text-5xl font-black text-gray-900 tracking-tight">Gallery Management</h1>
+          <p className="text-sm md:text-base text-gray-500 font-medium italic mt-2">Manage your categorized albums to attract high-end clients.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <label className={`bg-white/80 backdrop-blur-md border border-white shadow-sm hover:shadow-md text-gray-600 flex items-center gap-2 cursor-pointer py-4 px-6 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all hover:-translate-y-0.5 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-            <FiUpload size={14} /> {uploading ? 'Uploading...' : 'Add Video'}
-            <input type="file" accept="video/mp4" onChange={(e) => handleFileUpload(e, 'video')} className="hidden" />
-          </label>
-          <label className={`bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] text-white shadow-premium flex items-center gap-2 cursor-pointer py-4 px-8 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-xl ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-            <FiPlus size={16} /> {uploading ? 'Uploading...' : 'Upload Photos'}
-            <input type="file" multiple accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} className="hidden" />
-          </label>
-        </div>
+        <button 
+          onClick={() => {
+            setEditingId(null);
+            setFormData({ title: '', description: '', category: 'Photography', tags: '', videos: '', images: [], status: 'pending' });
+            setPreviews({ images: [] });
+            setIsModalOpen(true);
+          }}
+          className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
+        >
+          <FiPlus /> Create New Album
+        </button>
       </div>
 
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6 relative z-10">
-        <label className="block w-full aspect-square rounded-[3rem] border-2 border-dashed border-[#D4AF37]/30 hover:border-[#D4AF37] hover:bg-[#FDFBF7] transition-all cursor-pointer text-gray-400 hover:text-[#D4AF37] group relative overflow-hidden shadow-sm hover:shadow-md mb-6 break-inside-avoid bg-white/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-gray-300 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] transition-all shadow-sm">
-            <FiPlus size={28} />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Add New</span>
-          <input type="file" multiple accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} className="hidden" />
-        </label>
-
-        {vendor?.images?.map((img, i) => (
-          <div key={img.publicId || i} className="group relative rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-xl border border-white bg-white break-inside-avoid mb-6 transition-all duration-500 hover:-translate-y-1">
-            <img src={img.url} alt="Work" className="w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6">
-              <div className="flex justify-end">
-                <button 
-                  onClick={() => handleRemoveFile(img._id, 'image')}
-                  className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-[1rem] text-white hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-lg"
-                >
-                  <FiX size={16} />
-                </button>
+      {loading ? (
+        <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div></div>
+      ) : gallery.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
+          <FiImage className="mx-auto text-4xl text-gray-300 mb-4" />
+          <h3 className="text-xl font-bold text-gray-900">No Albums Found</h3>
+          <p className="text-gray-500 mt-2">Create your first photo album to showcase your work.</p>
+        </div>
+      ) : (
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+          {gallery.map(album => (
+            <div key={album._id} className="break-inside-avoid bg-white rounded-[2rem] overflow-hidden shadow-sm border border-gray-100 group">
+              <div className="relative">
+                <img src={album.images[0]} alt={album.title} className="w-full object-cover aspect-[4/3]" />
+                <div className="absolute top-4 right-4 flex flex-col gap-2">
+                  <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-xs font-bold shadow-sm uppercase tracking-wider">
+                    {album.status}
+                  </span>
+                  <span className="px-3 py-1 bg-primary-600 text-white rounded-full text-xs font-bold shadow-sm uppercase tracking-wider">
+                    {album.category}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-display font-black text-gray-900 mb-1">{album.title}</h3>
+                <p className="text-sm text-gray-500 font-medium mb-4">{album.images.length} Photos</p>
+                <div className="flex items-center gap-2 mt-4">
+                  <button onClick={() => openEdit(album)} className="text-primary-600 hover:text-primary-700 font-bold text-sm flex items-center gap-1 flex-1">
+                    Edit Album
+                  </button>
+                  <button onClick={() => handleDelete(album._id)} className="text-red-500 hover:text-red-700 font-bold text-sm flex items-center gap-1 flex-1 justify-end">
+                    <FiX /> Delete
+                  </button>
+                </div>
               </div>
             </div>
-            {i === 0 && (
-              <span className="absolute top-6 left-6 bg-gradient-to-br from-[#D4AF37] to-[#F4D03F] text-black text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl shadow-lg">
-                Featured Cover
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Video Preview Section if exists */}
-      {vendor?.video?.url && (
-        <div className="mt-16 relative z-10">
-          <h2 className="font-display text-2xl md:text-3xl font-black text-gray-900 mb-8 flex items-center gap-3">
-            <span className="w-12 h-12 rounded-[1.2rem] bg-indigo-50/80 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm backdrop-blur-md">🎬</span>
-            Business Showcase Video
-          </h2>
-          <div className="max-w-4xl aspect-video rounded-[3rem] overflow-hidden shadow-premium border-8 border-white relative group bg-black">
-            <video src={vendor.video.url} controls className="w-full h-full object-contain" />
-            <button 
-              onClick={() => handleRemoveFile('video', 'video')} 
-              className="absolute top-6 right-6 w-12 h-12 bg-black/40 backdrop-blur-md rounded-[1.2rem] text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center shadow-lg"
-            >
-              <FiX size={20} />
-            </button>
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Helpful Tips */}
-      <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] rounded-[2.5rem] p-10 text-white shadow-premium relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-bl-full blur-3xl pointer-events-none" />
-          <h3 className="font-display text-2xl font-black mb-6 flex items-center gap-3"><span className="text-[#D4AF37]">💡</span> Curation Guidelines</h3>
-          <ul className="space-y-4 text-gray-400 text-sm font-medium">
-            <li className="flex items-start gap-3"><span className="p-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full mt-0.5"><FiCheck size={12} /></span> Use high-resolution images (min 1080p).</li>
-            <li className="flex items-start gap-3"><span className="p-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full mt-0.5"><FiCheck size={12} /></span> Showcase diverse work from different events.</li>
-            <li className="flex items-start gap-3"><span className="p-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full mt-0.5"><FiCheck size={12} /></span> The first photo is your cover—make it count!</li>
-          </ul>
+      {/* Upload Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-[2rem] w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]">
+            {/* Header (Fixed) */}
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+              <h2 className="text-2xl font-display font-black">Create New Album</h2>
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)}
+                className="w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-900 rounded-full flex items-center justify-center transition-colors"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+            
+            {/* Form Body (Scrollable) */}
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Album Title</label>
+                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required className="w-full p-3.5 sm:p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-primary-500 focus:bg-white transition-colors outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} required className="w-full p-3.5 sm:p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-primary-500 focus:bg-white transition-colors outline-none appearance-none cursor-pointer">
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows="3" className="w-full p-3.5 sm:p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-primary-500 focus:bg-white transition-colors outline-none"></textarea>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Tags (comma separated)</label>
+                  <input type="text" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} placeholder="e.g. Traditional, Outdoors" className="w-full p-3.5 sm:p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-primary-500 focus:bg-white transition-colors outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Video URLs (comma separated)</label>
+                  <input type="text" value={formData.videos} onChange={e => setFormData({...formData, videos: e.target.value})} placeholder="e.g. YouTube or Vimeo link" className="w-full p-3.5 sm:p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-primary-500 focus:bg-white transition-colors outline-none" />
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <label className="block text-sm font-bold text-gray-700">Upload Photos</label>
+                <div className="relative border-2 border-dashed border-gray-300 rounded-3xl p-6 md:p-10 text-center hover:bg-pink-50/30 hover:border-primary-300 transition-all group">
+                  <input type="file" multiple onChange={handleImageUpload} accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                  
+                  <div className="flex flex-col items-center pointer-events-none">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 mb-4 group-hover:scale-110 transition-transform group-hover:bg-primary-50 group-hover:text-primary-500">
+                      <FiUpload size={28} />
+                    </div>
+                    <p className="text-base font-bold text-gray-900">Click or drag images to upload</p>
+                    <p className="text-xs text-gray-500 mt-2 font-medium">SVG, PNG, JPG or WebP (max. 5MB per file)</p>
+                  </div>
+                </div>
+                
+                {previews.images.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    {previews.images.map((img, i) => (
+                      <div key={i} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
+                        <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="Preview" />
+                        <button type="button" onClick={() => {
+                          setFormData(p => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }));
+                          setPreviews(p => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }));
+                        }} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg transform opacity-0 group-hover:opacity-100 transition-all active:scale-95 z-20">
+                          <FiX size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {uploading && (
+                <div className="bg-primary-50 text-primary-700 p-3 rounded-xl flex items-center justify-center gap-2 font-bold animate-pulse">
+                   <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div> Uploading Media...
+                </div>
+              )}
+
+              </div>
+
+              {/* Footer (Fixed) */}
+              <div className="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 shrink-0 flex gap-4 mt-auto rounded-b-[2rem]">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 sm:py-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-2xl font-bold transition-colors shadow-sm">Cancel</button>
+                <button type="submit" disabled={uploading} className="flex-1 py-3.5 sm:py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold shadow-lg shadow-primary-200 transition-all disabled:opacity-50">
+                  Save Album
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-white shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-[#C2185B]/10 to-transparent rounded-bl-full blur-3xl pointer-events-none" />
-          <h3 className="font-display text-2xl font-black text-gray-900 mb-4 flex items-center gap-3">🎥 Power of Video</h3>
-          <p className="text-gray-500 font-medium leading-relaxed italic">
-            Profiles with videos see a 60% higher engagement rate. A 30-second walkthrough or a montage of your best work builds immediate trust with couples.
-          </p>
-        </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }

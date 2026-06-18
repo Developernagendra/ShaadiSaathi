@@ -47,6 +47,9 @@ const TermsPage = lazy(() => import('./pages/TermsPage'))
 const RefundPolicyPage = lazy(() => import('./pages/RefundPolicyPage'))
 const CancellationPolicyPage = lazy(() => import('./pages/CancellationPolicyPage'))
 const TestimonialsPage = lazy(() => import('./pages/TestimonialsPage'))
+const RealWeddingsPage = lazy(() => import('./pages/RealWeddingsPage'))
+const RealWeddingDetailsPage = lazy(() => import('./pages/RealWeddingDetailsPage'))
+const GalleryPage = lazy(() => import('./pages/GalleryPage'))
 
 // Auth Pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
@@ -92,6 +95,7 @@ const ServiceApprovalDetails = lazy(() => import('./pages/admin/ServiceApprovalD
 const AdminBookingsPage = lazy(() => import('./pages/admin/AdminBookingsPage'))
 const AdminBookingDetailPage = lazy(() => import('./pages/admin/AdminBookingDetailPage'))
 const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage'))
+const AdminTestimonialsPage = lazy(() => import('./pages/admin/AdminTestimonialsPage'))
 
 // Special Pages
 const CabBookingPage = lazy(() => import('./pages/CabBookingPage'))
@@ -124,6 +128,7 @@ const MyAstrologyReportsPage = lazy(() => import('./pages/user/MyAstrologyReport
 // Vendor Sub-Pages
 const VendorPackagesPage = lazy(() => import('./pages/vendor/VendorPackagesPage'))
 const VendorGalleryPage = lazy(() => import('./pages/vendor/VendorGalleryPage'))
+const VendorRealWeddingsPage = lazy(() => import('./pages/vendor/VendorRealWeddingsPage'))
 const VendorCalendarPage = lazy(() => import('./pages/vendor/VendorCalendarPage'))
 const VendorReviewsPage = lazy(() => import('./pages/vendor/VendorReviewsPage'))
 const VendorNotificationsPage = lazy(() => import('./pages/vendor/VendorNotificationsPage'))
@@ -135,6 +140,8 @@ const AdminBlogsPage = lazy(() => import('./pages/admin/AdminBlogsPage'))
 const AdminLeadsPage = lazy(() => import('./pages/admin/AdminLeadsPage'))
 const AdminManageCabsPage = lazy(() => import('./pages/admin/AdminManageCabsPage'))
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
+const AdminRealWeddingsPage = lazy(() => import('./pages/admin/AdminRealWeddingsPage'))
+const AdminGalleryPage = lazy(() => import('./pages/admin/AdminGalleryPage'))
 const AdminReviewsPage = lazy(() => import('./pages/admin/AdminReviewsPage'))
 const AdminSubscriptionsPage = lazy(() => import('./pages/admin/AdminSubscriptionsPage'))
 const AdminNewsletterPage = lazy(() => import('./pages/admin/AdminNewsletterPage'))
@@ -274,6 +281,9 @@ export default function App() {
                 } />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/services" element={<ServicesPage />} />
+                <Route path="/real-weddings" element={<RealWeddingsPage />} />
+                <Route path="/real-weddings/:id" element={<RealWeddingDetailsPage />} />
+                <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/services/:categorySlug" element={<ServicesPage />} />
                 <Route path="/service/:id" element={<ServiceDetailPage />} />
                 <Route path="/vendors" element={<ServicesPage />} />
@@ -304,7 +314,7 @@ export default function App() {
                 {/* Public Invitation Route */}
                 <Route path="/invitation/:id" element={<PublicInvitationPage />} />
 
-{/* Auth Routes */}
+                {/* Auth Routes */}
                 <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
                 <Route path="/register" element={!user ? <RegisterSelectionPage /> : <Navigate to="/" />} />
                 <Route path="/register/user" element={!user ? <RegisterPage /> : <Navigate to="/" />} />
@@ -347,6 +357,7 @@ export default function App() {
                   <Route path="/vendor/services" element={<VendorServicesPage />} />
                   <Route path="/vendor/packages" element={<VendorPackagesPage />} />
                   <Route path="/vendor/gallery" element={<VendorGalleryPage />} />
+                  <Route path="/vendor/real-weddings" element={<VendorRealWeddingsPage />} />
                   <Route path="/vendor/portfolio-builder" element={<VendorPortfolioBuilder />} />
                   <Route path="/vendor/bookings" element={<VendorBookingsPage />} />
                   <Route path="/vendor/bookings/:id" element={<BookingDetailPage />} />
@@ -381,9 +392,12 @@ export default function App() {
                   <Route path="/admin/bookings" element={<AdminBookingsPage />} />
                   <Route path="/admin/bookings/:id" element={<AdminBookingDetailPage />} />
                   <Route path="/admin/blogs" element={<AdminBlogsPage />} />
+                  <Route path="/admin/testimonials" element={<AdminTestimonialsPage />} />
                   <Route path="/admin/leads" element={<AdminLeadsPage />} />
                   <Route path="/admin/imperial-fleet" element={<AdminManageCabsPage />} />
                   <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+                  <Route path="/admin/real-weddings" element={<AdminRealWeddingsPage />} />
+                  <Route path="/admin/gallery" element={<AdminGalleryPage />} />
                   <Route path="/admin/settings" element={<AdminSettingsPage />} />
                   <Route path="/admin/newsletter" element={<AdminNewsletterPage />} />
                   <Route path="/admin/packages" element={<AdminPackagesPage />} />

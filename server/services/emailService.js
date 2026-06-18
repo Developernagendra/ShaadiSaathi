@@ -6,8 +6,9 @@ dns.setDefaultResultOrder('ipv4first');
 
 // ─── Configuration ───────────────────────────────────────────────────
 const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
-const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '587', 10);
-const EMAIL_SECURE = process.env.EMAIL_SECURE === 'true'; // false for port 587 (STARTTLS)
+// Port 465 + secure:true (SSL/TLS) is far more reliable on Render/cloud than port 587 STARTTLS.
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '465', 10);
+const EMAIL_SECURE = process.env.EMAIL_SECURE !== 'false'; // Defaults TRUE for port 465 SSL
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_FROM = process.env.EMAIL_FROM || `ShaadiSaathi <${EMAIL_USER}>`;
@@ -40,15 +41,13 @@ const getTransporter = () => {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
     },
-    pool: true,           // Use connection pooling for better throughput
-    maxConnections: 3,
-    maxMessages: 100,
-    tls: {
-      rejectUnauthorized: false, // Allow self-signed certs (some SMTP relays need this)
-    },
-    connectionTimeout: 10000,  // 10 seconds to establish connection
-    greetingTimeout: 10000,
-    socketTimeout: 15000,      // 15 seconds for socket operations
+    // Disable pooling — stale pooled connections cause ETIMEDOUT on Render.
+    // Each email gets a fresh connection for maximum reliability.
+    pool: false,
+    // Extended timeouts for cloud environments with higher network latency
+    connectionTimeout: 30000,   // 30s to establish TCP connection
+    greetingTimeout: 30000,     // 30s for SMTP EHLO/HELO handshake
+    socketTimeout: 30000,       // 30s for individual socket read/write ops
   });
 
   return transporter;

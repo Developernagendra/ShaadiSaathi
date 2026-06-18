@@ -56,7 +56,7 @@ export default function KundliMatchingPage() {
 
   const shareWhatsApp = () => {
     if (!report) return;
-    const text = `*ShaadiSaathi Gun Milan Report*%0A%0A*Match*: ${report.brideDetails.name} & ${report.groomDetails.name}%0A*${t('astrology.labels.totalGun')}*: ${report.totalScore}/36%0A*${t('astrology.labels.compatibility')}*: ${report.percentage}%25%0A%0A*${t('astrology.labels.manglikAnalysis')}*:%0A${t(report.manglikAnalysis.statusKey)}%0A%0A*Conclusion*:%0A${t(report.conclusionKey)}%0A%0ACheck yours at ShaadiSaathi!`;
+    const text = `*ShaadiSaathi Gun Milan Report*%0A%0A*Match*: ${report.brideDetails?.name || 'Bride'} & ${report.groomDetails?.name || 'Groom'}%0A*${t('astrology.labels.totalGun')}*: ${report.totalScore}/36%0A*${t('astrology.labels.compatibility')}*: ${report.percentage}%25%0A%0A*${t('astrology.labels.manglikAnalysis')}*:%0A${t(report.manglikAnalysis?.statusKey || 'astrology.status.not_manglik')}%0A%0A*Conclusion*:%0A${t(report.conclusionKey || 'astrology.status.good_match')}%0A%0ACheck yours at ShaadiSaathi!`;
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
@@ -74,7 +74,7 @@ export default function KundliMatchingPage() {
     
     doc.setFontSize(12);
     doc.setTextColor(100);
-    doc.text(`Match: ${report.brideDetails.name} & ${report.groomDetails.name}`, 20, 30);
+    doc.text(`Match: ${report.brideDetails?.name || 'Bride'} & ${report.groomDetails?.name || 'Groom'}`, 20, 30);
     
     doc.setFontSize(16);
     doc.setTextColor(0);
@@ -82,10 +82,10 @@ export default function KundliMatchingPage() {
     
     doc.setFontSize(12);
     // Use doc.splitTextToSize to handle longer translations
-    const manglikText = doc.splitTextToSize(`${t('astrology.labels.manglikAnalysis')}: ${t(report.manglikAnalysis.statusKey)}`, 170);
+    const manglikText = doc.splitTextToSize(`${t('astrology.labels.manglikAnalysis')}: ${t(report.manglikAnalysis?.statusKey || 'astrology.status.not_manglik')}`, 170);
     doc.text(manglikText, 20, 55);
     
-    const conclusionText = doc.splitTextToSize(`Conclusion: ${t(report.conclusionKey)}`, 170);
+    const conclusionText = doc.splitTextToSize(`Conclusion: ${t(report.conclusionKey || 'astrology.status.good_match')}`, 170);
     doc.text(conclusionText, 20, 70);
     
     let yPos = 90;
@@ -101,7 +101,7 @@ export default function KundliMatchingPage() {
       yPos += 10;
     });
     
-    doc.save(`Kundli_Match_${report.brideDetails.name}_${report.groomDetails.name}.pdf`);
+    doc.save(`Kundli_Match_${report.brideDetails?.name || 'Bride'}_${report.groomDetails?.name || 'Groom'}.pdf`);
   };
 
   const saveToProfile = async () => {
@@ -203,7 +203,7 @@ export default function KundliMatchingPage() {
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-2">{t('astrology.labels.totalGun')}</p>
                         <h2 className="text-6xl font-display font-black mb-2">{report.totalScore} <span className="text-2xl text-gray-400">/ 36</span></h2>
-                        <p className="text-gray-300 italic print:text-gray-700">{t(report.conclusionKey)}</p>
+                        <p className="text-gray-300 italic print:text-gray-700">{t(report.conclusionKey || 'astrology.status.good_match')}</p>
                       </div>
                       
                       <div className="w-32 h-32 rounded-full border-8 border-[#D4AF37]/30 flex items-center justify-center relative">
@@ -239,13 +239,13 @@ export default function KundliMatchingPage() {
                     {/* Manglik Analysis */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
                       <div className="flex items-center gap-3 mb-4">
-                        <div className={`p-2 rounded-lg ${report.manglikAnalysis.isMatch ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} print:bg-transparent print:p-0`}>
-                          {report.manglikAnalysis.isMatch ? <FiCheckCircle /> : <FiAlertCircle />}
+                        <div className={`p-2 rounded-lg ${report.manglikAnalysis?.isMatch ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} print:bg-transparent print:p-0`}>
+                          {report.manglikAnalysis?.isMatch ? <FiCheckCircle /> : <FiAlertCircle />}
                         </div>
                         <h4 className="font-display font-black text-lg">{t('astrology.labels.manglikAnalysis')}</h4>
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed italic">
-                        {t(report.manglikAnalysis.statusKey)}
+                        {t(report.manglikAnalysis?.statusKey || 'astrology.status.not_manglik')}
                       </p>
                     </div>
 

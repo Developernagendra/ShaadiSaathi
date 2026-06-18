@@ -53,12 +53,12 @@ router.get('/services', protect, restrictTo('vendor', 'admin'), async (req, res,
   }
 });
 
-router.get('/dashboard', protect, restrictTo('vendor', 'admin'), verified, getVendorDashboard);
+router.get('/dashboard', protect, restrictTo('vendor', 'admin'), getVendorDashboard);
 router.get('/:id', optionalAuth, getVendorById);
 router.get('/:id/contact', protect, getVendorContact);
 router.post('/', protect, createVendorProfile);
-router.put('/profile', protect, restrictTo('vendor', 'admin'), verified, updateVendorProfile);
-router.put('/cab-pricing', protect, restrictTo('vendor', 'admin'), verified, async (req, res, next) => {
+router.put('/profile', protect, restrictTo('vendor', 'admin'), updateVendorProfile);
+router.put('/cab-pricing', protect, restrictTo('vendor', 'admin'), async (req, res, next) => {
   const Vendor = require('../models/Vendor');
   let vendor;
   if (req.user.role === 'admin' && req.query.vendorId) {
@@ -113,8 +113,8 @@ router.delete('/video', protect, restrictTo('vendor', 'admin'), verified, async 
 
 // Leads pipeline
 const { getVendorLeadsPipeline, updateLeadPipelineStatus } = require('../controllers/vendorController');
-router.get('/leads/pipeline', protect, restrictTo('vendor', 'admin'), verified, getVendorLeadsPipeline);
-router.patch('/leads/:id/status', protect, restrictTo('vendor', 'admin'), verified, updateLeadPipelineStatus);
+router.get('/leads/pipeline', protect, restrictTo('vendor', 'admin'), getVendorLeadsPipeline);
+router.patch('/leads/:id/status', protect, restrictTo('vendor', 'admin'), updateLeadPipelineStatus);
 
 // Blog management
 router.get('/blogs', protect, restrictTo('vendor', 'admin'), getVendorBlogs);

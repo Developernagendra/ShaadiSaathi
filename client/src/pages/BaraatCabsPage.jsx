@@ -269,10 +269,10 @@ export default function BaraatCabsPage() {
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Premium Wedding Transportation</span>
           </motion.div>
 
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl lg:text-8xl font-serif font-black text-white mb-6 tracking-tight drop-shadow-2xl">
-            Arrive in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic">Royal Elegance</span>
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif font-black text-white mb-6 tracking-tight drop-shadow-2xl">
+            Arrive in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic block sm:inline">Royal Elegance</span>
           </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-gray-300 font-medium text-lg md:text-2xl italic max-w-3xl mx-auto drop-shadow-md mb-10">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-gray-300 font-medium text-base sm:text-lg md:text-2xl italic max-w-3xl mx-auto drop-shadow-md mb-10">
             Make your grand entrance unforgettable. Curate your custom fleet from our handpicked selection of luxury vintage cars, premium SUVs, and luxury coaches.
           </motion.p>
           

@@ -116,13 +116,16 @@ const Blog = mongoose.model('Blog', blogSchema);
 
 // ==================== TESTIMONIAL MODEL ====================
 const testimonialSchema = new mongoose.Schema({
-
-  name: { type: String, required: true },
-  city: String,
-  text: { type: String, required: true },
+  brideName: { type: String, required: true },
+  groomName: { type: String, required: true },
+  city: { type: String, required: true },
+  review: { type: String, required: true },
   rating: { type: Number, default: 5 },
-  image: String,
-  date: String,
+  image: { type: String },
+  video: { type: String },
+  weddingDate: { type: Date },
+  servicesBooked: [{ type: String }],
+  isVerified: { type: Boolean, default: false },
   isFeatured: { type: Boolean, default: false },
 }, { timestamps: true });
 

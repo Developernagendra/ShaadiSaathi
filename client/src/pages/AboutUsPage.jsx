@@ -42,12 +42,12 @@ export default function AboutUsPage() {
 
   const baraatCabs = [
     { name: 'BMW 5 Series', type: 'Luxury Arrival', img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Audi A6', type: 'Premium Sedan', img: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Fortuner Royal', type: 'SUV Convoy', img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Scorpio Classic', type: 'Baraat VIP', img: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Innova Crysta', type: 'Family Comfort', img: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0be2?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Luxury Bus', type: 'Mass Transit', img: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Tempo Traveller', type: 'Group Convoy', img: 'https://images.unsplash.com/photo-1632207691143-643e2a9a9361?auto=format&fit=crop&w=800&q=80' }
+    { name: 'Audi A6', type: 'Premium Sedan', img: '/images/baraat/audi_wedding.png' },
+    { name: 'Fortuner Royal', type: 'SUV Convoy', img: '/images/baraat/fortuner_wedding.png' },
+    { name: 'Scorpio Classic', type: 'Baraat VIP', img: '/images/baraat/scorpio_wedding.png' },
+    { name: 'Innova Crysta', type: 'Family Comfort', img: '/images/baraat/innova_wedding.png' },
+    { name: 'Luxury Bus', type: 'Mass Transit', img: '/images/baraat/luxury_bus_wedding.png' },
+    { name: 'Tempo Traveller', type: 'Group Convoy', img: '/images/baraat/tempo_traveller_wedding.png' }
   ];
 
   const testimonials = [
@@ -84,8 +84,8 @@ export default function AboutUsPage() {
             <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Bihar's Next Gen Wedding Tech</span>
           </motion.div>
 
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tight mb-6 drop-shadow-2xl max-w-5xl">
-            Making Every Bihar Wedding <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic">Stress-Free & Memorable</span>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tight mb-6 drop-shadow-2xl max-w-5xl">
+            Making Every Bihar Wedding <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] italic block sm:inline">Stress-Free & Memorable</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="text-lg md:text-2xl text-gray-200 font-medium max-w-3xl mb-12 drop-shadow-md">
@@ -154,22 +154,22 @@ export default function AboutUsPage() {
       {/* 3. MISSION & VISION (Split Cards) */}
       <section className="py-20 px-4 bg-gray-50 dark:bg-[#111]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-white dark:bg-[#1a1a1a] p-12 rounded-[3rem] shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#C2185B]/5 rounded-bl-full transition-transform group-hover:scale-110" />
-            <FiSearch className="text-6xl text-[#C2185B] mb-8" />
-            <h3 className="font-display text-4xl font-black mb-4 dark:text-white">Our Mission</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-lg leading-relaxed mb-8">To bring transparency, trust, and zero-stress planning to every family in Bihar organizing a wedding.</p>
+          <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-white dark:bg-[#1a1a1a] p-6 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-[#C2185B]/5 rounded-bl-full transition-transform group-hover:scale-110" />
+            <FiSearch className="text-4xl sm:text-6xl text-[#C2185B] mb-6 sm:mb-8" />
+            <h3 className="font-display text-3xl sm:text-4xl font-black mb-4 dark:text-white">Our Mission</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg leading-relaxed mb-8">To bring transparency, trust, and zero-stress planning to every family in Bihar organizing a wedding.</p>
             <div className="flex flex-wrap gap-3">
               <span className="px-4 py-2 bg-pink-50 dark:bg-pink-900/20 text-[#C2185B] text-sm font-bold rounded-full">Trust</span>
               <span className="px-4 py-2 bg-pink-50 dark:bg-pink-900/20 text-[#C2185B] text-sm font-bold rounded-full">Transparency</span>
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-gradient-to-br from-[#1a1a1a] to-[#050505] text-white p-12 rounded-[3rem] shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/10 rounded-bl-full transition-transform group-hover:scale-110" />
-            <FiStar className="text-6xl text-[#D4AF37] mb-8" />
-            <h3 className="font-display text-4xl font-black mb-4">Our Vision</h3>
-            <p className="text-gray-400 text-lg leading-relaxed mb-8">To become the absolute standard for premium wedding technology and luxury event transportation globally.</p>
+          <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-gradient-to-br from-[#1a1a1a] to-[#050505] text-white p-6 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-[#D4AF37]/10 rounded-bl-full transition-transform group-hover:scale-110" />
+            <FiStar className="text-4xl sm:text-6xl text-[#D4AF37] mb-6 sm:mb-8" />
+            <h3 className="font-display text-3xl sm:text-4xl font-black mb-4">Our Vision</h3>
+            <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-8">To become the absolute standard for premium wedding technology and luxury event transportation globally.</p>
             <div className="flex flex-wrap gap-3">
               <span className="px-4 py-2 bg-white/10 text-[#D4AF37] border border-[#D4AF37]/30 text-sm font-bold rounded-full">Innovation</span>
               <span className="px-4 py-2 bg-white/10 text-[#D4AF37] border border-[#D4AF37]/30 text-sm font-bold rounded-full">Customer First</span>

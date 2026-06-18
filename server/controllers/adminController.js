@@ -1061,3 +1061,62 @@ exports.getAvailabilityMonitor = catchAsync(async (req, res, next) => {
     }
   });
 });
+
+// ==================== TESTIMONIALS (ADMIN) ====================
+
+// @desc    Get all testimonials (Admin)
+// @route   GET /api/admin/testimonials
+// @access  Private (Admin)
+exports.getAllTestimonialsAdmin = catchAsync(async (req, res, next) => {
+  const { Testimonial } = require('../models/FeatureModels');
+  const testimonials = await Testimonial.find().sort({ createdAt: -1 });
+  res.status(200).json({ status: 'success', data: { testimonials } });
+});
+
+// @desc    Create/Update testimonial
+// @route   POST /api/admin/testimonials
+// @access  Private (Admin)
+exports.saveTestimonial = catchAsync(async (req, res, next) => {
+  const { Testimonial } = require('../models/FeatureModels');
+  const { id, brideName, groomName, city, review, rating, image, video, weddingDate, servicesBooked, isVerified, isFeatured } = req.body;
+
+  if (!brideName || !groomName || !review || !city) {
+    return next(new AppError('Bride Name, Groom Name, City, and Review are required.', 400));
+  }
+
+  let testimonial;
+  if (id) {
+    testimonial = await Testimonial.findById(id);
+    if (!testimonial) return next(new AppError('Testimonial not found', 404));
+
+    testimonial.brideName = brideName;
+    testimonial.groomName = groomName;
+    testimonial.city = city;
+    testimonial.review = review;
+    testimonial.rating = rating || testimonial.rating;
+    testimonial.image = image || testimonial.image;
+    testimonial.video = video || testimonial.video;
+    testimonial.weddingDate = weddingDate || testimonial.weddingDate;
+    testimonial.servicesBooked = servicesBooked || testimonial.servicesBooked;
+    testimonial.isVerified = isVerified !== undefined ? isVerified : testimonial.isVerified;
+    testimonial.isFeatured = isFeatured !== undefined ? isFeatured : testimonial.isFeatured;
+
+    await testimonial.save();
+  } else {
+    testimonial = await Testimonial.create({
+      brideName, groomName, city, review, rating, image, video, weddingDate, servicesBooked, isVerified, isFeatured
+    });
+  }
+
+  res.status(200).json({ status: 'success', data: { testimonial } });
+});
+
+// @desc    Delete testimonial
+// @route   DELETE /api/admin/testimonials/:id
+// @access  Private (Admin)
+exports.deleteTestimonial = catchAsync(async (req, res, next) => {
+  const { Testimonial } = require('../models/FeatureModels');
+  const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
+  if (!testimonial) return next(new AppError('Testimonial not found', 404));
+  res.status(200).json({ status: 'success', message: 'Testimonial deleted successfully' });
+});

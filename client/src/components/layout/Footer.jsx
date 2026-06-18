@@ -6,6 +6,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import api from '../../utils/api'
 import { useTranslation } from 'react-i18next'
 import BrandLogo from '../common/BrandLogo'
+import toast from 'react-hot-toast'
 
 export default function Footer() {
   const { t } = useTranslation?.() || { t: (key) => key };
@@ -24,6 +25,9 @@ export default function Footer() {
 
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [openSection, setOpenSection] = useState(null)
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
   useEffect(() => {
     const fetchContact = async () => {
@@ -41,13 +45,36 @@ export default function Footer() {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400)
     }
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+    }
+    
     window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterLoading(true);
+    try {
+      await api.post('/newsletter/subscribe', { email: newsletterEmail });
+      toast.success('Successfully subscribed to the newsletter!');
+      setNewsletterEmail('');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to subscribe. Please try again.');
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section)
@@ -57,10 +84,11 @@ export default function Footer() {
     { to: '/', label: 'Home' },
     { to: '/services', label: 'Services' },
     { to: '/vendors', label: 'Vendors' },
-    { to: '/baraat-cabs', label: 'Luxury Baraat Cabs' },
-    { to: '/tools/ai-planner', label: 'AI Wedding Planner' },
+    { to: '/real-weddings', label: 'Real Weddings' },
+    { to: '/gallery', label: 'Gallery' },
+    { to: '/blog', label: 'Blog' },
     { to: '/about-us', label: 'About Us' },
-    { to: '/contact', label: 'Contact Us' },
+    { to: '/contact', label: 'Contact' },
   ]
 
   const servicesLinks = [
@@ -106,6 +134,37 @@ export default function Footer() {
           )}
         </AnimatePresence>
 
+        {/* ── NEWSLETTER ── */}
+        <div className="max-w-7xl mx-auto px-4 pt-12 pb-8 border-b border-white/10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/5 rounded-3xl p-8 border border-white/10 backdrop-blur-sm shadow-xl">
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-2xl font-bold text-white mb-2 flex items-center justify-center md:justify-start gap-2">
+                <FiMail className="text-[#C2185B]" /> Subscribe to our Newsletter
+              </h3>
+              <p className="text-slate-400 text-sm">Get the latest wedding trends, planning tips, and exclusive vendor offers delivered to your inbox.</p>
+            </div>
+            <div className="flex-1 w-full max-w-md">
+              <form onSubmit={handleNewsletterSubmit} className="flex items-center bg-white/10 p-1.5 rounded-full border border-white/10 focus-within:border-[#C2185B] transition-colors">
+                <input 
+                  type="email" 
+                  required 
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="Your email address" 
+                  className="bg-transparent text-white px-4 py-2 w-full outline-none text-sm placeholder-slate-400"
+                />
+                <button 
+                  type="submit" 
+                  disabled={newsletterLoading}
+                  className="bg-[#C2185B] hover:bg-[#a3154d] text-white px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider transition-colors shadow-lg disabled:opacity-50 whitespace-nowrap"
+                >
+                  {newsletterLoading ? 'Subscribing...' : 'Subscribe'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
         {/* ── FOOTER STRUCTURE ── */}
         <div className="max-w-7xl mx-auto px-4 pb-16 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
@@ -118,7 +177,7 @@ export default function Footer() {
               </button>
               
               <AnimatePresence>
-                {(openSection === 'company' || window.innerWidth >= 768) && (
+                {(openSection === 'company' || windowWidth >= 768) && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 
@@ -161,7 +220,7 @@ export default function Footer() {
               </button>
 
               <AnimatePresence>
-                {(openSection === 'quickLinks' || window.innerWidth >= 768) && (
+                {(openSection === 'quickLinks' || windowWidth >= 768) && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 
@@ -192,7 +251,7 @@ export default function Footer() {
               </button>
 
               <AnimatePresence>
-                {(openSection === 'services' || window.innerWidth >= 768) && (
+                {(openSection === 'services' || windowWidth >= 768) && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 
@@ -221,7 +280,7 @@ export default function Footer() {
               </button>
 
               <AnimatePresence>
-                {(openSection === 'legal' || window.innerWidth >= 768) && (
+                {(openSection === 'legal' || windowWidth >= 768) && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 

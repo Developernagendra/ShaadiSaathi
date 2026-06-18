@@ -23,11 +23,15 @@ exports.subscribe = catchAsync(async (req, res, next) => {
       existingSubscriber.subscribedAt = Date.now();
       await existingSubscriber.save();
       
-      await sendEmail({
-        email: existingSubscriber.email,
-        subject: 'Welcome back to ShaadiSaathi 💍',
-        html: getWelcomeEmailHTML(existingSubscriber.email)
-      });
+      try {
+        await sendEmail({
+          email: existingSubscriber.email,
+          subject: 'Welcome back to ShaadiSaathi 💍',
+          html: getWelcomeEmailHTML(existingSubscriber.email)
+        });
+      } catch (err) {
+        console.error('[SMTP] Failed to send welcome back email (non-fatal):', err.message);
+      }
 
       return res.status(200).json({
         success: true,
@@ -43,11 +47,15 @@ exports.subscribe = catchAsync(async (req, res, next) => {
     source: source || 'footer'
   });
 
-  await sendEmail({
-    email: subscriber.email,
-    subject: 'Welcome to ShaadiSaathi 💍',
-    html: getWelcomeEmailHTML(subscriber.email)
-  });
+  try {
+    await sendEmail({
+      email: subscriber.email,
+      subject: 'Welcome to ShaadiSaathi 💍',
+      html: getWelcomeEmailHTML(subscriber.email)
+    });
+  } catch (err) {
+    console.error('[SMTP] Failed to send welcome email (non-fatal):', err.message);
+  }
 
   res.status(201).json({
     success: true,
