@@ -139,12 +139,13 @@ export default function HomePage() {
                 alt="Wedding"
                 className="w-full h-full object-cover"
                 loading={i === 0 ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : "auto"}
               />
             </div>
           );
         })}
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90 sm:from-black/60 sm:via-black/40 sm:to-black/70" />
 
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-24 md:pt-32 pb-10">
           <motion.div
@@ -156,47 +157,48 @@ export default function HomePage() {
             <span>{t('home.premium_marketplace', 'Premium Wedding Marketplace')}</span>
           </motion.div>
 
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight mb-4 text-shadow drop-shadow-2xl">
+          <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] sm:leading-tight mb-3 sm:mb-4 text-shadow drop-shadow-2xl line-clamp-2 sm:line-clamp-none">
             {t('home.title', 'Find Trusted Wedding Services For Your Special Day')}
           </h1>
 
-          <div className="mb-10">
-            <p className="text-white/90 text-sm sm:text-base md:text-xl font-medium max-w-2xl mx-auto text-shadow leading-relaxed italic">
+          <div className="mb-8 sm:mb-10 px-2 sm:px-0">
+            <p className="text-white/95 text-xs sm:text-base md:text-xl font-medium max-w-2xl mx-auto text-shadow leading-relaxed italic line-clamp-3 sm:line-clamp-none">
               {t('home.subtitle', 'Trusted vendors, smart planning tools aur seamless booking ke saath apni wedding journey ko simple banayein.')}
             </p>
           </div>
 
-          <form onSubmit={handleSearch} className="bg-white rounded-[2rem] p-3 shadow-2xl flex flex-col md:flex-row gap-3 max-w-4xl w-full mx-auto mb-8 border border-gold-100 relative group overflow-hidden">
+          <form onSubmit={handleSearch} className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-3 shadow-2xl flex flex-col md:flex-row gap-0 md:gap-3 max-w-4xl w-full mx-auto mb-8 border border-gold-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-400 via-pink-500 to-gold-400 opacity-50" />
-            <div className="flex items-center gap-3 flex-1 px-4 py-2 w-full">
-              <FiSearch className="text-[#C2185B] flex-shrink-0" size={22} />
+            
+            <div className="flex items-center gap-3 flex-1 px-3 md:px-4 py-2.5 md:py-2 w-full border-b border-gray-100 md:border-b-0">
+              <FiSearch className="text-[#C2185B] flex-shrink-0" size={18} />
               <input
                 type="text"
                 placeholder="Ex: Luxury Venues..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full outline-none text-gray-800 placeholder-gray-400 font-medium text-base min-w-0"
+                className="w-full outline-none text-gray-800 placeholder-gray-400 font-medium text-sm md:text-base min-w-0"
               />
             </div>
-            <div className="flex flex-col md:flex-row items-center gap-3 px-4 py-2 border-t md:border-t-0 md:border-l border-gray-100 w-full md:w-auto md:min-w-[200px]">
-              <div className="flex items-center gap-3 w-full">
-                <FiMapPin className="text-[#C2185B] flex-shrink-0" size={20} />
-                <select
-                  value={searchCity}
-                  onChange={(e) => setSearchCity(e.target.value)}
-                  className="outline-none text-gray-800 font-bold text-sm bg-transparent w-full cursor-pointer min-w-0"
-                >
-                  <option value="">All Cities</option>
-                  {INDIAN_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+            
+            <div className="flex items-center gap-3 px-3 md:px-4 py-2.5 md:py-2 w-full md:w-auto md:min-w-[180px] md:border-l border-gray-100 mb-2 md:mb-0">
+              <FiMapPin className="text-[#C2185B] flex-shrink-0" size={18} />
+              <select
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className="outline-none text-gray-800 font-bold text-sm bg-transparent w-full cursor-pointer min-w-0"
+              >
+                <option value="">All Cities</option>
+                {INDIAN_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
             </div>
-            <button type="submit" className="btn-primary whitespace-nowrap !rounded-2xl py-4 px-10 text-sm shine-effect w-full md:w-auto flex-shrink-0">
+            
+            <button type="submit" className="bg-primary-600 hover:bg-primary-700 text-white whitespace-nowrap rounded-xl md:rounded-2xl py-2.5 md:py-4 px-8 text-sm font-bold shine-effect w-full md:w-auto flex-shrink-0 transition-colors">
               Find Vendors
             </button>
           </form>
 
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-2 md:gap-3 px-2 md:px-0 max-w-sm md:max-w-none mx-auto">
             {[
               { label: 'Venues 🏛️', slug: 'venues' },
               { label: 'Catering 🍽️', slug: 'catering' },
@@ -206,7 +208,7 @@ export default function HomePage() {
               <button
                 key={item.slug}
                 onClick={() => navigate(`/services?category=${item.slug}`)}
-                className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-4 sm:px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-[#D4AF37] hover:text-white transition-all shadow-lg active:scale-95"
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-3 md:px-5 py-2.5 md:py-2.5 rounded-xl md:rounded-full text-xs md:text-sm font-semibold transition-all hover:-translate-y-1 hover:shadow-lg text-center w-full md:w-auto truncate"
               >
                 {item.label}
               </button>

@@ -148,7 +148,7 @@ useEffect(() => {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${navTransparent ? 'bg-transparent py-2 md:py-4' : 'bg-white/95 backdrop-blur-md shadow-sm border-b border-pink-50/50 py-2 md:py-3'
+      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${navTransparent ? 'bg-transparent py-1.5 md:py-3' : 'bg-white/95 backdrop-blur-md shadow-sm border-b border-pink-50/50 py-1.5 md:py-2'
         }`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 md:gap-4">
@@ -231,25 +231,27 @@ useEffect(() => {
                 <LanguageSwitcher />
               </div>
               
-              {/* ── Mobile Menu Toggle ── */}
-              <div className="flex lg:hidden items-center gap-1 sm:gap-2">
+              {/* ── Mobile Actions (Login/Profile & Hamburger) ── */}
+              <div className="flex lg:hidden items-center gap-2">
                 {isAuthenticated ? (
-                  <div className="flex items-center gap-1 sm:gap-2 mr-1 sm:mr-2">
-                    <Link to="/cart" className={`p-1.5 sm:p-2 rounded-xl transition-all active:scale-95 ${navTransparent ? 'text-white hover:bg-white/10' : 'text-gray-600 hover:bg-pink-50'}`}>
-                      <FiShoppingCart size={18} />
-                    </Link>
-                  </div>
+                  <Link to={user?.role === 'vendor' ? '/vendor/dashboard' : '/dashboard'} className={`flex items-center justify-center w-11 h-11 rounded-full border shadow-sm transition-all active:scale-95 ${navTransparent ? 'border-white/20 bg-white/20 text-white' : 'border-gray-200 bg-gray-50'}`}>
+                    {user?.avatar?.url ? (
+                      <img src={user.avatar.url} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <span className="text-[13px] font-black">{getInitials(user?.name)}</span>
+                    )}
+                  </Link>
                 ) : (
-                  <Link to="/login" className={`text-[10px] font-black uppercase tracking-wider px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all ${navTransparent ? 'text-white bg-white/10' : 'text-primary-600 bg-pink-50'}`}>
+                  <Link to="/login" className={`flex items-center justify-center min-h-[44px] text-[11px] font-black uppercase tracking-wider px-4 rounded-lg transition-all border ${navTransparent ? 'text-white border-white/30 bg-white/10' : 'text-primary-600 border-primary-100 bg-pink-50'}`}>
                     Login
                   </Link>
                 )}
                 
                 <button
-                  onClick={() => setMobileOpen(!mobileOpen)}
-                  className={`p-1.5 sm:p-2 rounded-xl transition-all active:scale-95 ${navTransparent ? 'text-white hover:bg-white/10' : 'text-gray-900 bg-gray-50 border border-gray-100 hover:bg-gray-100'}`}
+                  onClick={() => setMobileOpen(true)}
+                  className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-95 border ${navTransparent ? 'text-white border-white/20 bg-white/10' : 'text-gray-900 border-gray-200 bg-gray-50'}`}
                 >
-                  {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+                  <FiMenu size={24} />
                 </button>
               </div>
 
@@ -374,10 +376,6 @@ useEffect(() => {
                 </div>
               )}
 
-              {/* Mobile Toggle */}
-              <button onClick={() => setMobileOpen(true)} className={`lg:hidden flex-shrink-0 w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${navTransparent ? 'text-white bg-white/10 border border-white/20' : 'text-gray-900 bg-gray-100'}`}>
-                <FiMenu size={22} />
-              </button>
             </div>
           </div>
         </div>
