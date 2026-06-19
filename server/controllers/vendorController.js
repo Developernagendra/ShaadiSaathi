@@ -57,8 +57,46 @@ const createVendorProfile = catchAsync(async (req, res, next) => {
       });
     }
   } catch (err) {
-    console.error('Vendor registration notification failed:', err);
+    console.error('[VENDOR_PROFILE] ❌ In-app notification failed:', err.message);
   }
+
+  // ── EMAIL: Welcome email to vendor + Admin notification emails ─────
+  // Fire-and-forget — never block the HTTP response for email dispatch
+  (async () => {
+    try {
+      // 1. Send vendor welcome email
+      if (req.user.email) {
+        const welcomeTemplate = emailTemplates.vendorWelcome(
+          req.user.name,
+          vendor.businessName || `${req.user.name}'s Business`
+        );
+        await sendEmail({ to: req.user.email, ...welcomeTemplate });
+        console.log(`[VENDOR_PROFILE] ✅ Welcome email sent to vendor: ${req.user.email}`);
+      }
+
+      // 2. Send admin notification emails
+      const admins = await User.find({ role: 'admin' }).lean();
+      for (const admin of admins) {
+        if (admin.email) {
+          const adminTemplate = emailTemplates.adminVendorRegistration(
+            admin.name || 'Administrator',
+            {
+              name: req.user.name,
+              email: req.user.email || vendor.email,
+              phone: req.user.phone || vendor.phone || 'Not Provided',
+              businessName: vendor.businessName || 'Pending Setup',
+              vendorType: vendor.vendorType || 'service',
+            }
+          );
+          await sendEmail({ to: admin.email, ...adminTemplate });
+          console.log(`[VENDOR_PROFILE] ✅ Admin notified about new vendor profile: ${admin.email}`);
+        }
+      }
+    } catch (emailErr) {
+      console.error('[VENDOR_PROFILE] ❌ EMAIL_DISPATCH_FAILED:');
+      console.error(`[VENDOR_PROFILE]    → Error : ${emailErr.message}`);
+    }
+  })();
 
   res.status(201).json({
     status: 'success',
@@ -636,9 +674,13 @@ const updateVendorApproval = catchAsync(async (req, res, next) => {
     if (emailTemplates && emailTemplates.vendorApproval) {
       const template = emailTemplates.vendorApproval(vendor.user.name, status);
       await sendEmail({ to: vendor.user.email, ...template });
+      console.log(`[VENDOR_APPROVAL] ✅ Approval email sent to: ${vendor.user.email} (status: ${status})`);
     }
   } catch (err) {
-    console.error('Email notification failed during vendor approval:', err);
+    console.error('[VENDOR_APPROVAL] ❌ APPROVAL_EMAIL_FAILED:');
+    console.error(`[VENDOR_APPROVAL]    → Vendor : ${vendor.user.email}`);
+    console.error(`[VENDOR_APPROVAL]    → Status : ${status}`);
+    console.error(`[VENDOR_APPROVAL]    → Error  : ${err.message}`);
   }
 
   // Create system notification

@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const User = require('../models/User');
-const { sendEmail, emailTemplates } = require('../services/emailService');
+const { sendEmail, emailTemplates, getClientUrl } = require('../services/emailService');
 
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -51,14 +51,19 @@ const register = catchAsync(async (req, res, next) => {
         const token = existingUser.generateEmailVerificationToken();
         await existingUser.save({ validateBeforeSave: false });
 
-        const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
+        const clientUrl = getClientUrl();
         const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
         // Fire-and-forget: don't block the HTTP response
         const template = emailTemplates.verification(existingUser.name, verificationUrl, existingUser.preferredLanguage);
         sendEmail({ to: existingUser.email, subject: template.subject, html: template.html, text: template.text })
-          .then(() => console.log(`[AUTH] Resent verification email to unverified account: ${existingUser.email}`))
-          .catch((err) => console.error('[AUTH] Failed to resend verification email:', err.message));
+          .then(() => console.log(`[AUTH] ✅ Resent verification email to unverified account: ${existingUser.email}`))
+          .catch((err) => {
+            console.error('[AUTH] ❌ VERIFICATION_RESEND_FAILED:');
+            console.error(`[AUTH]    → Email    : ${existingUser.email}`);
+            console.error(`[AUTH]    → Error    : ${err.message}`);
+            console.error(`[AUTH]    → Code     : ${err.code || 'UNKNOWN'}`);
+          });
 
         return res.status(400).json({
           success: false,
@@ -127,7 +132,7 @@ const register = catchAsync(async (req, res, next) => {
   const token = user.generateEmailVerificationToken();
   console.log('[REGISTRATION] 🔑 Verification Token Generated');
 
-  // Auto-verify all normal users
+  // Auto-verify all normal users (they can use the platform immediately)
   if (userRole === 'user') {
     user.isVerified = true;
     user.isEmailVerified = true;
@@ -140,28 +145,86 @@ const register = catchAsync(async (req, res, next) => {
 
   await user.save({ validateBeforeSave: false });
 
-  const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
-
+  const clientUrl = getClientUrl();
   const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
-  console.log('[REGISTRATION] 📨 Email Attempt Started (Background)');
+  console.log('[REGISTRATION] 📨 Email Dispatch Started (Background)');
 
-  // Only send verification emails if they are not already verified (e.g. vendors)
-  if (!user.isVerified) {
-    const template = emailTemplates.verification(user.name, verificationUrl, user.preferredLanguage);
+  // ── EMAIL 1: Welcome Email (always sent for all users) ─────────────
+  if (userRole === 'user') {
+    const welcomeTemplate = emailTemplates.welcomeUser(user.name);
     sendEmail({
       to: user.email,
-      subject: template.subject,
-      html: template.html,
-      text: template.text,
+      subject: welcomeTemplate.subject,
+      html: welcomeTemplate.html,
     })
-      .then((emailResult) => {
-        console.log('[VERIFY_EMAIL] ✅ Verification Email Success');
-        console.log(`[SMTP]    → To        : ${user.email}`);
-      })
-      .catch((error) => {
-        console.error('[VERIFY_EMAIL] ❌ Verification Email Failed:', error.message);
+      .then(() => console.log(`[WELCOME_EMAIL] ✅ Welcome email sent to: ${user.email}`))
+      .catch((err) => {
+        console.error('[WELCOME_EMAIL] ❌ WELCOME_EMAIL_FAILED:');
+        console.error(`[WELCOME_EMAIL]    → Email : ${user.email}`);
+        console.error(`[WELCOME_EMAIL]    → Error : ${err.message}`);
       });
+  }
+
+  // ── EMAIL 2: Vendor Welcome + Verification Email ───────────────────
+  if (userRole === 'vendor') {
+    // Send vendor welcome email
+    const vendorWelcomeTemplate = emailTemplates.vendorWelcome(user.name, `${name}'s Business`);
+    sendEmail({
+      to: user.email,
+      subject: vendorWelcomeTemplate.subject,
+      html: vendorWelcomeTemplate.html,
+    })
+      .then(() => console.log(`[VENDOR_WELCOME] ✅ Vendor welcome email sent to: ${user.email}`))
+      .catch((err) => {
+        console.error('[VENDOR_WELCOME] ❌ VENDOR_WELCOME_FAILED:');
+        console.error(`[VENDOR_WELCOME]    → Email : ${user.email}`);
+        console.error(`[VENDOR_WELCOME]    → Error : ${err.message}`);
+      });
+
+    // Send verification email for vendors (they need to verify)
+    if (!user.isVerified) {
+      const verifyTemplate = emailTemplates.verification(user.name, verificationUrl, user.preferredLanguage);
+      sendEmail({
+        to: user.email,
+        subject: verifyTemplate.subject,
+        html: verifyTemplate.html,
+      })
+        .then(() => {
+          console.log('[VERIFY_EMAIL] ✅ Vendor verification email sent');
+          console.log(`[SMTP]    → To : ${user.email}`);
+        })
+        .catch((err) => {
+          console.error('[VERIFY_EMAIL] ❌ VENDOR_VERIFICATION_FAILED:');
+          console.error(`[VERIFY_EMAIL]    → Email : ${user.email}`);
+          console.error(`[VERIFY_EMAIL]    → Error : ${err.message}`);
+        });
+    }
+
+    // ── EMAIL 3: Notify all admins about new vendor registration ─────
+    (async () => {
+      try {
+        const admins = await User.find({ role: 'admin' }).lean();
+        for (const admin of admins) {
+          if (admin.email) {
+            const adminTemplate = emailTemplates.adminVendorRegistration(
+              admin.name || 'Administrator',
+              {
+                name: user.name,
+                email: user.email,
+                phone: user.phone || 'Not Provided',
+                businessName: `${name}'s Business (Pending)`,
+                vendorType: vendorType || 'service',
+              }
+            );
+            await sendEmail({ to: admin.email, ...adminTemplate });
+            console.log(`[ADMIN_NOTIFY] ✅ Admin notified about new vendor: ${admin.email}`);
+          }
+        }
+      } catch (err) {
+        console.error('[ADMIN_NOTIFY] ❌ ADMIN_VENDOR_NOTIFICATION_FAILED:', err.message);
+      }
+    })();
   }
 
   console.log('[REGISTER] ✅ Response Sent - Account created');
@@ -355,12 +418,15 @@ const verifyEmail = catchAsync(async (req, res, next) => {
     );
   }
 
+  // Prevent reuse — verify and invalidate token
   user.isVerified = true;
   user.isEmailVerified = true;
   user.verificationToken = undefined;
   user.verificationTokenExpire = undefined;
 
   await user.save({ validateBeforeSave: false });
+
+  console.log(`[VERIFY_EMAIL] ✅ Email verified successfully for: ${user.email}`);
 
   res.status(200).json({
     status: 'success',
@@ -396,10 +462,8 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     validateBeforeSave: false,
   });
 
-  const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
-
-  const resetUrl =
-    `${clientUrl}/reset-password/${resetToken}`;
+  const clientUrl = getClientUrl();
+  const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
   const template =
     emailTemplates.resetPassword(
@@ -413,12 +477,15 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     to: user.email,
     ...template,
   }).then(() => {
-    console.log('[FORGOT_PASSWORD] ✅ Reset Email Success');
+    console.log(`[FORGOT_PASSWORD] ✅ Reset email sent to: ${user.email}`);
   }).catch((err) => {
     // Do NOT clear the reset token here — the user should be able to retry
     // or use the resend flow. Clearing it means the link in any delayed email
     // becomes permanently invalid.
-    console.error('[FORGOT_PASSWORD] ❌ Reset Email Failed:', err.message);
+    console.error('[FORGOT_PASSWORD] ❌ RESET_EMAIL_FAILED:');
+    console.error(`[FORGOT_PASSWORD]    → Email : ${user.email}`);
+    console.error(`[FORGOT_PASSWORD]    → Error : ${err.message}`);
+    console.error(`[FORGOT_PASSWORD]    → Code  : ${err.code || 'UNKNOWN'}`);
     console.error('[FORGOT_PASSWORD]    → Token preserved so user can request another email');
   });
 
@@ -472,6 +539,7 @@ const resetPassword = catchAsync(async (req, res, next) => {
 
   user.password = req.body.password;
 
+  // Invalidate token after use — prevent reuse
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
 
@@ -485,8 +553,12 @@ const resetPassword = catchAsync(async (req, res, next) => {
     to: user.email,
     ...confirmTemplate,
   })
-    .then(() => console.log('[RESET_PASSWORD] ✅ Password changed confirmation email sent'))
-    .catch((err) => console.error('[RESET_PASSWORD] ❌ Password changed email failed:', err.message));
+    .then(() => console.log(`[RESET_PASSWORD] ✅ Password changed confirmation email sent to: ${user.email}`))
+    .catch((err) => {
+      console.error('[RESET_PASSWORD] ❌ PASSWORD_CHANGED_EMAIL_FAILED:');
+      console.error(`[RESET_PASSWORD]    → Email : ${user.email}`);
+      console.error(`[RESET_PASSWORD]    → Error : ${err.message}`);
+    });
 
   const jwtToken = generateToken(
     user._id,
@@ -578,6 +650,12 @@ const changePassword = catchAsync(async (req, res, next) => {
 
   await user.save();
 
+  // Send password changed confirmation (fire-and-forget)
+  const confirmTemplate = emailTemplates.passwordChanged(user.name);
+  sendEmail({ to: user.email, ...confirmTemplate })
+    .then(() => console.log(`[CHANGE_PASSWORD] ✅ Password changed confirmation sent to: ${user.email}`))
+    .catch((err) => console.error(`[CHANGE_PASSWORD] ❌ Confirmation email failed: ${err.message}`));
+
   res.status(200).json({
     status: 'success',
     message:
@@ -630,11 +708,12 @@ const resendVerification = catchAsync(async (req, res, next) => {
     validateBeforeSave: false,
   });
 
-  const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
-
+  const clientUrl = getClientUrl();
   const verificationUrl = `${clientUrl}/verify-email/${token}`;
 
-  console.log(`[DEVELOPMENT] 🔗 Resend Verification Link: ${verificationUrl}`);
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'local') {
+    console.log(`[DEVELOPMENT] 🔗 Resend Verification Link: ${verificationUrl}`);
+  }
 
   const template =
     emailTemplates.verification(
@@ -649,9 +728,12 @@ const resendVerification = catchAsync(async (req, res, next) => {
     to: user.email,
     ...template,
   }).then(() => {
-    console.log('[VERIFY_EMAIL] ✅ Resend Success');
-  }).catch((error) => {
-    console.error('[VERIFY_EMAIL] ❌ Resend Failed:', error.message);
+    console.log(`[VERIFY_EMAIL] ✅ Resend verification sent to: ${user.email}`);
+  }).catch((err) => {
+    console.error('[VERIFY_EMAIL] ❌ RESEND_VERIFICATION_FAILED:');
+    console.error(`[VERIFY_EMAIL]    → Email : ${user.email}`);
+    console.error(`[VERIFY_EMAIL]    → Error : ${err.message}`);
+    console.error(`[VERIFY_EMAIL]    → Code  : ${err.code || 'UNKNOWN'}`);
   });
 
   return res.status(200).json({
@@ -712,6 +794,7 @@ const testEmail = catchAsync(async (req, res, next) => {
         <p><b>Environment:</b> ${process.env.NODE_ENV}</p>
         <p><b>SMTP Host:</b> ${process.env.EMAIL_HOST || 'smtp.gmail.com'}</p>
         <p><b>SMTP Port:</b> ${process.env.EMAIL_PORT || '465'}</p>
+        <p><b>CLIENT_URL:</b> ${getClientUrl()}</p>
         <p>Your authentication gating and verification flow will now work smoothly.</p>
       </div>
     `;
@@ -727,6 +810,7 @@ const testEmail = catchAsync(async (req, res, next) => {
         recipient: to,
         smtpHost: process.env.EMAIL_HOST || 'smtp.gmail.com',
         smtpPort: process.env.EMAIL_PORT || '465',
+        clientUrl: getClientUrl(),
       }
     });
   } catch (error) {

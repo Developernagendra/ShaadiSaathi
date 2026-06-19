@@ -76,7 +76,11 @@ const corsOptions = {
       /https:\/\/shaadi-saathi(-[a-z0-9-]+)?\.vercel\.app/.test(origin) ||
       /https:\/\/shaadisaathi(-[a-z0-9-]+)?\.vercel\.app/.test(origin);
 
-    if (isAllowed) {
+    // In non-production, also allow private/LAN network IPs (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+    const isPrivateNetwork = process.env.NODE_ENV !== 'production' &&
+      /^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin);
+
+    if (isAllowed || isPrivateNetwork) {
       callback(null, true);
     } else {
       console.warn(`⚠️ CORS BLOCKED for Origin: ${origin}`);
@@ -208,22 +212,85 @@ if (!authMid.protect || !authMid.restrictTo || !authMid.adminOnly) {
 }
 
 /* ---------------- STARTUP ENV VALIDATION ---------------- */
-const REQUIRED_ENV_VARS = ['MONGO_URI', 'JWT_SECRET'];
-const RECOMMENDED_ENV_VARS = ['EMAIL_USER', 'EMAIL_PASS', 'CLIENT_URL', 'OPENAI_API_KEY'];
+// ── Required: Server WILL NOT start without these ──────────────────────
+const REQUIRED_ENV_VARS = [
+  { key: 'JWT_SECRET', label: 'JWT signing secret' },
+];
 
-const missingRequired = REQUIRED_ENV_VARS.filter(v => !process.env[v] && !process.env[v.replace('MONGO_URI', 'MONGODB_URI')]);
+// ── Required for Email: Server starts but emails will FAIL ─────────────
+const EMAIL_REQUIRED_VARS = [
+  { key: 'EMAIL_HOST', label: 'SMTP host (e.g. smtp.gmail.com)' },
+  { key: 'EMAIL_PORT', label: 'SMTP port (e.g. 465)' },
+  { key: 'EMAIL_USER', label: 'SMTP username / Gmail address' },
+  { key: 'EMAIL_PASS', label: 'SMTP password / Gmail App Password' },
+  { key: 'EMAIL_FROM', label: 'From address (e.g. ShaadiSaathi <you@gmail.com>)' },
+  { key: 'CLIENT_URL', label: 'Frontend URL for email links (e.g. https://shaadi-saathi.vercel.app)' },
+];
+
+// ── Recommended: features degrade gracefully ───────────────────────────
+const RECOMMENDED_ENV_VARS = ['OPENAI_API_KEY', 'FRONTEND_URL', 'SERVER_URL'];
+
+// Check MongoDB URI (supports both MONGO_URI and MONGODB_URI)
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+if (!mongoUri) {
+  console.error('❌ FATAL: Missing MONGO_URI (or MONGODB_URI). Server startup aborted.');
+  process.exit(1);
+}
+
+// Check required vars
+const missingRequired = REQUIRED_ENV_VARS.filter(v => !process.env[v.key]);
 if (missingRequired.length > 0) {
-  console.error(`❌ FATAL: Missing required environment variables: ${missingRequired.join(', ')}`);
+  console.error('❌ FATAL: Missing required environment variables:');
+  missingRequired.forEach(v => console.error(`   → ${v.key}: ${v.label}`));
   console.error('❌ Server startup aborted. Please set these variables in .env or your hosting provider.');
   process.exit(1);
 }
 
+// Check email vars — warn loudly but don't crash (allows partial operation)
+const missingEmail = EMAIL_REQUIRED_VARS.filter(v => !process.env[v.key]);
+if (missingEmail.length > 0) {
+  console.error('');
+  console.error('╔══════════════════════════════════════════════════════════════╗');
+  console.error('║  ⚠️  EMAIL SYSTEM DISABLED — Missing environment variables  ║');
+  console.error('╚══════════════════════════════════════════════════════════════╝');
+  missingEmail.forEach(v => console.error(`   ❌ ${v.key}: ${v.label}`));
+  console.error('');
+  console.error('   Emails (verification, password reset, booking) will NOT be sent.');
+  console.error('   Set these in .env (local) or Render Dashboard → Environment (production).');
+  console.error('');
+} else {
+  console.log('✅ All email environment variables configured.');
+}
+
+// Check recommended vars
 const missingRecommended = RECOMMENDED_ENV_VARS.filter(v => !process.env[v]);
 if (missingRecommended.length > 0) {
   console.warn(`⚠️  Missing recommended environment variables: ${missingRecommended.join(', ')}`);
-  console.warn('⚠️  Some features (email, AI chatbot) may not work without these variables.');
 }
+
+// Validate CLIENT_URL has no trailing slash (common misconfiguration)
+if (process.env.CLIENT_URL && process.env.CLIENT_URL.endsWith('/')) {
+  console.warn(`⚠️  CLIENT_URL has a trailing slash: "${process.env.CLIENT_URL}"`);
+  console.warn('   → This can cause double-slash in email verification links. Stripping it automatically.');
+  process.env.CLIENT_URL = process.env.CLIENT_URL.replace(/\/+$/, '');
+}
+
+// Validate no localhost URLs in production
+if (process.env.NODE_ENV === 'production') {
+  const urlVars = ['CLIENT_URL', 'FRONTEND_URL', 'SERVER_URL'];
+  urlVars.forEach(key => {
+    const val = process.env[key];
+    if (val && (val.includes('localhost') || val.includes('127.0.0.1'))) {
+      console.error(`❌ CRITICAL: ${key} contains localhost in production: "${val}"`);
+      console.error('   → This WILL break email links. Please set to production domain.');
+    }
+  });
+}
+
 console.log('✅ Environment variables validated.');
+console.log(`   → NODE_ENV   : ${process.env.NODE_ENV}`);
+console.log(`   → CLIENT_URL : ${process.env.CLIENT_URL || '(not set)'}`);
+console.log(`   → EMAIL_USER : ${process.env.EMAIL_USER || '(not set)'}`);
 
 /* ---------------- ROUTES ---------------- */
 const { testEmail } = require("./controllers/authController");

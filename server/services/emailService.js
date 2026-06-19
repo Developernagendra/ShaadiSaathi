@@ -12,7 +12,17 @@ const EMAIL_SECURE = process.env.EMAIL_SECURE !== 'false'; // Defaults TRUE for 
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_FROM = process.env.EMAIL_FROM || `ShaadiSaathi <${EMAIL_USER}>`;
-const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+
+// ─── Centralized Client URL Resolution ──────────────────────────────
+// CRITICAL: Default fallback is PRODUCTION domain, not localhost.
+// Localhost fallback caused all email links to break when CLIENT_URL was
+// missing from Render's environment configuration.
+const getClientUrl = () => {
+  const raw = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'https://shaadi-saathi.vercel.app';
+  return raw.replace(/\/+$/, ''); // Strip trailing slashes
+};
+
+const CLIENT_URL = getClientUrl();
 
 const COLORS = {
   primary: '#C2185B',
@@ -67,9 +77,11 @@ const verifySMTP = async () => {
     console.log(`[SMTP]    → Host     : ${EMAIL_HOST}:${EMAIL_PORT}`);
     console.log(`[SMTP]    → User     : ${EMAIL_USER}`);
     console.log(`[SMTP]    → From     : ${EMAIL_FROM}`);
+    console.log(`[SMTP]    → ClientURL: ${CLIENT_URL}`);
     return true;
   } catch (err) {
     console.error('[SMTP] ❌ SMTP verification failed:', err.message);
+    console.error('[SMTP]    → Code     :', err.code || 'UNKNOWN');
     console.error('[SMTP]    → Check EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT in your .env');
     return false;
   }
@@ -77,6 +89,21 @@ const verifySMTP = async () => {
 
 // ─── Retry Helper ────────────────────────────────────────────────────
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// ─── Categorize SMTP Errors ─────────────────────────────────────────
+const categorizeError = (err) => {
+  if (!err) return 'UNKNOWN_ERROR';
+  const code = err.code || '';
+  const msg = (err.message || '').toLowerCase();
+
+  if (code === 'EAUTH' || msg.includes('invalid login') || msg.includes('authentication')) return 'SMTP_AUTH_ERROR';
+  if (code === 'ESOCKET' || code === 'ECONNECTION' || code === 'ETIMEDOUT' || code === 'ECONNREFUSED') return 'SMTP_CONNECTION_ERROR';
+  if (code === 'EDNS' || code === 'ENETUNREACH') return 'SMTP_DNS_ERROR';
+  if (msg.includes('rate') || msg.includes('limit') || msg.includes('quota')) return 'SMTP_RATE_LIMIT';
+  if (msg.includes('recipient') || msg.includes('address')) return 'SMTP_RECIPIENT_ERROR';
+  if (msg.includes('template') || msg.includes('html')) return 'TEMPLATE_ERROR';
+  return 'SMTP_UNKNOWN_ERROR';
+};
 
 // ─── Send Email with Retry Logic ─────────────────────────────────────
 const sendEmail = async (options) => {
@@ -91,14 +118,19 @@ const sendEmail = async (options) => {
   // Guard: validate recipient is a non-empty string
   if (!mailOptions.to || typeof mailOptions.to !== 'string' || !mailOptions.to.includes('@')) {
     const msg = `Invalid or missing email recipient: "${mailOptions.to}"`;
-    console.error(`[SMTP] ❌ ${msg}`);
+    console.error(`[SMTP] ❌ RECIPIENT_ERROR: ${msg}`);
     throw new Error(msg);
+  }
+
+  // Guard: validate subject exists
+  if (!mailOptions.subject) {
+    console.warn('[SMTP] ⚠️  Email subject is empty — this may cause delivery issues.');
   }
 
   // Centralized Nodemailer Dispatch
   const t = getTransporter();
   if (!t) {
-    const msg = 'Email transport not configured. Check EMAIL_USER and EMAIL_PASS environment variables.';
+    const msg = 'SMTP_CONFIG_ERROR: Email transport not configured. Check EMAIL_USER and EMAIL_PASS environment variables.';
     console.error(`[SMTP] ❌ ${msg}`);
     throw new Error(msg);
   }
@@ -127,11 +159,19 @@ const sendEmail = async (options) => {
       return { success: true, messageId: info.messageId, response: info.response };
     } catch (err) {
       lastError = err;
+      const errorCategory = categorizeError(err);
       console.error(`[SMTP] ❌ Attempt ${attempt}/${MAX_RETRIES} failed:`);
+      console.error(`[SMTP]    → Category  : ${errorCategory}`);
       console.error(`[SMTP]    → Host      : ${EMAIL_HOST}:${EMAIL_PORT}`);
       console.error(`[SMTP]    → Recipient : ${mailOptions.to}`);
       console.error(`[SMTP]    → Code      : ${err.code || 'UNKNOWN'}`);
       console.error(`[SMTP]    → Error     : ${err.message}`);
+
+      // Don't retry auth errors — they'll fail every time
+      if (errorCategory === 'SMTP_AUTH_ERROR') {
+        console.error('[SMTP] 🛑 Authentication error — aborting retries (fix EMAIL_USER/EMAIL_PASS)');
+        break;
+      }
 
       if (attempt < MAX_RETRIES) {
         const delay = RETRY_DELAYS[attempt - 1] || 3000;
@@ -241,6 +281,72 @@ const emailTemplates = {
       preheader
     );
     return { subject, html };
+  },
+
+  // ── Welcome Email (for newly registered users) ─────────────────────
+  welcomeUser: (name) => {
+    const html = getBaseTemplate(
+      'Welcome to ShaadiSaathi!',
+      `<h2 style="color: ${COLORS.text}; margin-top: 0;">Welcome, ${name}! 🎉</h2>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Thank you for joining ShaadiSaathi — India's premier wedding marketplace. We're thrilled to be part of your wedding journey!</p>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Here's what you can do next:</p>
+       <div style="background-color: #F8F9FA; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #EAEAEA;">
+         <p style="margin: 8px 0;">✨ <strong>Browse Vendors</strong> — Find photographers, caterers, decorators & more</p>
+         <p style="margin: 8px 0;">📅 <strong>Book Services</strong> — Secure your wedding vendors with instant booking</p>
+         <p style="margin: 8px 0;">💬 <strong>Chat with Vendors</strong> — Discuss requirements directly</p>
+         <p style="margin: 8px 0;">🔧 <strong>Wedding Tools</strong> — Budget planner, checklist, guest manager & more</p>
+       </div>
+       <div style="text-align: center; margin: 30px 0;">
+         <a href="${CLIENT_URL}/services" style="display: inline-block; background-color: ${COLORS.primary}; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold;">Explore Vendors</a>
+       </div>`,
+      'Welcome to ShaadiSaathi! Start planning your dream wedding today.'
+    );
+    return { subject: 'Welcome to ShaadiSaathi! 🎉', html };
+  },
+
+  // ── Vendor Welcome Email ───────────────────────────────────────────
+  vendorWelcome: (name, businessName) => {
+    const html = getBaseTemplate(
+      'Welcome to ShaadiSaathi Partner Program!',
+      `<h2 style="color: ${COLORS.text}; margin-top: 0;">Welcome, ${name}! 🤝</h2>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Thank you for registering <strong>${businessName || 'your business'}</strong> on ShaadiSaathi's vendor marketplace!</p>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Your vendor profile is being reviewed by our team. Here's what to expect:</p>
+       <div style="background-color: #F8F9FA; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #EAEAEA;">
+         <p style="margin: 8px 0;">1️⃣ <strong>Profile Review</strong> — Our team will review your profile (usually within 24 hours)</p>
+         <p style="margin: 8px 0;">2️⃣ <strong>Approval Email</strong> — You'll receive an email once approved</p>
+         <p style="margin: 8px 0;">3️⃣ <strong>Go Live</strong> — Start receiving bookings from couples across India</p>
+       </div>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">In the meantime, you can complete your profile to speed up the approval process.</p>
+       <div style="text-align: center; margin: 30px 0;">
+         <a href="${CLIENT_URL}/vendor/dashboard" style="display: inline-block; background-color: ${COLORS.primary}; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold;">Complete Your Profile</a>
+       </div>`,
+      'Welcome to ShaadiSaathi Partner Program! Complete your profile to get started.'
+    );
+    return { subject: 'Welcome to ShaadiSaathi Partner Program! 🤝', html };
+  },
+
+  // ── Admin: New Vendor Registration Alert ───────────────────────────
+  adminVendorRegistration: (adminName, vendorDetails) => {
+    const html = getBaseTemplate(
+      'New Vendor Registration',
+      `<h2 style="color: ${COLORS.text}; margin-top: 0;">Hi ${adminName},</h2>
+       <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">A new vendor has registered on the platform and requires approval.</p>
+       
+       <h3 style="color: ${COLORS.text}; margin-top: 30px; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #333333; padding-bottom: 5px; display: inline-block;">Vendor Details</h3>
+       <div style="background-color: #F8F9FA; padding: 20px; border-radius: 8px; margin: 10px 0; border: 1px solid #EAEAEA;">
+         <p style="margin: 8px 0;"><strong>Name:</strong> ${vendorDetails.name || 'N/A'}</p>
+         <p style="margin: 8px 0;"><strong>Email:</strong> ${vendorDetails.email || 'N/A'}</p>
+         <p style="margin: 8px 0;"><strong>Phone:</strong> ${vendorDetails.phone || 'N/A'}</p>
+         <p style="margin: 8px 0;"><strong>Business:</strong> ${vendorDetails.businessName || 'Pending Setup'}</p>
+         <p style="margin: 8px 0;"><strong>Type:</strong> ${vendorDetails.vendorType || 'service'}</p>
+         <p style="margin: 8px 0;"><strong>Registered At:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+       </div>
+
+       <div style="text-align: center; margin: 40px 0 20px;">
+         <a href="${CLIENT_URL}/admin/vendors" style="display: inline-block; background-color: ${COLORS.text}; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 16px;">Review in Admin Panel</a>
+       </div>`
+    );
+    return { subject: 'New Vendor Registration — Action Required - ShaadiSaathi', html };
   },
 
   // ── Reset Password ─────────────────────────────────────────────────
@@ -520,6 +626,7 @@ module.exports = {
   sendEmail,
   emailTemplates,
   verifySMTP,
+  getClientUrl,
   getWelcomeEmailHTML,
   getCampaignEmailHTML,
   getPackageUserEmailHTML,
