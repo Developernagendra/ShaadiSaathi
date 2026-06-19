@@ -299,12 +299,10 @@ app.get("/api/test-email", testEmail);
 app.use("/api/auth", authLimiter, require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/vendors", require("./routes/vendorRoutes"));
-app.use("/api/vendor", require("./routes/vendorRoutes"));
 app.use("/api/services", require("./routes/serviceRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/reviews", require("./routes/reviewRoutes"));
 app.use("/api/cab-booking", require("./routes/cabRoutes"));
-app.use("/api/baraat-cabs", require("./routes/cabRoutes"));
 app.use("/api/fleet", require("./routes/fleetRoutes"));
 app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
@@ -339,8 +337,8 @@ app.get("/api/health/email", async (req, res) => {
 });
 
 /* ---------------- 404 ---------------- */
-app.use("*", (req, res) => {
-  res.status(404).json({
+app.use((req, res) => {
+  return res.status(404).json({
     success: false,
     message: "API Route Not Found"
   });

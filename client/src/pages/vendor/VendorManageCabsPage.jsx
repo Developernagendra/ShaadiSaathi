@@ -135,7 +135,7 @@ export default function VendorManageCabsPage() {
   const loadVehicles = async () => {
     setVehiclesLoading(true)
     try {
-      const { data } = await api.get('/vendor/fleet/vehicles')
+      const { data } = await api.get('/vendors/fleet/vehicles')
       setVehicles(data.data || [])
     } catch (err) {
       console.error('Vehicles load error:', err)
