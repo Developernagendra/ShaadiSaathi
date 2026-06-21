@@ -104,17 +104,19 @@ const verifySMTP = async () => {
     }
   } else if (provider === 'smtp') {
     try {
+      const port = parseInt(process.env.EMAIL_PORT, 10);
       const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT, 10),
-        secure: process.env.EMAIL_SECURE === 'true',
+        port: port,
+        secure: port === 465, // True for 465, false for other ports
+        family: 4, // Force IPv4 to prevent ENETUNREACH on IPv6
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
         },
       });
       await transporter.verify();
-      console.log(`[EMAIL] ✅ Nodemailer SMTP connected — Host: ${process.env.EMAIL_HOST}`);
+      console.log(`[EMAIL] ✅ Nodemailer SMTP connected — Host: ${process.env.EMAIL_HOST}, Port: ${port}, Secure: ${port === 465}, IPv4: true`);
       return true;
     } catch (err) {
       console.error(`[EMAIL] ❌ Nodemailer SMTP connection failed: ${err.message}`);
@@ -198,10 +200,12 @@ const sendEmail = async (options) => {
         const data = await response.json();
         messageId = data.messageId;
       } else if (provider === 'smtp') {
+        const port = parseInt(process.env.EMAIL_PORT, 10);
         const transporter = nodemailer.createTransport({
           host: process.env.EMAIL_HOST,
-          port: parseInt(process.env.EMAIL_PORT, 10),
-          secure: process.env.EMAIL_SECURE === 'true',
+          port: port,
+          secure: port === 465,
+          family: 4, // Force IPv4 to prevent ENETUNREACH
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
@@ -227,12 +231,24 @@ const sendEmail = async (options) => {
       lastError = err;
       console.error(`[EMAIL] ❌ Attempt ${attempt}/${MAX_RETRIES} failed:`);
       console.error(`[EMAIL]    → Error     : ${err.message}`);
+      if (err.code) console.error(`[EMAIL]    → Code      : ${err.code}`);
 
-      if (err.message.toLowerCase().includes('key not found') || err.message.toLowerCase().includes('unauthorized') || err.message.includes('Invalid login')) {
+      const errStr = err.message.toLowerCase() + ' ' + (err.code || '').toLowerCase();
+
+      // 9. Do not retry authentication failures
+      if (errStr.includes('key not found') || errStr.includes('unauthorized') || errStr.includes('invalid login') || errStr.includes('eauth')) {
         console.error('[EMAIL] 🛑 Authentication error — aborting retries');
         break;
       }
 
+      // 7. Detect specific network errors
+      const isNetworkError = ['enetunreach', 'etimedout', 'econnrefused', 'econnreset', 'ehostunreach'].some(code => errStr.includes(code));
+      
+      if (isNetworkError) {
+        console.error(`[EMAIL] ⚠️  Transient network failure detected: ${err.code || 'Network Issue'}`);
+      }
+
+      // 8. Retry transient network failures or general unknown errors (that aren't auth)
       if (attempt < MAX_RETRIES) {
         const delay = RETRY_DELAYS[attempt - 1] || 3000;
         console.log(`[EMAIL] ⏳ Retrying in ${delay / 1000}s...`);
