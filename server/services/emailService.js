@@ -35,10 +35,8 @@ const COLORS = {
   text: '#333333',
   lightText: '#666666',
 };
-
 // ─── Nodemailer Import ─────────────────────────────────────────────────
-const nodemailer = require('nodemailer');
-
+// REMOVED: SMTP is fully deprecated.
 // ─── Brevo API Key Format Validation ─────────────────────────────────
 // v3 API keys start with "xkeysib-", SMTP relay keys start with "xsmtpsib-"
 // The HTTP API (/v3/smtp/email) ONLY accepts v3 API keys.
@@ -59,69 +57,35 @@ const validateBrevoKeyFormat = (key) => {
   return { valid: true };
 };
 
-// ─── Check active provider ────────────────────────────────────────────
-const getActiveProvider = () => {
-  const brevoKey = process.env.BREVO_API_KEY;
-  const hasBrevo = brevoKey && brevoKey.startsWith('xkeysib-');
-  const hasSMTP = process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USER && process.env.EMAIL_PASS;
-  
-  if (hasBrevo) return 'brevo';
-  if (hasSMTP) return 'smtp';
-  return null;
-};
-
 // ─── Verify Email Connection ──────────────────────────────────────────
-const verifySMTP = async () => {
-  const provider = getActiveProvider();
-
-  if (!provider) {
-    console.error('[EMAIL] ❌ No valid email provider configured (Missing Brevo API key or complete SMTP credentials). Emails will NOT be sent.');
+const verifyBrevo = async () => {
+  const key = process.env.BREVO_API_KEY;
+  const { valid, reason } = validateBrevoKeyFormat(key);
+  if (!valid) {
+    console.error(`[EMAIL] ❌ Brevo API configuration error: ${reason}`);
     return false;
   }
 
-  if (provider === 'brevo') {
-    const key = process.env.BREVO_API_KEY;
-    try {
-      const response = await fetch('https://api.brevo.com/v3/account', {
-        headers: {
-          'accept': 'application/json',
-          'api-key': key,
-        },
-      });
+  try {
+    const response = await fetch('https://api.brevo.com/v3/account', {
+      headers: {
+        'accept': 'application/json',
+        'api-key': key,
+      },
+    });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => null);
-        console.error(`[EMAIL] ❌ Brevo API key rejected: ${errData?.message || `HTTP ${response.status}`}`);
-        return false;
-      }
-
-      const data = await response.json();
-      console.log(`[EMAIL] ✅ Brevo API connected — Account: ${data.email || 'OK'}`);
-      return true;
-    } catch (err) {
-      console.error(`[EMAIL] ⚠️  Brevo connectivity check failed: ${err.message}`);
-      return true; // Don't block startup on transient network failures
-    }
-  } else if (provider === 'smtp') {
-    try {
-      const port = parseInt(process.env.EMAIL_PORT, 10);
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: port,
-        secure: port === 465, // True for 465, false for other ports
-        family: 4, // Force IPv4 to prevent ENETUNREACH on IPv6
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-      await transporter.verify();
-      console.log(`[EMAIL] ✅ Nodemailer SMTP connected — Host: ${process.env.EMAIL_HOST}, Port: ${port}, Secure: ${port === 465}, IPv4: true`);
-      return true;
-    } catch (err) {
-      console.error(`[EMAIL] ❌ Nodemailer SMTP connection failed: ${err.message}`);
+    if (!response.ok) {
+      const errData = await response.json().catch(() => null);
+      console.error(`[EMAIL] ❌ Brevo API key rejected: ${errData?.message || `HTTP ${response.status}`}`);
       return false;
     }
+
+    const data = await response.json();
+    console.log(`[EMAIL] ✅ Brevo API connected — Account: ${data.email || 'OK'}`);
+    return true;
+  } catch (err) {
+    console.error(`[EMAIL] ⚠️  Brevo connectivity check failed: ${err.message}`);
+    return true; // Don't block startup on transient network failures
   }
 };
 
@@ -129,17 +93,17 @@ const verifySMTP = async () => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── Send Email ──────────────────────────────────────────────────────
-const sendEmail = async (options) => {
-  const provider = getActiveProvider();
-  
-  if (!provider) {
-    const msg = 'EMAIL_CONFIG_ERROR: No valid email provider configured (Missing Brevo v3 API key or SMTP credentials).';
+const sendEmail = async ({ to, email, subject, html, text, fromName, from }) => {
+  const key = process.env.BREVO_API_KEY;
+  const { valid, reason } = validateBrevoKeyFormat(key);
+  if (!valid) {
+    const msg = `EMAIL_CONFIG_ERROR: ${reason}`;
     console.error(`[EMAIL] ❌ ${msg}`);
     throw new Error(msg);
   }
 
-  const senderEmail = parseEmailFrom(options.from || EMAIL_FROM);
-  const recipientEmail = options.to || options.email;
+  const senderEmail = parseEmailFrom(from || EMAIL_FROM);
+  const recipientEmail = to || email;
 
   // Guard: validate recipient is a non-empty string
   if (!recipientEmail || typeof recipientEmail !== 'string' || !recipientEmail.includes('@')) {
@@ -149,7 +113,7 @@ const sendEmail = async (options) => {
   }
 
   // Guard: validate subject exists
-  if (!options.subject) {
+  if (!subject) {
     console.warn('[EMAIL] ⚠️  Email subject is empty — this may cause delivery issues.');
   }
 
@@ -159,74 +123,48 @@ const sendEmail = async (options) => {
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      console.log(`[EMAIL] 📨 Sending email via ${provider === 'brevo' ? 'Brevo API' : 'SMTP'} (attempt ${attempt}/${MAX_RETRIES}):`);
+      console.log(`[EMAIL] 📨 Sending email via Brevo API (attempt ${attempt}/${MAX_RETRIES}):`);
       console.log(`[EMAIL]    → Recipient: ${recipientEmail}`);
-      console.log(`[EMAIL]    → Subject  : ${options.subject}`);
-      console.log(`[EMAIL]    → Sender   : ${options.fromName || EMAIL_FROM_NAME} <${senderEmail}>`);
+      console.log(`[EMAIL]    → Subject  : ${subject}`);
+      console.log(`[EMAIL]    → Sender   : ${fromName || EMAIL_FROM_NAME} <${senderEmail}>`);
 
-      let messageId = null;
+      const mailOptions = {
+        sender: { email: senderEmail, name: fromName || EMAIL_FROM_NAME },
+        to: [{ email: recipientEmail }],
+        subject: subject,
+        htmlContent: html,
+        textContent: text || (html ? html.replace(/<[^>]*>?/gm, '') : ''),
+      };
 
-      if (provider === 'brevo') {
-        const mailOptions = {
-          sender: { email: senderEmail, name: options.fromName || EMAIL_FROM_NAME },
-          to: [{ email: recipientEmail }],
-          subject: options.subject,
-          htmlContent: options.html,
-          textContent: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : ''),
-        };
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': key,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(mailOptions),
+      });
 
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'accept': 'application/json',
-            'api-key': process.env.BREVO_API_KEY,
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify(mailOptions),
-        });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const errorMsg = errorData ? errorData.message : `HTTP Error ${response.status}`;
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          const errorMsg = errorData ? errorData.message : `HTTP Error ${response.status}`;
-
-          if (errorMsg.toLowerCase().includes('key not found') || response.status === 401) {
-            const keyPrefix = process.env.BREVO_API_KEY.substring(0, 10);
-            throw new Error(`${errorMsg} — Key starts with "${keyPrefix}...". Ensure BREVO_API_KEY is a v3 API key (xkeysib-*).`);
-          }
-
-          throw new Error(errorMsg);
+        if (errorMsg.toLowerCase().includes('key not found') || response.status === 401) {
+          const keyPrefix = key.substring(0, 10);
+          throw new Error(`${errorMsg} — Key starts with "${keyPrefix}...". Ensure BREVO_API_KEY is a v3 API key (xkeysib-*).`);
         }
 
-        const data = await response.json();
-        messageId = data.messageId;
-      } else if (provider === 'smtp') {
-        const port = parseInt(process.env.EMAIL_PORT, 10);
-        const transporter = nodemailer.createTransport({
-          host: process.env.EMAIL_HOST,
-          port: port,
-          secure: port === 465,
-          family: 4, // Force IPv4 to prevent ENETUNREACH
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-          },
-        });
-
-        const info = await transporter.sendMail({
-          from: `"${options.fromName || EMAIL_FROM_NAME}" <${senderEmail}>`,
-          to: recipientEmail,
-          subject: options.subject,
-          text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : ''),
-          html: options.html,
-        });
-
-        messageId = info.messageId;
+        throw new Error(errorMsg);
       }
 
-      console.log(`[EMAIL] ✅ EMAIL DELIVERED via ${provider === 'brevo' ? 'Brevo' : 'SMTP'}`);
+      const data = await response.json();
+      const messageId = data.messageId;
+
+      console.log(`[EMAIL] ✅ EMAIL DELIVERED via Brevo API`);
       console.log(`[EMAIL]    → MessageId: ${messageId}`);
 
-      return { success: true, messageId: messageId, provider };
+      return { success: true, messageId: messageId, provider: 'brevo' };
     } catch (err) {
       lastError = err;
       console.error(`[EMAIL] ❌ Attempt ${attempt}/${MAX_RETRIES} failed:`);
@@ -235,20 +173,18 @@ const sendEmail = async (options) => {
 
       const errStr = err.message.toLowerCase() + ' ' + (err.code || '').toLowerCase();
 
-      // 9. Do not retry authentication failures
-      if (errStr.includes('key not found') || errStr.includes('unauthorized') || errStr.includes('invalid login') || errStr.includes('eauth')) {
+      // Do not retry authentication failures
+      if (errStr.includes('key not found') || errStr.includes('unauthorized')) {
         console.error('[EMAIL] 🛑 Authentication error — aborting retries');
         break;
       }
 
-      // 7. Detect specific network errors
       const isNetworkError = ['enetunreach', 'etimedout', 'econnrefused', 'econnreset', 'ehostunreach'].some(code => errStr.includes(code));
-      
+
       if (isNetworkError) {
         console.error(`[EMAIL] ⚠️  Transient network failure detected: ${err.code || 'Network Issue'}`);
       }
 
-      // 8. Retry transient network failures or general unknown errors (that aren't auth)
       if (attempt < MAX_RETRIES) {
         const delay = RETRY_DELAYS[attempt - 1] || 3000;
         console.log(`[EMAIL] ⏳ Retrying in ${delay / 1000}s...`);
@@ -700,7 +636,7 @@ const getPackageAdminEmailHTML = (inquiry, pkg) => {
 module.exports = {
   sendEmail,
   emailTemplates,
-  verifySMTP,
+  verifyBrevo,
   getClientUrl,
   getWelcomeEmailHTML,
   getCampaignEmailHTML,

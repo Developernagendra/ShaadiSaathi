@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { NewsletterCampaign, NewsletterSubscriber } = require('../models');
-const { sendEmail, getCampaignEmailHTML, verifySMTP } = require('../services/emailService');
+const { sendEmail, getCampaignEmailHTML, verifyBrevo } = require('../services/emailService');
 
 // Run every minute to check for scheduled campaigns
 const initCampaignScheduler = () => {
@@ -32,9 +32,9 @@ const initCampaignScheduler = () => {
         }
 
         try {
-          await verifySMTP();
+          await verifyBrevo();
         } catch (err) {
-          console.error(`[Cron] SMTP Verification Failed for campaign ${campaign.name}:`, err.message);
+          console.error(`[Cron] Brevo Verification Failed for campaign ${campaign.name}:`, err.message);
           campaign.status = 'failed';
           await campaign.save();
           continue;

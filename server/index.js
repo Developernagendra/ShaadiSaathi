@@ -17,7 +17,7 @@ const socketUtil = require('./utils/socket');
 const { initSocketHandlers } = require('./utils/socketHandlers');
 const { cloudinary } = require('./config/cloudinary');
 const { errorHandler } = require('./middleware/errorMiddleware');
-const { verifySMTP } = require('./services/emailService');
+const { verifyBrevo } = require('./services/emailService');
 
 // Activate keep-alive mechanism
 require("./keepAlive");
@@ -245,19 +245,17 @@ if (missingRequired.length > 0) {
 // Check email vars — warn loudly but don't crash (allows partial operation)
 const missingCommon = COMMON_EMAIL_VARS.filter(v => !process.env[v.key]);
 const hasBrevo = process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.startsWith('xkeysib-');
-const hasSMTP = process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USER && process.env.EMAIL_PASS;
 
-if (missingCommon.length > 0 || (!hasBrevo && !hasSMTP)) {
+if (missingCommon.length > 0 || !hasBrevo) {
   console.error('');
   console.error('╔══════════════════════════════════════════════════════════════╗');
   console.error('║  ⚠️  EMAIL SYSTEM DISABLED — Missing environment variables  ║');
   console.error('╚══════════════════════════════════════════════════════════════╝');
   missingCommon.forEach(v => console.error(`   ❌ ${v.key}: ${v.label}`));
-  
-  if (!hasBrevo && !hasSMTP) {
+
+  if (!hasBrevo) {
     console.error('   ❌ Missing Email Provider Credentials.');
-    console.error('      Set either a valid BREVO_API_KEY (starts with xkeysib-)');
-    console.error('      OR configure SMTP (EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS).');
+    console.error('      Set a valid BREVO_API_KEY (starts with xkeysib-)');
   }
 
   console.error('');
@@ -272,8 +270,11 @@ if (missingCommon.length > 0 || (!hasBrevo && !hasSMTP)) {
     console.error('   Generate one at: https://app.brevo.com → SMTP & API → API Keys');
     console.error('');
   }
+  
+  // Fail server startup if invalid email configurations
+  process.exit(1);
 } else {
-  console.log(`✅ All email environment variables configured. Provider: ${hasBrevo ? 'Brevo HTTP API' : 'Nodemailer SMTP'}`);
+  console.log('✅ All email environment variables configured. Provider: Brevo HTTP API');
 }
 
 // Check recommended vars
@@ -304,7 +305,7 @@ if (process.env.NODE_ENV === 'production') {
 console.log('✅ Environment variables validated.');
 console.log(`   → NODE_ENV   : ${process.env.NODE_ENV}`);
 console.log(`   → CLIENT_URL : ${process.env.CLIENT_URL || '(not set)'}`);
-console.log(`   → EMAIL_USER : ${process.env.EMAIL_USER || '(not set)'}`);
+console.log(`   → BREVO_KEY  : ${process.env.BREVO_API_KEY ? 'Set' : '(not set)'}`);
 
 /* ---------------- ROUTES ---------------- */
 const { testEmail } = require("./controllers/authController");
@@ -338,15 +339,15 @@ app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 /* ---------------- HEALTH CHECKS ---------------- */
 app.get("/api/health/email", async (req, res) => {
   try {
-    const { verifySMTP } = require('./services/emailService');
-    const isOk = await verifySMTP();
+    const { verifyBrevo } = require('./services/emailService');
+    const isOk = await verifyBrevo();
     if (isOk) {
-      res.json({ smtp: "connected" });
+      res.json({ brevo: "connected" });
     } else {
-      res.status(503).json({ smtp: "failed", reason: "Transporter verification failed. Check logs." });
+      res.status(503).json({ brevo: "failed", reason: "Brevo verification failed. Check logs." });
     }
   } catch (error) {
-    res.status(500).json({ smtp: "error", reason: error.message });
+    res.status(500).json({ brevo: "error", reason: error.message });
   }
 });
 
@@ -660,14 +661,14 @@ const startServer = async () => {
       console.error('⚠️ Error seeding blogs:', blogErr.message);
     }
 
-    // Verify SMTP configuration on startup
+    // Verify Brevo configuration on startup
     try {
-      const smtpOk = await verifySMTP();
-      if (!smtpOk) {
-        console.warn('⚠️  SMTP verification failed — emails may not be delivered. Check EMAIL_USER and EMAIL_PASS in .env');
+      const brevoOk = await verifyBrevo();
+      if (!brevoOk) {
+        console.warn('⚠️  Brevo verification failed — emails may not be delivered. Check BREVO_API_KEY in .env');
       }
-    } catch (smtpErr) {
-      console.error('⚠️  SMTP verification error:', smtpErr.message);
+    } catch (brevoErr) {
+      console.error('⚠️  Brevo verification error:', brevoErr.message);
     }
 
     const PORT = process.env.PORT || 5000;

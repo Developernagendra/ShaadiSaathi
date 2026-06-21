@@ -10,7 +10,7 @@ The backend engine for ShaadiSaathi, a robust MERN stack wedding marketplace. Bu
 - **Authentication**: [JSON Web Token (JWT)](https://jwt.io/)
 - **Media Storage**: [Cloudinary](https://cloudinary.com/)
 - **File Uploads**: [Multer](https://github.com/expressjs/multer)
-- **Email Service**: [Nodemailer](https://nodemailer.com/)
+- **Email Service**: [Brevo API](https://www.brevo.com/)
 
 ## 🛠️ Architectural Features
 
@@ -60,10 +60,9 @@ server/
    CLOUDINARY_API_KEY=your_key
    CLOUDINARY_API_SECRET=your_secret
    
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_app_password
+   BREVO_API_KEY=xkeysib-your-v3-api-key
+   EMAIL_FROM=hello@shaadisaathi.com
+   EMAIL_FROM_NAME="ShaadiSaathi"
    ```
 
 3. **Start Development Server**:

@@ -1,7 +1,7 @@
 const { NewsletterSubscriber, NewsletterCampaign } = require('../models');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const { sendEmail, getWelcomeEmailHTML, getCampaignEmailHTML, verifySMTP } = require('../services/emailService');
+const { sendEmail, getWelcomeEmailHTML, getCampaignEmailHTML, verifyBrevo } = require('../services/emailService');
 
 // ==================== SUBSCRIBER ENDPOINTS ====================
 
@@ -30,7 +30,7 @@ exports.subscribe = catchAsync(async (req, res, next) => {
           html: getWelcomeEmailHTML(existingSubscriber.email)
         });
       } catch (err) {
-        console.error('[SMTP] Failed to send welcome back email (non-fatal):', err.message);
+        console.error('[EMAIL] Failed to send welcome back email (non-fatal):', err.message);
       }
 
       return res.status(200).json({
@@ -54,7 +54,7 @@ exports.subscribe = catchAsync(async (req, res, next) => {
       html: getWelcomeEmailHTML(subscriber.email)
     });
   } catch (err) {
-    console.error('[SMTP] Failed to send welcome email (non-fatal):', err.message);
+    console.error('[EMAIL] Failed to send welcome email (non-fatal):', err.message);
   }
 
   res.status(201).json({
@@ -247,9 +247,9 @@ exports.sendTestEmail = catchAsync(async (req, res, next) => {
   }
 
   try {
-    await verifySMTP();
+    await verifyBrevo();
   } catch (err) {
-    return next(new AppError(`SMTP Verification Failed: ${err.message}`, 500));
+    return next(new AppError(`Brevo Verification Failed: ${err.message}`, 500));
   }
 
   try {
@@ -291,11 +291,11 @@ exports.sendCampaignNow = catchAsync(async (req, res, next) => {
   }
 
   try {
-    await verifySMTP();
+    await verifyBrevo();
   } catch (err) {
     campaign.status = 'failed';
     await campaign.save();
-    return next(new AppError(`SMTP Verification Failed: ${err.message}`, 500));
+    return next(new AppError(`Brevo Verification Failed: ${err.message}`, 500));
   }
 
   // Set status to sending

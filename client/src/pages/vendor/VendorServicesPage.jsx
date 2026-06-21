@@ -254,13 +254,13 @@ export default function VendorServicesPage() {
     const total = services.length;
     const active = services.filter(s => s.isActive).length;
     const pending = services.filter(s => s.status === 'pending').length;
-    const mockBookingsCount = services.reduce((acc, curr) => acc + (curr.bookingsCount || Math.floor((curr.startingPrice % 7) + 2)), 0);
+    const realBookingsCount = services.reduce((acc, curr) => acc + (curr.bookingsCount || 0), 0);
 
     return [
       { label: 'Total Services', value: total, desc: 'Created offerings', icon: <FiLayers size={20} />, color: 'text-gray-900', bg: 'bg-white shadow-sm border border-gray-100' },
       { label: 'Active & Live', value: active, desc: 'Visible on storefront', icon: <FiCheckCircle size={20} />, color: 'text-green-600', bg: 'bg-[#F0FDF4] border border-green-100' },
       { label: 'Pending Approval', value: pending, desc: 'Awaiting moderation', icon: <FiInfo size={20} />, color: 'text-amber-600', bg: 'bg-[#FFFBEB] border border-amber-100' },
-      { label: 'Total Bookings', value: mockBookingsCount, desc: 'Placements served', icon: <FiActivity size={20} />, color: 'text-[#C2185B]', bg: 'bg-[#FFF0F6] border border-pink-100' },
+      { label: 'Total Bookings', value: realBookingsCount, desc: 'Placements served', icon: <FiActivity size={20} />, color: 'text-[#C2185B]', bg: 'bg-[#FFF0F6] border border-pink-100' },
     ];
   }, [services]);
 

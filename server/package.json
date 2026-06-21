@@ -8,7 +8,6 @@
     "dev": "nodemon index.js",
     "test-perf": "node testPerformance.js",
     "test-db": "node testAPI.js",
-    "test-email": "node testEmail.js",
     "check-cat": "node check-categories.js"
   },
   "dependencies": {
@@ -30,7 +29,6 @@
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary-v2": "^1.0.3",
     "node-cron": "^3.0.3",
-    "nodemailer": "^9.0.1",
     "openai": "^4.52.0",
     "socket.io": "^4.7.5",
     "uuid": "^10.0.0",
