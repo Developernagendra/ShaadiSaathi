@@ -14,8 +14,8 @@ export default function ContactPage() {
     setLoading(true)
     try {
       const { data } = await api.post('/features/contact', form);
-      toast.success(data.message || "Message sent successfully!", { 
-        style: { borderRadius: '1rem', background: '#333', color: '#fff' } 
+      toast.success(data.message || "Message sent successfully!", {
+        style: { borderRadius: '1rem', background: '#333', color: '#fff' }
       });
       setForm({ name: '', email: '', phone: '', subject: '', message: '' })
     } catch (error) {
@@ -60,7 +60,7 @@ export default function ContactPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-16 -mt-10 relative z-20">
-        
+
         {/* ── Contact Info Cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {[
@@ -69,7 +69,7 @@ export default function ContactPage() {
             { icon: <FiMapPin />, title: 'Office Location', value: 'Darbhanga, Bihar', desc: 'Lalbagh, Bihar - 846004', href: 'https://maps.google.com/?q=Lalbagh+Palace+Rd,+Lalbagh,+Darbhanga,+Bihar+846004' },
             { icon: <FiMessageCircle />, title: 'WhatsApp Support', value: 'Chat with Us', desc: 'Instant support via WhatsApp', href: 'https://wa.me/917903075243', color: 'text-green-500' }
           ].map(({ icon, title, value, desc, href, color }, i) => (
-            <motion.a 
+            <motion.a
               key={title}
               href={href}
               target={title === 'Office Location' || title === 'WhatsApp Support' ? '_blank' : undefined}
@@ -91,12 +91,12 @@ export default function ContactPage() {
 
         {/* ── Split Layout: Form + Map & Quick Help ── */}
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
+
           {/* 💬 Left Column: Contact Form */}
           <div className="lg:col-span-7">
             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-[3.5rem] p-8 sm:p-12 md:p-16 shadow-premium border border-pink-50 relative overflow-hidden h-full">
               <div className="absolute inset-0 floral-pattern opacity-[0.02] pointer-events-none" />
-              
+
               <div className="mb-10 relative z-10">
                 <div className="inline-flex items-center gap-2 text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] mb-4">
                   <div className="w-8 h-px bg-[#D4AF37]" /> Send a Message
@@ -179,7 +179,7 @@ export default function ContactPage() {
 
           {/* 🗺 Right Column: Map & Quick Help */}
           <div className="lg:col-span-5 space-y-8">
-            
+
             {/* Map Section */}
             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-[3rem] p-6 shadow-premium border border-pink-50 relative overflow-hidden flex flex-col">
               <div className="px-2 mb-4">
@@ -189,7 +189,7 @@ export default function ContactPage() {
 
               {/* Embedded Interactive Map */}
               <div className="h-[250px] rounded-[2rem] overflow-hidden shadow-inner border border-gray-100 relative group">
-                <iframe 
+                <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3580.4468641151624!2d85.8978187!3d26.182283!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed3d7fd5a3fb9d%3A0xc3c5f5ed0b8ee8fb!2sLalbagh%2C%20Darbhanga%2C%20Bihar%20846004!5e0!3m2!1sen!2sin!4v1716024900000!5m2!1sen!2sin"
                   className="w-full h-full border-0 absolute inset-0 filter grayscale-[20%] contrast-125"
                   allowFullScreen=""

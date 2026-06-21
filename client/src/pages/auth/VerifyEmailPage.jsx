@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/authSlice'
-import axios from 'axios'
+import api from '../../utils/api'
 
 export default function VerifyEmailPage() {
   const { token } = useParams()
@@ -15,11 +15,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     const verify = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://shaadisaathi-3.onrender.com/api';
-        // Handle double/missing /api safely
-        const baseApiUrl = apiUrl.replace(/\/api$/, '') + '/api';
-
-        await axios.get(`${baseApiUrl}/auth/verify-email/${token}`);
+        await api.get(`/auth/verify-email/${token}`);
 
         setStatus('success');
 
@@ -36,9 +32,8 @@ export default function VerifyEmailPage() {
         }, 2000);
       } catch (err) {
         setStatus('error');
-        const errMsg = err.response?.data?.message || 'Verification failed';
+        const errMsg = err.response?.data?.message || err?.message || 'Verification failed';
         setMessage(errMsg);
-        alert(errMsg);
       }
     };
 

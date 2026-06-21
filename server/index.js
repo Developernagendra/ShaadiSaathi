@@ -218,12 +218,8 @@ const REQUIRED_ENV_VARS = [
 ];
 
 // ── Required for Email: Server starts but emails will FAIL ─────────────
-const EMAIL_REQUIRED_VARS = [
-  { key: 'EMAIL_HOST', label: 'SMTP host (e.g. smtp.gmail.com)' },
-  { key: 'EMAIL_PORT', label: 'SMTP port (e.g. 465)' },
-  { key: 'EMAIL_USER', label: 'SMTP username / Gmail address' },
-  { key: 'EMAIL_PASS', label: 'SMTP password / Gmail App Password' },
-  { key: 'EMAIL_FROM', label: 'From address (e.g. ShaadiSaathi <you@gmail.com>)' },
+const COMMON_EMAIL_VARS = [
+  { key: 'EMAIL_FROM', label: 'Sender email address (e.g. you@gmail.com)' },
   { key: 'CLIENT_URL', label: 'Frontend URL for email links (e.g. https://shaadi-saathi.vercel.app)' },
 ];
 
@@ -247,19 +243,37 @@ if (missingRequired.length > 0) {
 }
 
 // Check email vars — warn loudly but don't crash (allows partial operation)
-const missingEmail = EMAIL_REQUIRED_VARS.filter(v => !process.env[v.key]);
-if (missingEmail.length > 0) {
+const missingCommon = COMMON_EMAIL_VARS.filter(v => !process.env[v.key]);
+const hasBrevo = process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.startsWith('xkeysib-');
+const hasSMTP = process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USER && process.env.EMAIL_PASS;
+
+if (missingCommon.length > 0 || (!hasBrevo && !hasSMTP)) {
   console.error('');
   console.error('╔══════════════════════════════════════════════════════════════╗');
   console.error('║  ⚠️  EMAIL SYSTEM DISABLED — Missing environment variables  ║');
   console.error('╚══════════════════════════════════════════════════════════════╝');
-  missingEmail.forEach(v => console.error(`   ❌ ${v.key}: ${v.label}`));
+  missingCommon.forEach(v => console.error(`   ❌ ${v.key}: ${v.label}`));
+  
+  if (!hasBrevo && !hasSMTP) {
+    console.error('   ❌ Missing Email Provider Credentials.');
+    console.error('      Set either a valid BREVO_API_KEY (starts with xkeysib-)');
+    console.error('      OR configure SMTP (EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS).');
+  }
+
   console.error('');
   console.error('   Emails (verification, password reset, booking) will NOT be sent.');
   console.error('   Set these in .env (local) or Render Dashboard → Environment (production).');
   console.error('');
+
+  const brevoKey = process.env.BREVO_API_KEY;
+  if (brevoKey && brevoKey.startsWith('xsmtpsib-')) {
+    console.error('   ⚠️  NOTE: Your BREVO_API_KEY starts with "xsmtpsib-" which is an SMTP relay key.');
+    console.error('   The HTTP API requires a v3 API key starting with "xkeysib-".');
+    console.error('   Generate one at: https://app.brevo.com → SMTP & API → API Keys');
+    console.error('');
+  }
 } else {
-  console.log('✅ All email environment variables configured.');
+  console.log(`✅ All email environment variables configured. Provider: ${hasBrevo ? 'Brevo HTTP API' : 'Nodemailer SMTP'}`);
 }
 
 // Check recommended vars
@@ -514,7 +528,7 @@ const startServer = async () => {
       } else {
         let needsUpdate = false;
         if (admin.role !== 'admin') { admin.role = 'admin'; needsUpdate = true; }
-        if (!admin.isActive)       { admin.isActive = true;  needsUpdate = true; }
+        if (!admin.isActive) { admin.isActive = true; needsUpdate = true; }
 
         // FIX: only call comparePassword if ADMIN_PASS is a non-empty string
         // Passing null/undefined to bcrypt.compare throws "Illegal arguments: object, string"

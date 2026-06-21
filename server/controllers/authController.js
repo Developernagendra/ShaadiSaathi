@@ -364,6 +364,7 @@ const login = catchAsync(async (req, res, next) => {
   }
 
   res.status(200).json({
+    success: true,
     status: 'success',
     message: 'Login successful.',
     token,
@@ -780,22 +781,35 @@ const logout = catchAsync(async (req, res, next) => {
 // ---------------- TEST EMAIL DIAGNOSTIC ----------------
 const testEmail = catchAsync(async (req, res, next) => {
   try {
-    const to = process.env.EMAIL_USER; // Send to self
+    const to = process.env.EMAIL_USER || process.env.EMAIL_FROM;
     if (!to) {
-      return next(new AppError('EMAIL_USER environment variable is not configured.', 500));
+      return next(new AppError('EMAIL_USER or EMAIL_FROM environment variable is not configured.', 500));
     }
 
-    const subject = 'ShaadiSaathi SMTP Diagnostic Test';
+    // Pre-check Brevo key format
+    const brevoKey = process.env.BREVO_API_KEY;
+    const keyStatus = !brevoKey
+      ? 'MISSING'
+      : brevoKey.startsWith('xkeysib-')
+        ? 'VALID (v3 API key)'
+        : brevoKey.startsWith('xsmtpsib-')
+          ? 'INVALID (SMTP key — need v3 API key starting with xkeysib-)'
+          : `UNKNOWN FORMAT (starts with ${brevoKey.substring(0, 8)}...)`;
+
+    const hasSMTP = process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USER && process.env.EMAIL_PASS;
+    const smtpStatus = hasSMTP ? 'CONFIGURED' : 'MISSING/INCOMPLETE';
+
+    const subject = 'ShaadiSaathi Email Diagnostic Test';
     const html = `
       <div style="font-family:sans-serif;padding:20px;border:1px solid #ddd;border-radius:8px;">
-        <h2 style="color:#22c55e;">SMTP Test Successful! ✅</h2>
-        <p>If you are reading this email, the Gmail SMTP configuration in <b>ShaadiSaathi</b> is fully functional.</p>
+        <h2 style="color:#22c55e;">Email System Test Successful! ✅</h2>
+        <p>If you are reading this email, the dual-mode email integration in <b>ShaadiSaathi</b> is fully functional.</p>
         <p><b>Time:</b> ${new Date().toISOString()}</p>
         <p><b>Environment:</b> ${process.env.NODE_ENV}</p>
-        <p><b>SMTP Host:</b> ${process.env.EMAIL_HOST || 'smtp.gmail.com'}</p>
-        <p><b>SMTP Port:</b> ${process.env.EMAIL_PORT || '465'}</p>
+        <p><b>Brevo Key Status:</b> ${keyStatus}</p>
+        <p><b>SMTP Status:</b> ${smtpStatus}</p>
         <p><b>CLIENT_URL:</b> ${getClientUrl()}</p>
-        <p>Your authentication gating and verification flow will now work smoothly.</p>
+        <p>Your authentication, verification, and booking email flows will now work smoothly.</p>
       </div>
     `;
 
@@ -808,14 +822,15 @@ const testEmail = catchAsync(async (req, res, next) => {
       data: {
         messageId: info.messageId,
         recipient: to,
-        smtpHost: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        smtpPort: process.env.EMAIL_PORT || '465',
+        emailProviderUsed: info.provider || 'unknown',
+        brevoKeyStatus: keyStatus,
+        smtpStatus: smtpStatus,
         clientUrl: getClientUrl(),
       }
     });
   } catch (error) {
-    console.error('[SMTP] Test Endpoint Failed:', error);
-    return next(new AppError(`SMTP Configuration Error: ${error.message}`, 500));
+    console.error('[EMAIL] Test Endpoint Failed:', error);
+    return next(new AppError(`Email Configuration Error: ${error.message}`, 500));
   }
 });
 

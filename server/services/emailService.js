@@ -1,17 +1,21 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
-
-// Force IPv4 resolution to prevent Gmail SMTP ENETUNREACH timeouts on systems without full IPv6 routing
-dns.setDefaultResultOrder('ipv4first');
-
 // ─── Configuration ───────────────────────────────────────────────────
-const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
-// Port 465 + secure:true (SSL/TLS) is far more reliable on Render/cloud than port 587 STARTTLS.
-const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '465', 10);
-const EMAIL_SECURE = process.env.EMAIL_SECURE !== 'false'; // Defaults TRUE for port 465 SSL
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
-const EMAIL_FROM = process.env.EMAIL_FROM || `ShaadiSaathi <${EMAIL_USER}>`;
+
+// Parse EMAIL_FROM safely — extract plain email from "Name <email>" format if present
+const parseEmailFrom = (raw) => {
+  if (!raw) return 'support@shaadisaathi.com';
+  const match = raw.match(/<([^>]+)>/);
+  if (match) return match[1].trim();
+  // If it contains a space but no angle brackets, it might be "Name email" — take the email part
+  if (raw.includes(' ') && raw.includes('@')) {
+    const parts = raw.split(/\s+/);
+    const emailPart = parts.find(p => p.includes('@'));
+    if (emailPart) return emailPart.trim();
+  }
+  return raw.trim();
+};
+
+const EMAIL_FROM = parseEmailFrom(process.env.EMAIL_FROM);
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'ShaadiSaathi';
 
 // ─── Centralized Client URL Resolution ──────────────────────────────
 // CRITICAL: Default fallback is PRODUCTION domain, not localhost.
@@ -32,107 +36,119 @@ const COLORS = {
   lightText: '#666666',
 };
 
-// ─── Nodemailer Transporter (Gmail SMTP) ─────────────────────────────
-let transporter = null;
+// ─── Nodemailer Import ─────────────────────────────────────────────────
+const nodemailer = require('nodemailer');
 
-const getTransporter = () => {
-  if (transporter) return transporter;
-
-  if (!EMAIL_USER || !EMAIL_PASS) {
-    console.error('[SMTP] ❌ EMAIL_USER or EMAIL_PASS is missing. Emails will NOT be sent.');
-    return null;
+// ─── Brevo API Key Format Validation ─────────────────────────────────
+// v3 API keys start with "xkeysib-", SMTP relay keys start with "xsmtpsib-"
+// The HTTP API (/v3/smtp/email) ONLY accepts v3 API keys.
+const validateBrevoKeyFormat = (key) => {
+  if (!key) return { valid: false, reason: 'BREVO_API_KEY is not set' };
+  if (key.startsWith('xsmtpsib-')) {
+    return {
+      valid: false,
+      reason: 'BREVO_API_KEY is an SMTP relay key (starts with "xsmtpsib-"). The HTTP API requires a v3 API key (starts with "xkeysib-").',
+    };
   }
-
-  transporter = nodemailer.createTransport({
-    host: EMAIL_HOST,
-    port: EMAIL_PORT,
-    secure: EMAIL_SECURE,
-    auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
-    },
-    // Disable pooling — stale pooled connections cause ETIMEDOUT on Render.
-    // Each email gets a fresh connection for maximum reliability.
-    pool: false,
-    // Extended timeouts for cloud environments with higher network latency
-    connectionTimeout: 30000,   // 30s to establish TCP connection
-    greetingTimeout: 30000,     // 30s for SMTP EHLO/HELO handshake
-    socketTimeout: 30000,       // 30s for individual socket read/write ops
-  });
-
-  return transporter;
+  if (!key.startsWith('xkeysib-')) {
+    return {
+      valid: false,
+      reason: `BREVO_API_KEY has unexpected format (starts with "${key.substring(0, 10)}..."). Expected a v3 API key starting with "xkeysib-".`,
+    };
+  }
+  return { valid: true };
 };
 
-// ─── Verify SMTP Connection ──────────────────────────────────────────
+// ─── Check active provider ────────────────────────────────────────────
+const getActiveProvider = () => {
+  const brevoKey = process.env.BREVO_API_KEY;
+  const hasBrevo = brevoKey && brevoKey.startsWith('xkeysib-');
+  const hasSMTP = process.env.EMAIL_HOST && process.env.EMAIL_PORT && process.env.EMAIL_USER && process.env.EMAIL_PASS;
+  
+  if (hasBrevo) return 'brevo';
+  if (hasSMTP) return 'smtp';
+  return null;
+};
+
+// ─── Verify Email Connection ──────────────────────────────────────────
 const verifySMTP = async () => {
-  const t = getTransporter();
-  if (!t) {
-    console.warn('[SMTP] ⚠️  Transporter not available — skipping verification.');
+  const provider = getActiveProvider();
+
+  if (!provider) {
+    console.error('[EMAIL] ❌ No valid email provider configured (Missing Brevo API key or complete SMTP credentials). Emails will NOT be sent.');
     return false;
   }
 
-  try {
-    await t.verify();
-    console.log('[SMTP] ✅ Gmail SMTP connection verified successfully');
-    console.log(`[SMTP]    → Host     : ${EMAIL_HOST}:${EMAIL_PORT}`);
-    console.log(`[SMTP]    → User     : ${EMAIL_USER}`);
-    console.log(`[SMTP]    → From     : ${EMAIL_FROM}`);
-    console.log(`[SMTP]    → ClientURL: ${CLIENT_URL}`);
-    return true;
-  } catch (err) {
-    console.error('[SMTP] ❌ SMTP verification failed:', err.message);
-    console.error('[SMTP]    → Code     :', err.code || 'UNKNOWN');
-    console.error('[SMTP]    → Check EMAIL_USER, EMAIL_PASS, EMAIL_HOST, EMAIL_PORT in your .env');
-    return false;
+  if (provider === 'brevo') {
+    const key = process.env.BREVO_API_KEY;
+    try {
+      const response = await fetch('https://api.brevo.com/v3/account', {
+        headers: {
+          'accept': 'application/json',
+          'api-key': key,
+        },
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => null);
+        console.error(`[EMAIL] ❌ Brevo API key rejected: ${errData?.message || `HTTP ${response.status}`}`);
+        return false;
+      }
+
+      const data = await response.json();
+      console.log(`[EMAIL] ✅ Brevo API connected — Account: ${data.email || 'OK'}`);
+      return true;
+    } catch (err) {
+      console.error(`[EMAIL] ⚠️  Brevo connectivity check failed: ${err.message}`);
+      return true; // Don't block startup on transient network failures
+    }
+  } else if (provider === 'smtp') {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: parseInt(process.env.EMAIL_PORT, 10),
+        secure: process.env.EMAIL_SECURE === 'true',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+      await transporter.verify();
+      console.log(`[EMAIL] ✅ Nodemailer SMTP connected — Host: ${process.env.EMAIL_HOST}`);
+      return true;
+    } catch (err) {
+      console.error(`[EMAIL] ❌ Nodemailer SMTP connection failed: ${err.message}`);
+      return false;
+    }
   }
 };
 
 // ─── Retry Helper ────────────────────────────────────────────────────
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ─── Categorize SMTP Errors ─────────────────────────────────────────
-const categorizeError = (err) => {
-  if (!err) return 'UNKNOWN_ERROR';
-  const code = err.code || '';
-  const msg = (err.message || '').toLowerCase();
-
-  if (code === 'EAUTH' || msg.includes('invalid login') || msg.includes('authentication')) return 'SMTP_AUTH_ERROR';
-  if (code === 'ESOCKET' || code === 'ECONNECTION' || code === 'ETIMEDOUT' || code === 'ECONNREFUSED') return 'SMTP_CONNECTION_ERROR';
-  if (code === 'EDNS' || code === 'ENETUNREACH') return 'SMTP_DNS_ERROR';
-  if (msg.includes('rate') || msg.includes('limit') || msg.includes('quota')) return 'SMTP_RATE_LIMIT';
-  if (msg.includes('recipient') || msg.includes('address')) return 'SMTP_RECIPIENT_ERROR';
-  if (msg.includes('template') || msg.includes('html')) return 'TEMPLATE_ERROR';
-  return 'SMTP_UNKNOWN_ERROR';
-};
-
-// ─── Send Email with Retry Logic ─────────────────────────────────────
+// ─── Send Email ──────────────────────────────────────────────────────
 const sendEmail = async (options) => {
-  const mailOptions = {
-    from: options.from || EMAIL_FROM,
-    to: options.to || options.email,
-    subject: options.subject,
-    html: options.html,
-    text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : ''),
-  };
+  const provider = getActiveProvider();
+  
+  if (!provider) {
+    const msg = 'EMAIL_CONFIG_ERROR: No valid email provider configured (Missing Brevo v3 API key or SMTP credentials).';
+    console.error(`[EMAIL] ❌ ${msg}`);
+    throw new Error(msg);
+  }
+
+  const senderEmail = parseEmailFrom(options.from || EMAIL_FROM);
+  const recipientEmail = options.to || options.email;
 
   // Guard: validate recipient is a non-empty string
-  if (!mailOptions.to || typeof mailOptions.to !== 'string' || !mailOptions.to.includes('@')) {
-    const msg = `Invalid or missing email recipient: "${mailOptions.to}"`;
-    console.error(`[SMTP] ❌ RECIPIENT_ERROR: ${msg}`);
+  if (!recipientEmail || typeof recipientEmail !== 'string' || !recipientEmail.includes('@')) {
+    const msg = `Invalid or missing email recipient: "${recipientEmail}"`;
+    console.error(`[EMAIL] ❌ RECIPIENT_ERROR: ${msg}`);
     throw new Error(msg);
   }
 
   // Guard: validate subject exists
-  if (!mailOptions.subject) {
-    console.warn('[SMTP] ⚠️  Email subject is empty — this may cause delivery issues.');
-  }
-
-  // Centralized Nodemailer Dispatch
-  const t = getTransporter();
-  if (!t) {
-    const msg = 'SMTP_CONFIG_ERROR: Email transport not configured. Check EMAIL_USER and EMAIL_PASS environment variables.';
-    console.error(`[SMTP] ❌ ${msg}`);
-    throw new Error(msg);
+  if (!options.subject) {
+    console.warn('[EMAIL] ⚠️  Email subject is empty — this may cause delivery issues.');
   }
 
   const MAX_RETRIES = 3;
@@ -141,51 +157,94 @@ const sendEmail = async (options) => {
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      console.log(`[SMTP] 📨 Sending email (attempt ${attempt}/${MAX_RETRIES}):`);
-      console.log(`[SMTP]    → Recipient: ${mailOptions.to}`);
-      console.log(`[SMTP]    → Subject  : ${mailOptions.subject}`);
+      console.log(`[EMAIL] 📨 Sending email via ${provider === 'brevo' ? 'Brevo API' : 'SMTP'} (attempt ${attempt}/${MAX_RETRIES}):`);
+      console.log(`[EMAIL]    → Recipient: ${recipientEmail}`);
+      console.log(`[EMAIL]    → Subject  : ${options.subject}`);
+      console.log(`[EMAIL]    → Sender   : ${options.fromName || EMAIL_FROM_NAME} <${senderEmail}>`);
 
-      const info = await t.sendMail(mailOptions);
+      let messageId = null;
 
-      // ── Email Delivery Tracking Log ─────────────────────────────
-      console.log(`[SMTP] ✅ EMAIL DELIVERED`);
-      console.log(`[SMTP]    → Recipient : ${mailOptions.to}`);
-      console.log(`[SMTP]    → Subject   : ${mailOptions.subject}`);
-      console.log(`[SMTP]    → MessageId : ${info.messageId}`);
-      console.log(`[SMTP]    → Response  : ${info.response || 'N/A'}`);
-      console.log(`[SMTP]    → Accepted  : ${(info.accepted || []).join(', ') || 'N/A'}`);
-      // ─────────────────────────────────────────────────────────────
+      if (provider === 'brevo') {
+        const mailOptions = {
+          sender: { email: senderEmail, name: options.fromName || EMAIL_FROM_NAME },
+          to: [{ email: recipientEmail }],
+          subject: options.subject,
+          htmlContent: options.html,
+          textContent: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : ''),
+        };
 
-      return { success: true, messageId: info.messageId, response: info.response };
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': process.env.BREVO_API_KEY,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(mailOptions),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMsg = errorData ? errorData.message : `HTTP Error ${response.status}`;
+
+          if (errorMsg.toLowerCase().includes('key not found') || response.status === 401) {
+            const keyPrefix = process.env.BREVO_API_KEY.substring(0, 10);
+            throw new Error(`${errorMsg} — Key starts with "${keyPrefix}...". Ensure BREVO_API_KEY is a v3 API key (xkeysib-*).`);
+          }
+
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        messageId = data.messageId;
+      } else if (provider === 'smtp') {
+        const transporter = nodemailer.createTransport({
+          host: process.env.EMAIL_HOST,
+          port: parseInt(process.env.EMAIL_PORT, 10),
+          secure: process.env.EMAIL_SECURE === 'true',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+          },
+        });
+
+        const info = await transporter.sendMail({
+          from: `"${options.fromName || EMAIL_FROM_NAME}" <${senderEmail}>`,
+          to: recipientEmail,
+          subject: options.subject,
+          text: options.text || (options.html ? options.html.replace(/<[^>]*>?/gm, '') : ''),
+          html: options.html,
+        });
+
+        messageId = info.messageId;
+      }
+
+      console.log(`[EMAIL] ✅ EMAIL DELIVERED via ${provider === 'brevo' ? 'Brevo' : 'SMTP'}`);
+      console.log(`[EMAIL]    → MessageId: ${messageId}`);
+
+      return { success: true, messageId: messageId, provider };
     } catch (err) {
       lastError = err;
-      const errorCategory = categorizeError(err);
-      console.error(`[SMTP] ❌ Attempt ${attempt}/${MAX_RETRIES} failed:`);
-      console.error(`[SMTP]    → Category  : ${errorCategory}`);
-      console.error(`[SMTP]    → Host      : ${EMAIL_HOST}:${EMAIL_PORT}`);
-      console.error(`[SMTP]    → Recipient : ${mailOptions.to}`);
-      console.error(`[SMTP]    → Code      : ${err.code || 'UNKNOWN'}`);
-      console.error(`[SMTP]    → Error     : ${err.message}`);
+      console.error(`[EMAIL] ❌ Attempt ${attempt}/${MAX_RETRIES} failed:`);
+      console.error(`[EMAIL]    → Error     : ${err.message}`);
 
-      // Don't retry auth errors — they'll fail every time
-      if (errorCategory === 'SMTP_AUTH_ERROR') {
-        console.error('[SMTP] 🛑 Authentication error — aborting retries (fix EMAIL_USER/EMAIL_PASS)');
+      if (err.message.toLowerCase().includes('key not found') || err.message.toLowerCase().includes('unauthorized') || err.message.includes('Invalid login')) {
+        console.error('[EMAIL] 🛑 Authentication error — aborting retries');
         break;
       }
 
       if (attempt < MAX_RETRIES) {
         const delay = RETRY_DELAYS[attempt - 1] || 3000;
-        console.log(`[SMTP] ⏳ Retrying in ${delay / 1000}s...`);
+        console.log(`[EMAIL] ⏳ Retrying in ${delay / 1000}s...`);
         await sleep(delay);
       }
     }
   }
 
-  // Reset stale transporter singleton so the next email gets a fresh connection
-  transporter = null;
-  console.error(`[SMTP] 💀 All ${MAX_RETRIES} attempts failed for email to ${mailOptions.to}`);
+  console.error(`[EMAIL] 💀 All ${MAX_RETRIES} attempts failed for email to ${recipientEmail}`);
   throw lastError;
 };
+
 
 // ─── Base HTML Template ──────────────────────────────────────────────
 const getBaseTemplate = (title, content, preheader = '') => {
@@ -229,7 +288,7 @@ const emailTemplates = {
     const isHi = lang === 'hi';
     const isBho = lang === 'bho';
     const isMai = lang === 'mai';
-    
+
     let subject = 'Verify your email - ShaadiSaathi';
     let title = 'Verify Your Email Address';
     let greeting = `Hi ${name},`;
@@ -240,32 +299,32 @@ const emailTemplates = {
     let preheader = 'Please verify your email to complete your ShaadiSaathi registration';
 
     if (isHi) {
-        subject = 'अपना ईमेल वेरीफाई करें - ShaadiSaathi';
-        title = 'अपना ईमेल पता वेरीफाई करें';
-        greeting = `नमस्ते ${name},`;
-        msg1 = 'ShaadiSaathi में आपका स्वागत है! शुरू करने के लिए कृपया अपना ईमेल पता वेरीफाई करें।';
-        btnText = 'ईमेल वेरीफाई करें';
-        msg2 = 'यदि बटन काम नहीं करता है, तो इस लिंक को कॉपी करें और अपने ब्राउज़र में पेस्ट करें:';
-        msg3 = 'यह लिंक 24 घंटे में समाप्त हो जाएगा।';
-        preheader = 'अपने ShaadiSaathi पंजीकरण को पूरा करने के लिए कृपया अपना ईमेल वेरीफाई करें';
+      subject = 'अपना ईमेल वेरीफाई करें - ShaadiSaathi';
+      title = 'अपना ईमेल पता वेरीफाई करें';
+      greeting = `नमस्ते ${name},`;
+      msg1 = 'ShaadiSaathi में आपका स्वागत है! शुरू करने के लिए कृपया अपना ईमेल पता वेरीफाई करें।';
+      btnText = 'ईमेल वेरीफाई करें';
+      msg2 = 'यदि बटन काम नहीं करता है, तो इस लिंक को कॉपी करें और अपने ब्राउज़र में पेस्ट करें:';
+      msg3 = 'यह लिंक 24 घंटे में समाप्त हो जाएगा।';
+      preheader = 'अपने ShaadiSaathi पंजीकरण को पूरा करने के लिए कृपया अपना ईमेल वेरीफाई करें';
     } else if (isBho) {
-        subject = 'आपन ईमेल वेरीफाई करीं - ShaadiSaathi';
-        title = 'आपन ईमेल पता वेरीफाई करीं';
-        greeting = `रउवा के गोर लागत बानी ${name},`;
-        msg1 = 'ShaadiSaathi में राउर स्वागत बा! शुरू करे खातिर निहोरा बा कि आपन ईमेल पता वेरीफाई करीं।';
-        btnText = 'ईमेल वेरीफाई करीं';
-        msg2 = 'जदी बटन काम नईखे करत, त ए लिंक के कॉपी करीं आउर आपन ब्राउज़र में पेस्ट करीं:';
-        msg3 = 'ए लिंक के समय 24 घंटा में खतम हो जाई।';
-        preheader = 'आपन ShaadiSaathi पंजीकरण के पूरा करे खातिर कृपया आपन ईमेल वेरीफाई करीं';
+      subject = 'आपन ईमेल वेरीफाई करीं - ShaadiSaathi';
+      title = 'आपन ईमेल पता वेरीफाई करीं';
+      greeting = `रउवा के गोर लागत बानी ${name},`;
+      msg1 = 'ShaadiSaathi में राउर स्वागत बा! शुरू करे खातिर निहोरा बा कि आपन ईमेल पता वेरीफाई करीं।';
+      btnText = 'ईमेल वेरीफाई करीं';
+      msg2 = 'जदी बटन काम नईखे करत, त ए लिंक के कॉपी करीं आउर आपन ब्राउज़र में पेस्ट करीं:';
+      msg3 = 'ए लिंक के समय 24 घंटा में खतम हो जाई।';
+      preheader = 'आपन ShaadiSaathi पंजीकरण के पूरा करे खातिर कृपया आपन ईमेल वेरीफाई करीं';
     } else if (isMai) {
-        subject = 'अपन ईमेल वेरीफाई करू - ShaadiSaathi';
-        title = 'अपन ईमेल पता वेरीफाई करू';
-        greeting = `प्रणाम ${name},`;
-        msg1 = 'ShaadiSaathi मे अहाँक स्वागत अछि! शुरू करबाक लेल कृपा कय अपन ईमेल पता वेरीफाई करू।';
-        btnText = 'ईमेल वेरीफाई करू';
-        msg2 = 'जँ ई बटन काज नहि करैत अछि, तँ ई लिंक केँ कॉपी कय अपन ब्राउज़र मे पेस्ट करू:';
-        msg3 = 'ई लिंक 24 घंटा मे समाप्त भ जायत।';
-        preheader = 'अपन ShaadiSaathi पंजीकरण पूरा करबाक लेल कृपा कय अपन ईमेल वेरीफाई करू';
+      subject = 'अपन ईमेल वेरीफाई करू - ShaadiSaathi';
+      title = 'अपन ईमेल पता वेरीफाई करू';
+      greeting = `प्रणाम ${name},`;
+      msg1 = 'ShaadiSaathi मे अहाँक स्वागत अछि! शुरू करबाक लेल कृपा कय अपन ईमेल पता वेरीफाई करू।';
+      btnText = 'ईमेल वेरीफाई करू';
+      msg2 = 'जँ ई बटन काज नहि करैत अछि, तँ ई लिंक केँ कॉपी कय अपन ब्राउज़र मे पेस्ट करू:';
+      msg3 = 'ई लिंक 24 घंटा मे समाप्त भ जायत।';
+      preheader = 'अपन ShaadiSaathi पंजीकरण पूरा करबाक लेल कृपा कय अपन ईमेल वेरीफाई करू';
     }
 
     const html = getBaseTemplate(
@@ -388,13 +447,13 @@ const emailTemplates = {
       'Vendor Application Update',
       `<h2 style="color: ${COLORS.text}; margin-top: 0;">Hi ${name},</h2>
        <p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Your vendor application has been <strong>${status}</strong>.</p>
-       ${isApproved ? 
-         `<p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">You can now login and start managing your services.</p>
+       ${isApproved ?
+        `<p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">You can now login and start managing your services.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${CLIENT_URL}/vendor/dashboard" style="display: inline-block; background-color: ${COLORS.primary}; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold;">Go to Dashboard</a>
           </div>` :
-         `<p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Please contact support for more details regarding this decision.</p>`
-       }`
+        `<p style="color: ${COLORS.lightText}; font-size: 16px; line-height: 1.6;">Please contact support for more details regarding this decision.</p>`
+      }`
     );
     return { subject: `Vendor Application ${status === 'approved' ? 'Approved' : 'Update'}`, html };
   },
