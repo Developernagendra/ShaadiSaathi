@@ -806,7 +806,7 @@ export default function VendorServicesPage() {
           {/* Features Tag Input */}
           <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white shadow-sm transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] space-y-5">
             <label className="label text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-md bg-[#FFF8F0] text-[#D4AF37] flex items-center justify-center"><FiLayers size={12}/></span>
+              <span className="w-6 h-6 rounded-md bg-[#FFF8F0] text-[#D4AF37] flex items-center justify-center"><FiLayers size={12} /></span>
               Highlights & Service Features
             </label>
             <div className="flex gap-3">
