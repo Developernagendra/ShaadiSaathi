@@ -328,29 +328,42 @@ exports.createBooking = catchAsync(async (req, res, next) => {
 
       console.log("[EMAIL PAYLOAD] createBooking:", bookingPayload);
 
+      let emailsDelivered = 0;
+      let emailsFailed = 0;
+
       // 1. Send User Confirmation Email
       try {
-        console.log(`[EMAIL] Sending booking confirmation to user: ${req.user.email}`);
+        console.log(`[EMAIL] 📨 Sending booking confirmation to user: ${req.user.email}`);
         const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
         await sendEmail({ to: req.user.email, ...template });
+        console.log(`[EMAIL] ✅ User confirmation email delivered to: ${req.user.email}`);
+        emailsDelivered++;
       } catch (emailErr) {
-        console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for booking ${bookingPayload.bookingId}:`, emailErr.message);
+        emailsFailed++;
+        console.error(`[EMAIL] ❌ USER_CONFIRMATION_FAILED for booking ${bookingPayload.bookingId}:`);
+        console.error(`[EMAIL]    → Recipient : ${req.user.email}`);
+        console.error(`[EMAIL]    → Error     : ${emailErr.message}`);
       }
 
       // 2. Send Vendor Alert Email (if vendor email exists)
       if (vendor && vendor.email) {
         try {
-          console.log(`[EMAIL] Sending booking alert to vendor: ${vendor.email}`);
+          console.log(`[EMAIL] 📨 Sending booking alert to vendor: ${vendor.email}`);
           const vendorTemplate = emailTemplates.vendorBookingAlert(
             vendor.businessName || 'Vendor Partner',
             bookingPayload
           );
           await sendEmail({ to: vendor.email, ...vendorTemplate });
+          console.log(`[EMAIL] ✅ Vendor booking alert delivered to: ${vendor.email}`);
+          emailsDelivered++;
         } catch (err) {
-          console.error('[EMAIL] ❌ Failed to send vendor booking alert email:', err.message);
+          emailsFailed++;
+          console.error('[EMAIL] ❌ VENDOR_ALERT_FAILED:');
+          console.error(`[EMAIL]    → Recipient : ${vendor.email}`);
+          console.error(`[EMAIL]    → Error     : ${err.message}`);
         }
       } else {
-        console.warn('[EMAIL] ⚠️ Vendor has no email address — skipping vendor alert email');
+        console.warn('[EMAIL] ⚠️ Vendor has no email address on profile — skipping vendor alert email');
       }
 
       // 3. Send Admin Alert Email (to all admin users)
@@ -358,19 +371,30 @@ exports.createBooking = catchAsync(async (req, res, next) => {
         const adminsList = await User.find({ role: 'admin' }).lean();
         for (const adm of adminsList) {
           if (adm.email) {
-            console.log(`[EMAIL] Sending booking alert to admin: ${adm.email}`);
-            const adminTemplate = emailTemplates.adminBookingAlert(
-              adm.name || 'Administrator',
-              bookingPayload
-            );
-            await sendEmail({ to: adm.email, ...adminTemplate });
+            try {
+              console.log(`[EMAIL] 📨 Sending booking alert to admin: ${adm.email}`);
+              const adminTemplate = emailTemplates.adminBookingAlert(
+                adm.name || 'Administrator',
+                bookingPayload
+              );
+              await sendEmail({ to: adm.email, ...adminTemplate });
+              console.log(`[EMAIL] ✅ Admin booking alert delivered to: ${adm.email}`);
+              emailsDelivered++;
+            } catch (adminEmailErr) {
+              emailsFailed++;
+              console.error(`[EMAIL] ❌ ADMIN_ALERT_FAILED for ${adm.email}: ${adminEmailErr.message}`);
+            }
           }
         }
       } catch (err) {
-        console.error('[EMAIL] ❌ Failed to send admin booking alert email:', err.message);
+        console.error('[EMAIL] ❌ ADMIN_LIST_FETCH_FAILED:', err.message);
       }
 
-      console.log('[EMAIL] ✅ ALL BOOKING EMAILS DISPATCHED SUCCESSFULLY');
+      if (emailsFailed === 0) {
+        console.log(`[EMAIL] ✅ ALL BOOKING EMAILS DELIVERED (${emailsDelivered}/${emailsDelivered + emailsFailed})`);
+      } else {
+        console.warn(`[EMAIL] ⚠️ BOOKING EMAILS PARTIAL: ${emailsDelivered} delivered, ${emailsFailed} failed`);
+      }
     } catch (error) {
       console.error('[EMAIL] ❌ BOOKING EMAIL FLOW FAILED:', error.message);
     }
@@ -767,13 +791,21 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
 
       console.log("[EMAIL PAYLOAD] createCabBooking:", bookingPayload);
 
+      let cabEmailsDelivered = 0;
+      let cabEmailsFailed = 0;
+
       // 1. Send User Confirmation Email
       try {
-        console.log(`[EMAIL] Sending cab booking confirmation to user: ${req.user.email}`);
+        console.log(`[EMAIL] 📨 Sending cab booking confirmation to user: ${req.user.email}`);
         const template = emailTemplates.bookingConfirmation(req.user.name, bookingPayload);
         await sendEmail({ to: req.user.email, ...template });
+        console.log(`[EMAIL] ✅ User cab confirmation email delivered to: ${req.user.email}`);
+        cabEmailsDelivered++;
       } catch (emailErr) {
-        console.error(`[EMAIL] ⚠️ Failed to send user confirmation email for cab booking ${bookingPayload.bookingId}:`, emailErr.message);
+        cabEmailsFailed++;
+        console.error('[EMAIL] ❌ USER_CAB_CONFIRMATION_FAILED:');
+        console.error(`[EMAIL]    → Recipient : ${req.user.email}`);
+        console.error(`[EMAIL]    → Error     : ${emailErr.message}`);
       }
 
       // 2. Send Vendor Alert Email(s)
@@ -782,15 +814,18 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
           const vUser = await User.findById(vId);
           if (vUser && vUser.email) {
             const vProfile = await Vendor.findOne({ user: vId });
-            const vendorPayload = { ...bookingPayload, vendorName: vProfile ? vProfile.businessName : 'Cab Vendor Partner' };
-            const vendorTemplate = emailTemplates.vendorBookingAlert(
-              vendorPayload.vendorName,
-              vendorPayload
-            );
+            const vendorName = vProfile ? vProfile.businessName : 'Cab Vendor Partner';
+            const vendorPayload = { ...bookingPayload, vendorName };
+            const vendorTemplate = emailTemplates.vendorBookingAlert(vendorName, vendorPayload);
             await sendEmail({ to: vUser.email, ...vendorTemplate });
+            console.log(`[EMAIL] ✅ Cab vendor alert delivered to: ${vUser.email}`);
+            cabEmailsDelivered++;
           }
         } catch (err) {
-          console.error("❌ Failed to send cab vendor booking alert email:", err.message);
+          cabEmailsFailed++;
+          console.error('[EMAIL] ❌ VENDOR_CAB_ALERT_FAILED:');
+          console.error(`[EMAIL]    → VendorId : ${vId}`);
+          console.error(`[EMAIL]    → Error    : ${err.message}`);
         }
       }
 
@@ -799,18 +834,29 @@ exports.createCabBooking = catchAsync(async (req, res, next) => {
         const adminsList = await User.find({ role: 'admin' }).lean();
         for (const adm of adminsList) {
           if (adm.email) {
-            const adminTemplate = emailTemplates.adminBookingAlert(
-              adm.name || 'Administrator',
-              bookingPayload
-            );
-            await sendEmail({ to: adm.email, ...adminTemplate });
+            try {
+              const adminTemplate = emailTemplates.adminBookingAlert(
+                adm.name || 'Administrator',
+                bookingPayload
+              );
+              await sendEmail({ to: adm.email, ...adminTemplate });
+              console.log(`[EMAIL] ✅ Admin cab alert delivered to: ${adm.email}`);
+              cabEmailsDelivered++;
+            } catch (adminErr) {
+              cabEmailsFailed++;
+              console.error(`[EMAIL] ❌ ADMIN_CAB_ALERT_FAILED for ${adm.email}: ${adminErr.message}`);
+            }
           }
         }
       } catch (err) {
-        console.error("❌ Failed to send admin booking alert email:", err.message);
+        console.error('[EMAIL] ❌ ADMIN_LIST_FETCH_FAILED (cab):', err.message);
       }
 
-      console.log('[EMAIL] ✅ ALL CAB BOOKING EMAILS DISPATCHED SUCCESSFULLY');
+      if (cabEmailsFailed === 0) {
+        console.log(`[EMAIL] ✅ ALL CAB BOOKING EMAILS DELIVERED (${cabEmailsDelivered}/${cabEmailsDelivered + cabEmailsFailed})`);
+      } else {
+        console.warn(`[EMAIL] ⚠️ CAB BOOKING EMAILS PARTIAL: ${cabEmailsDelivered} delivered, ${cabEmailsFailed} failed`);
+      }
     } catch (error) {
       console.error('[EMAIL] ❌ CAB BOOKING EMAIL FLOW FAILED:', error.message);
     }
@@ -1193,7 +1239,7 @@ exports.updateBookingStatus = catchAsync(async (req, res, next) => {
     });
   }
 
-  // Trigger Multi-channel Notifications (In-App, Email, SMS)
+  // Trigger Multi-channel Notifications (In-App, Email, SMS) for CUSTOMER
   try {
     await sendBookingNotification({
       userId: booking.userId,
@@ -1202,8 +1248,38 @@ exports.updateBookingStatus = catchAsync(async (req, res, next) => {
       status: status
     });
   } catch (error) {
-    console.error('Notification error:', error);
+    console.error('[NOTIFY] ❌ Customer booking notification error:', error.message);
   }
+
+  // ── VENDOR EMAIL: Notify vendor about booking status change ────────
+  // BUG-04 FIX: Vendor was never emailed when status changed
+  (async () => {
+    try {
+      const vendorUser = await User.findById(booking.vendor || booking.vendorId);
+      if (vendorUser && vendorUser.email) {
+        const vendorPayload = {
+          bookingId: booking.bookingId || 'N/A',
+          customerName: booking.contactName || 'Customer',
+          customerEmail: booking.contactEmail || 'Not Provided',
+          customerPhone: booking.contactPhone || 'Not Provided',
+          vendorName: booking.vendorProfileId?.businessName || 'Your Business',
+          serviceName: booking.serviceName || 'Wedding Service',
+          eventDate: booking.eventDate ? new Date(booking.eventDate).toLocaleDateString('en-IN') : 'TBD',
+          eventTime: booking.eventTime || 'TBD',
+          eventLocation: booking.eventVenue || booking.eventCity || 'TBD',
+          bookingAmount: booking.amount || 0,
+          bookingStatus: status
+        };
+        const vendorTemplate = emailTemplates.bookingStatusUpdate(vendorUser.name, vendorPayload);
+        await sendEmail({ to: vendorUser.email, ...vendorTemplate });
+        console.log(`[EMAIL] ✅ Vendor status update email (${status}) delivered to: ${vendorUser.email}`);
+      }
+    } catch (vendorEmailErr) {
+      console.error('[EMAIL] ❌ VENDOR_STATUS_UPDATE_EMAIL_FAILED:');
+      console.error(`[EMAIL]    → Status : ${status}`);
+      console.error(`[EMAIL]    → Error  : ${vendorEmailErr.message}`);
+    }
+  })();
 
   // Socket Real-time Sync
   const io = req.app.get('io');
@@ -1288,7 +1364,7 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
 
   await booking.save();
 
-  // 1. Notify Customer (this also triggers the sendBookingNotification for emails/sms)
+  // 1. Notify Customer via email + in-app
   try {
     await sendBookingNotification({
       userId: booking.user,
@@ -1297,8 +1373,38 @@ exports.cancelBooking = catchAsync(async (req, res, next) => {
       status: 'cancelled'
     });
   } catch (error) {
-    console.error('Notification error:', error);
+    console.error('[NOTIFY] ❌ Customer cancellation notification error:', error.message);
   }
+
+  // ── VENDOR EMAIL: Notify vendor that booking was cancelled ─────────
+  // BUG-05 FIX: Vendor was never emailed when user cancelled a booking
+  (async () => {
+    try {
+      const cancelledVendor = booking.vendor;
+      const vendorUser = await User.findById(cancelledVendor);
+      if (vendorUser && vendorUser.email) {
+        const cancelPayload = {
+          bookingId: booking.bookingId || 'N/A',
+          customerName: booking.contactName || req.user.name || 'Customer',
+          customerEmail: booking.contactEmail || req.user.email || 'Not Provided',
+          customerPhone: booking.contactPhone || 'Not Provided',
+          vendorName: booking.vendorProfileId?.businessName || 'Your Business',
+          serviceName: booking.serviceName || 'Wedding Service',
+          eventDate: booking.eventDate ? new Date(booking.eventDate).toLocaleDateString('en-IN') : 'TBD',
+          eventTime: booking.eventTime || 'TBD',
+          eventLocation: booking.eventVenue || booking.eventCity || 'TBD',
+          bookingAmount: booking.amount || 0,
+          bookingStatus: 'cancelled'
+        };
+        const vendorCancelTemplate = emailTemplates.bookingStatusUpdate(vendorUser.name, cancelPayload);
+        await sendEmail({ to: vendorUser.email, ...vendorCancelTemplate });
+        console.log(`[EMAIL] ✅ Vendor cancellation email delivered to: ${vendorUser.email}`);
+      }
+    } catch (vendorCancelErr) {
+      console.error('[EMAIL] ❌ VENDOR_CANCELLATION_EMAIL_FAILED:');
+      console.error(`[EMAIL]    → Error : ${vendorCancelErr.message}`);
+    }
+  })();
 
   // 2. Notify Vendor in real-time
   await sendNotification({

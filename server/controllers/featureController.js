@@ -309,7 +309,7 @@ exports.getContactInfo = catchAsync(async (req, res, next) => {
   }
 });
 
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, getBaseTemplate } = require('../services/emailService');
 
 exports.submitContact = catchAsync(async (req, res, next) => {
   const { name, email, subject, message } = req.body;
@@ -318,39 +318,64 @@ exports.submitContact = catchAsync(async (req, res, next) => {
     return next(new AppError('Please provide all required fields', 400));
   }
 
-  // Send email to admin
-  try {
-    await sendEmail({
-      to: process.env.EMAIL_USER,
-      subject: `📞 New Contact Inquiry: ${subject}`,
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-          <h2 style="color: #c2185b;">New Contact Inquiry</h2>
-          <p><strong>From:</strong> ${name} (${email})</p>
-          <p><strong>Subject:</strong> ${subject}</p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="white-space: pre-wrap;">${message}</p>
-        </div>
-      `
-    });
+  const adminEmail = process.env.EMAIL_FROM;
+  if (!adminEmail) {
+    console.error('[CONTACT_FORM] ❌ EMAIL_FROM env var not set — cannot send admin notification');
+  }
 
-    // Send confirmation to user
+  // ── 1. Send branded admin notification email ───────────────────────
+  if (adminEmail) {
+    try {
+      const adminHtml = getBaseTemplate(
+        `New Contact Inquiry: ${subject}`,
+        `<h2 style="color: #333; margin-top: 0;">📞 New Contact Inquiry</h2>
+         <div style="background-color: #F8F9FA; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #EAEAEA;">
+           <p style="margin: 8px 0;"><strong>Name:</strong> ${name}</p>
+           <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #C2185B; text-decoration: none;">${email}</a></p>
+           <p style="margin: 8px 0;"><strong>Subject:</strong> ${subject}</p>
+         </div>
+         <h3 style="color: #333;">Message</h3>
+         <div style="background-color: #FAFAFA; padding: 20px; border-left: 4px solid #C2185B; border-radius: 4px; white-space: pre-wrap; color: #555; line-height: 1.7;">${message}</div>
+         <div style="text-align: center; margin: 30px 0;">
+           <a href="mailto:${email}" style="display: inline-block; background-color: #C2185B; color: #ffffff; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold;">Reply to ${name}</a>
+         </div>`,
+        `New contact inquiry from ${name}`
+      );
+      await sendEmail({
+        to: adminEmail,
+        subject: `📞 New Contact Inquiry: ${subject}`,
+        html: adminHtml
+      });
+      console.log(`[CONTACT_FORM] ✅ Admin notified about contact inquiry from: ${email}`);
+    } catch (err) {
+      console.error('[CONTACT_FORM] ❌ ADMIN_NOTIFICATION_FAILED:');
+      console.error(`[CONTACT_FORM]    → Error : ${err.message}`);
+    }
+  }
+
+  // ── 2. Send branded confirmation email to user ─────────────────────
+  try {
+    const userHtml = getBaseTemplate(
+      'We received your message!',
+      `<h2 style="color: #333; margin-top: 0;">Hi ${name}, 🙏</h2>
+       <p style="color: #666; font-size: 16px; line-height: 1.6;">Thank you for reaching out to <strong>ShaadiSaathi</strong>. We have received your message regarding:</p>
+       <div style="background-color: #F8F9FA; padding: 16px 20px; border-radius: 8px; border-left: 4px solid #C2185B; margin: 20px 0;">
+         <p style="margin: 0; font-weight: bold; color: #333; font-size: 16px;">"${subject}"</p>
+       </div>
+       <p style="color: #666; font-size: 16px; line-height: 1.6;">Our support team will carefully review your inquiry and get back to you within <strong>24–48 hours</strong>.</p>
+       <p style="color: #666; font-size: 14px;">If your matter is urgent, you can reach us directly at <a href="mailto:n4narendrakr@gmail.com" style="color: #C2185B;">n4narendrakr@gmail.com</a>.</p>`,
+      `We received your message — ShaadiSaathi will respond within 24-48 hours`
+    );
     await sendEmail({
       to: email,
-      subject: '🌸 We received your message - ShaadiSaathi',
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-          <h2 style="color: #c2185b;">Hi ${name},</h2>
-          <p>Thank you for reaching out to ShaadiSaathi. We have received your message regarding "<strong>${subject}</strong>".</p>
-          <p>Our team will review your inquiry and get back to you within 24-48 hours.</p>
-          <br />
-          <p>Best Regards,</p>
-          <p><strong>ShaadiSaathi Support Team</strong></p>
-        </div>
-      `
+      subject: '🌸 We received your message — ShaadiSaathi',
+      html: userHtml
     });
+    console.log(`[CONTACT_FORM] ✅ Confirmation email sent to user: ${email}`);
   } catch (err) {
-    console.error('Email failed:', err);
+    console.error('[CONTACT_FORM] ❌ USER_CONFIRMATION_FAILED:');
+    console.error(`[CONTACT_FORM]    → Email : ${email}`);
+    console.error(`[CONTACT_FORM]    → Error : ${err.message}`);
   }
 
   res.status(200).json({

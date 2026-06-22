@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { NewsletterCampaign, NewsletterSubscriber } = require('../models');
-const { sendEmail, getCampaignEmailHTML, verifyBrevo } = require('../services/emailService');
+const { sendEmail, getCampaignEmailHTML } = require('../services/emailService');
 
 // Run every minute to check for scheduled campaigns
 const initCampaignScheduler = () => {
@@ -31,14 +31,7 @@ const initCampaignScheduler = () => {
           continue;
         }
 
-        try {
-          await verifyBrevo();
-        } catch (err) {
-          console.error(`[Cron] Brevo Verification Failed for campaign ${campaign.name}:`, err.message);
-          campaign.status = 'failed';
-          await campaign.save();
-          continue;
-        }
+        // Brevo is verified at startup — no redundant per-campaign check needed
 
         let delivered = 0;
         let failed = 0;

@@ -76,7 +76,27 @@ const verifyBrevo = async () => {
 
     if (!response.ok) {
       const errData = await response.json().catch(() => null);
-      console.error(`[EMAIL] ❌ Brevo API key rejected: ${errData?.message || `HTTP ${response.status}`}`);
+      const errMessage = errData?.message || `HTTP ${response.status}`;
+
+      // ── IP Whitelist Rejection Detection ──────────────────────────────
+      // Brevo returns a specific message about "unrecognised IP address" when the
+      // caller's IP is not whitelisted in Brevo's security settings.
+      if (errMessage.toLowerCase().includes('unrecognised ip') || errMessage.toLowerCase().includes('unrecognized ip')) {
+        // Extract the IP address: Brevo phrases it as "...unrecognised IP address <ip>..."
+        const ipMatch = errMessage.match(/ip address\s+([\da-f:\.]+)/i);
+        const detectedIp = ipMatch ? ipMatch[1] : 'your server IP (check startup logs)';
+        console.error(`[EMAIL] ❌ Brevo API key rejected: ${errMessage}`);
+        console.error('[EMAIL] 🔴 ACTION REQUIRED: Your IP is not whitelisted in Brevo.');
+        console.error(`[EMAIL]    → Detected IP : ${detectedIp}`);
+        console.error(`[EMAIL]    → Fix Step 1  : Open https://app.brevo.com/security/authorised_ips`);
+        console.error(`[EMAIL]    → Fix Step 2  : Click "Add an IP address"`);
+        console.error(`[EMAIL]    → Fix Step 3  : Enter: ${detectedIp}`);
+        console.error('[EMAIL]    → Fix Step 4  : Save and restart your server');
+        console.warn('[EMAIL] ⚠️  Brevo verification failed — emails may not be delivered. Check BREVO_API_KEY in .env');
+        return false;
+      }
+
+      console.error(`[EMAIL] ❌ Brevo API key rejected: ${errMessage}`);
       return false;
     }
 
@@ -638,6 +658,7 @@ module.exports = {
   emailTemplates,
   verifyBrevo,
   getClientUrl,
+  getBaseTemplate,
   getWelcomeEmailHTML,
   getCampaignEmailHTML,
   getPackageUserEmailHTML,

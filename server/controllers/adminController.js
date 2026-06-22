@@ -759,35 +759,22 @@ exports.approveServiceAdmin = catchAsync(async (req, res, next) => {
       link: '/vendor/dashboard/services'
     });
 
-    // Service Approval Email — uses correct config/email path
-    try {
-      const { sendEmail, emailTemplates } = require('../services/emailService');
-      const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
-      const template = emailTemplates.serviceApproved
-        ? emailTemplates.serviceApproved(service.vendor.user.name, service.title, clientUrl)
-        : {
-          subject: '🎉 Your Service Has Been Approved — ShaadiSaathi',
-          html: `
-              <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#fff">
-                <div style="background:linear-gradient(135deg,#c41e6b,#e91e8c);padding:40px;text-align:center">
-                  <h1 style="color:white;margin:0;font-size:28px">💒 ShaadiSaathi</h1>
-                </div>
-                <div style="padding:40px">
-                  <h2 style="color:#27ae60">🎉 Your Service is Now Live!</h2>
-                  <p style="color:#666">Hi ${service.vendor.user.name},</p>
-                  <p style="color:#666">Great news! Your service <strong>${service.title}</strong> has been approved by our team and is now publicly visible on ShaadiSaathi. Users can discover and book your service right now.</p>
-                  <div style="text-align:center;margin:30px 0">
-                    <a href="${clientUrl}/vendor/dashboard" style="background:linear-gradient(135deg,#c41e6b,#e91e8c);color:white;padding:14px 32px;border-radius:30px;text-decoration:none;font-weight:bold">View Your Dashboard</a>
-                  </div>
-                </div>
-                <div style="background:#f8f8f8;padding:20px;text-align:center;color:#999;font-size:12px">© 2024 ShaadiSaathi</div>
-              </div>`,
-        };
-      await sendEmail({ to: service.vendor.user.email, ...template });
-      console.log('[SMTP] Service approval email sent to:', service.vendor.user.email);
-    } catch (mailErr) {
-      console.error('[SMTP] Failed to send service approval email:', mailErr.message);
-    }
+      // Service Approval Email
+      try {
+        const { sendEmail, emailTemplates } = require('../services/emailService');
+        const clientUrl = (process.env.CLIENT_URL || 'https://shaadi-saathi.vercel.app').replace(/\/$/, '');
+        const template = emailTemplates.serviceApproved(
+          service.vendor.user.name,
+          service.title,
+          clientUrl
+        );
+        await sendEmail({ to: service.vendor.user.email, ...template });
+        console.log('[EMAIL] ✅ Service approval email sent to:', service.vendor.user.email);
+      } catch (mailErr) {
+        console.error('[EMAIL] ❌ SERVICE_APPROVAL_EMAIL_FAILED:');
+        console.error(`[EMAIL]    → Recipient : ${service.vendor.user.email}`);
+        console.error(`[EMAIL]    → Error     : ${mailErr.message}`);
+      }
   }
 
   // Socket Realtime Sync

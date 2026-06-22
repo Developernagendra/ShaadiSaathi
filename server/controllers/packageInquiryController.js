@@ -33,24 +33,34 @@ exports.submitInquiry = catchAsync(async (req, res, next) => {
   if (email) {
     try {
       await sendEmail({
-        email: email,
+        to: email,
         subject: `We've received your Wedding Package Inquiry! 💍`,
         html: getPackageUserEmailHTML(name, pkg.name)
       });
+      console.log(`[PACKAGE_INQUIRY] ✅ User confirmation email sent to: ${email}`);
     } catch (error) {
-      console.error('Failed to send user confirmation email', error);
+      console.error('[PACKAGE_INQUIRY] ❌ USER_EMAIL_FAILED:');
+      console.error(`[PACKAGE_INQUIRY]    → Email : ${email}`);
+      console.error(`[PACKAGE_INQUIRY]    → Error : ${error.message}`);
     }
   }
 
   // Send Alert to Admin
-  try {
-    await sendEmail({
-      email: process.env.EMAIL_FROM || 'admin@shaadisaathi.com',
-      subject: `🚨 New Package Inquiry: ${pkg.name}`,
-      html: getPackageAdminEmailHTML(newInquiry, pkg)
-    });
-  } catch (error) {
-    console.error('Failed to send admin alert email', error);
+  const adminEmail = process.env.EMAIL_FROM;
+  if (adminEmail) {
+    try {
+      await sendEmail({
+        to: adminEmail,
+        subject: `🚨 New Package Inquiry: ${pkg.name}`,
+        html: getPackageAdminEmailHTML(newInquiry, pkg)
+      });
+      console.log(`[PACKAGE_INQUIRY] ✅ Admin alert email sent to: ${adminEmail}`);
+    } catch (error) {
+      console.error('[PACKAGE_INQUIRY] ❌ ADMIN_EMAIL_FAILED:');
+      console.error(`[PACKAGE_INQUIRY]    → Error : ${error.message}`);
+    }
+  } else {
+    console.warn('[PACKAGE_INQUIRY] ⚠️ EMAIL_FROM not set — skipping admin alert');
   }
 
   res.status(201).json({

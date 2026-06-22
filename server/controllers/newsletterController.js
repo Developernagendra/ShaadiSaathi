@@ -1,7 +1,7 @@
 const { NewsletterSubscriber, NewsletterCampaign } = require('../models');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const { sendEmail, getWelcomeEmailHTML, getCampaignEmailHTML, verifyBrevo } = require('../services/emailService');
+const { sendEmail, getWelcomeEmailHTML, getCampaignEmailHTML } = require('../services/emailService');
 
 // ==================== SUBSCRIBER ENDPOINTS ====================
 
@@ -246,15 +246,11 @@ exports.sendTestEmail = catchAsync(async (req, res, next) => {
     return next(new AppError('No campaign found with that ID', 404));
   }
 
-  try {
-    await verifyBrevo();
-  } catch (err) {
-    return next(new AppError(`Brevo Verification Failed: ${err.message}`, 500));
-  }
+  // Brevo is verified at server startup — no need to re-verify on every test send
 
   try {
     await sendEmail({
-      email,
+      to: email,
       subject: `[TEST] ${campaign.subject}`,
       html: getCampaignEmailHTML('test@example.com', campaign.subject, campaign.content, campaign.bannerUrl)
     });
@@ -290,13 +286,7 @@ exports.sendCampaignNow = catchAsync(async (req, res, next) => {
     return next(new AppError('No active subscribers to send the campaign to.', 404));
   }
 
-  try {
-    await verifyBrevo();
-  } catch (err) {
-    campaign.status = 'failed';
-    await campaign.save();
-    return next(new AppError(`Brevo Verification Failed: ${err.message}`, 500));
-  }
+  // Brevo is verified at server startup — no need to re-verify on every campaign dispatch
 
   // Set status to sending
   campaign.status = 'sending';
